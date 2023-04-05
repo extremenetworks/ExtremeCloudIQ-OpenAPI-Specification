@@ -1,0 +1,35 @@
+= ExtremeCloud IQ OpenAPI Specification
+:toc:
+
+ExtremeCloud IQ OpenAPI specification is a comprehensive and powerful OpenAPI that enables developers to integrate with the https://extremecloudiq.com/login[ExtremeCloud IQ] cloud-managed network management platform.
+
+== Introduction
+
+ExtremeCloud IQ is a cloud-based solution that provides centralized management and control for networking devices, including switches, access points, and routers.
+
+With the ExtremeCloud IQ OpenAPI specification, developers can leverage a wide range of RESTful APIs to interact with the platform and perform various tasks such as provisioning and configuration, monitoring and reporting, and troubleshooting.
+
+== What it can do
+
+Developers can use the ExtremeCloud IQ OpenAPI specification to build custom applications, automate network management tools, and integrate with other systems.
+
+This enables organizations to streamline their network operations, improve visibility and control over their network infrastructure, and enhance the overall performance and security of their networks.
+
+== How to use the API
+
+ExtremeCloud IQ OpenAPI specification is based on the latest https://spec.openapis.org/oas/latest.html[OpenAPI 3.x standard], which allows for easy and standardized communication between different systems and programming languages.
+
+ExtremeCloud IQ OpenAPI Specification provides a well-documented and consistent interface for developers to interact with the ExtremeCloud IQ platform, making it simple and efficient to build integrations and applications that extend the capabilities of the platform.
+
+Please check below links for the documentation and tools we provided:
+
+* https://developer.extremecloudiq.com/[ExtremeCloud IQ Developer portal]
+* https://api.extremecloudiq.com/swagger-ui/index.html[Swagger UI]
+* https://developer.extremecloudiq.com/documentation/[API Documentation & Tutorial]
+
+== Releases
+
+Normally ExtremeCloud IQ OpenAPI will release every 1-2 months, please check below links for the historical release notes and OpenAPI specifications.
+
+* https://developer.extremecloudiq.com/releases/[Release Notes]
+* https://github.com/extremenetworks/ExtremeCloudIQ-OpenAPI-Specification/releases[Release History]
