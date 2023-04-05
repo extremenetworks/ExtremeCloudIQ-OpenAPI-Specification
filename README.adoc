@@ -3,9 +3,9 @@
 
 == Introduction
 
-ExtremeCloud IQ is a cloud-based solution offered by https://www.extremenetworks.com/[Extreme Networks] that provides centralized management and control for networking devices, including access points (AP), switches,and routers.
+https://extremecloudiq.com/login[ExtremeCloud IQ] is a cloud-based solution offered by https://www.extremenetworks.com/[Extreme Networks] that provides centralized management and control for networking devices, including access points (AP), switches,and routers.
 
-ExtremeCloud IQ OpenAPI specification is a comprehensive and powerful OpenAPI that enables developers to integrate with the https://extremecloudiq.com/login[ExtremeCloud IQ] cloud-managed network management platform.
+ExtremeCloud IQ OpenAPI specification is a comprehensive and powerful OpenAPI that enables developers to integrate with the ExtremeCloud IQ cloud-managed network management platform.
 
 == What it can do
 
