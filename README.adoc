@@ -13,7 +13,7 @@ With the ExtremeCloud IQ OpenAPI specification, developers can leverage a wide r
 
 Developers can use the ExtremeCloud IQ OpenAPI specification to build custom applications, automate network management tools, and integrate with other systems.
 
-== How to use the API
+== How to use it
 
 ExtremeCloud IQ OpenAPI specification is based on the latest https://spec.openapis.org/oas/latest.html[OpenAPI 3.x standard], which allows for easy and standardized communication between different systems and programming languages.
 
