@@ -1,19 +1,17 @@
 = ExtremeCloud IQ OpenAPI Specification
 :toc:
 
-ExtremeCloud IQ OpenAPI specification is a comprehensive and powerful OpenAPI that enables developers to integrate with the https://extremecloudiq.com/login[ExtremeCloud IQ] cloud-managed network management platform.
-
 == Introduction
 
-ExtremeCloud IQ is a cloud-based solution that provides centralized management and control for networking devices, including switches, access points, and routers.
+ExtremeCloud IQ is a cloud-based solution offered by https://www.extremenetworks.com/[Extreme Networks] that provides centralized management and control for networking devices, including access points (AP), switches,and routers.
 
-With the ExtremeCloud IQ OpenAPI specification, developers can leverage a wide range of RESTful APIs to interact with the platform and perform various tasks such as provisioning and configuration, monitoring and reporting, and troubleshooting.
+ExtremeCloud IQ OpenAPI specification is a comprehensive and powerful OpenAPI that enables developers to integrate with the https://extremecloudiq.com/login[ExtremeCloud IQ] cloud-managed network management platform.
 
 == What it can do
 
-Developers can use the ExtremeCloud IQ OpenAPI specification to build custom applications, automate network management tools, and integrate with other systems.
+With the ExtremeCloud IQ OpenAPI specification, developers can leverage a wide range of RESTful APIs to interact with the platform and perform various tasks such as provisioning and configuration, monitoring and reporting, and troubleshooting.
 
-This enables organizations to streamline their network operations, improve visibility and control over their network infrastructure, and enhance the overall performance and security of their networks.
+Developers can use the ExtremeCloud IQ OpenAPI specification to build custom applications, automate network management tools, and integrate with other systems.
 
 == How to use the API
 
@@ -21,7 +19,7 @@ ExtremeCloud IQ OpenAPI specification is based on the latest https://spec.openap
 
 ExtremeCloud IQ OpenAPI Specification provides a well-documented and consistent interface for developers to interact with the ExtremeCloud IQ platform, making it simple and efficient to build integrations and applications that extend the capabilities of the platform.
 
-Please check below links for the documentation and tools we provided:
+Please check the below links for the documentation and tools we provided:
 
 * https://developer.extremecloudiq.com/[ExtremeCloud IQ Developer portal]
 * https://api.extremecloudiq.com/swagger-ui/index.html[Swagger UI]
