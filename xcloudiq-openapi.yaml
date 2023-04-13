@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 23.2.0.30
+  version: 23.2.1.4
 servers:
 - url: '{base_url}'
   description: ExtremeCloud IQ REST API Server
@@ -2317,66 +2317,6 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
-  /devices/{id}/bounce-port:
-    post:
-      tags:
-      - Device
-      summary: Bounce port of a device
-      description: Bounce port for the given device id.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_bounce_port_for_single_device
-      operationId: bounceDevicePort
-      parameters:
-      - $ref: '#/components/parameters/id'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/XiqBounceDevicePortRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqBounceDevicePortResponse'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /devices/installation-report:
-    get:
-      tags:
-      - Device
-      summary: Get Installation devices
-      description: List the device installation report.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_xiq_device_installation_report
-      operationId: getXiqDeviceInstallationReport
-      parameters:
-      - name: id
-        in: query
-        description: Unique id
-        required: true
-        schema:
-          type: integer
-          items:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqDeviceInstallationReportResponse'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
   /network-policies:
     get:
       tags:
@@ -2597,7 +2537,8 @@ paths:
       description: List active clients with filters and pagination.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_active_clients
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_client_list
+      operationId: listActiveClients
       parameters:
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
@@ -2630,52 +2571,6 @@ paths:
           type: array
           items:
             type: string
-      - name: clientOsNames
-        in: query
-        description: The client os names
-        required: false
-        schema:
-          type: array
-          items:
-            type: string
-      - name: clientConnectionTypes
-        in: query
-        description: The client connection types
-        required: false
-        schema:
-          type: array
-          items:
-            type: integer
-      - name: clientHealthStatus
-        in: query
-        description: The client health status - 1 - HEALTHY, 2 - POOR
-        required: false
-        schema:
-          type: integer
-      - name: excludeLocallyManaged
-        in: query
-        description: Return Cloud managed Devices' clients. Default value - false
-        required: false
-        schema:
-          type: boolean
-      - name: searchString
-        in: query
-        description: The SearchString
-        required: false
-        schema:
-          type: string
-      - name: sortField
-        in: query
-        description: Sort field. Available values - AUTH_METHOD, CHANNEL, CONNECTED_VIA, CONNECTION_TYPE, DEVICE_NAME, HOST_NAME, IPV4, IPV6, MAC, NAC_DETAILS, NAC_PROFILE, OS_TYPE, REPORTED_BY, START_TIME, USER_NAME, USER_PROFILE, VLAN
-        required: false
-        schema:
-          type: string
-      - name: sortOrder
-        in: query
-        description: Sort order (ascending by default). Available values - ASC, DESC
-        required: false
-        schema:
-          type: string
       responses:
         '200':
           description: OK
@@ -2725,40 +2620,6 @@ paths:
           type: array
           items:
             type: string
-      - name: clientOsNames
-        in: query
-        description: The client os names
-        required: false
-        schema:
-          type: array
-          items:
-            type: string
-      - name: clientConnectionTypes
-        in: query
-        description: The client connection types
-        required: false
-        schema:
-          type: array
-          items:
-            type: integer
-      - name: clientHealthStatus
-        in: query
-        description: The client health status - 1 - HEALTHY, 2 - POOR
-        required: false
-        schema:
-          type: integer
-      - name: excludeLocallyManaged
-        in: query
-        description: Return Cloud managed Devices' clients. Default value - false
-        required: false
-        schema:
-          type: boolean
-      - name: searchString
-        in: query
-        description: The SearchString
-        required: false
-        schema:
-          type: string
       responses:
         '200':
           description: OK
@@ -2826,112 +2687,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqClient'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /clients/active/count:
-    get:
-      tags:
-      - Client
-      summary: Get active clients count
-      description: List active clients count.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_active_clients_count
-      operationId: getActiveClientsCount
-      parameters:
-      - $ref: '#/components/parameters/page'
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/fields'
-      - $ref: '#/components/parameters/views'
-      - $ref: '#/components/parameters/locationIds'
-      - $ref: '#/components/parameters/deviceIds'
-      - name: vlans
-        in: query
-        description: The associate vlan IDs
-        required: false
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int32
-      - name: userProfileNames
-        in: query
-        description: The user profile names
-        required: false
-        schema:
-          type: array
-          items:
-            type: string
-      - name: ssids
-        in: query
-        description: The SSIDs
-        required: false
-        schema:
-          type: array
-          items:
-            type: string
-      - name: clientOsNames
-        in: query
-        description: The client os names
-        required: false
-        schema:
-          type: array
-          items:
-            type: string
-      - name: clientConnectionTypes
-        in: query
-        description: The client connection types
-        required: false
-        schema:
-          type: array
-          items:
-            type: integer
-      - name: clientHealthStatus
-        in: query
-        description: The client health status - 1 - HEALTHY, 2 - POOR
-        required: false
-        schema:
-          type: integer
-      - name: excludeLocallyManaged
-        in: query
-        description: Return Cloud managed Devices' clients. Default value - false
-        required: false
-        schema:
-          type: boolean
-      - name: searchString
-        in: query
-        description: The SearchString
-        required: false
-        schema:
-          type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetActiveClientsResponse'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /clients/byMac/{clientMac}:
-    delete:
-      tags:
-      - Client
-      summary: Disconnect the client
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_disconnect_client_by_macAddress_for_one_client
-      operationId: disconnectClient
-      description: Disconnect the client.
-      parameters:
-      - $ref: '#/components/parameters/mac'
-      responses:
-        '200':
-          description: OK
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -6849,6 +6604,54 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /copilot/anomalies/port-efficiency/stats:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get PortEfficiency Device Stats
+      description: Get all the stats for PortEfficiency device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_portefficiency_device_stats
+      operationId: getCopilotPortEfficiencyDeviceStats
+      parameters:
+      - $ref: '#/components/parameters/anomalyId'
+      - $ref: '#/components/parameters/locationId1'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotPortEfficiencyStats'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/port-efficiency/speed-duplex-stats:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get PortEfficiency Device Speed and Duplex Stats
+      description: Get all the speed and duplex for PortEfficiency device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_portefficiency_device_speed_duplex
+      operationId: getCopilotPortEfficiencyDeviceSpeedDuplex
+      parameters:
+      - $ref: '#/components/parameters/anomalyId'
+      - $ref: '#/components/parameters/locationId1'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotPortEfficiencySpeedDuplex'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
 components:
   schemas:
     XiqLoginRequest:
@@ -8641,102 +8444,6 @@ components:
           type: integer
           description: The beacon network policy ID.
           format: int64
-    XiqBounceDevicePortRequest:
-      type: object
-      description: The request for bounce port for the given device id.
-      required:
-      - interfaceName
-      properties:
-        portNumber:
-          type: string
-          description: The port number of the device (eg. 1,2, ..)
-        bouncePortReason:
-          type: string
-          description: The reason to bounce the port of the specific device/switch.
-    XiqBounceDevicePortOperationResult:
-      allOf:
-      - type: object
-        description: Generic ExtremeCloud IQ Device model
-        properties:
-          status:
-            type: string
-            description: The status value
-          message:
-            type: string
-            description: The message
-    XiqBounceDevicePortData:
-      allOf:
-      - type: object
-        description: Generic ExtremeCloud IQ Device model
-        properties:
-          status:
-            type: integer
-            description: The status value
-          requestId:
-            type: integer
-            description: The requestId of the response
-            format: int32
-          results:
-            type: array
-            description: The list of results
-            items:
-              $ref: '#/components/schemas/XiqBounceDevicePortOperationResult'
-    XiqBounceDevicePortResponse:
-      allOf:
-      - type: object
-        description: Generic ExtremeCloud IQ Device model
-        properties:
-          data:
-            $ref: '#/components/schemas/XiqBounceDevicePortData'
-    XiqDeviceInstallationReportResponse:
-      type: object
-      description: The device installation response
-      required:
-      - onboarded
-      - location_name
-      - network_policy_name
-      - device_template_name
-      - ip_address
-      - default_gateway
-      - ntp_server
-      - dns_server
-      - enable_poe
-      - xiq_connectivity
-      - installation_images
-      properties:
-        onboarded:
-          type: boolean
-          description: Device onboard status
-        location_name:
-          type: string
-          description: Location unique name
-        network_policy_name:
-          type: string
-          description: Network policy name
-        device_template_name:
-          type: string
-          description: Device template name
-        ip_address:
-          type: string
-          description: Device IPv4 address
-        default_gateway:
-          type: string
-          description: Device default gateway
-        ntp_server:
-          type: string
-          description: ntp server address
-        dns_server:
-          type: string
-          description: dns server address
-        enable_poe:
-          type: boolean
-          description: Enable PoE
-        xiq_connectivity:
-          type: boolean
-          description: Cloud or Locally managed indicator. True means Cloud managed device
-        installation_images:
-          type: boolean
-          description: Device contains installation images or not
     PagedXiqNetworkPolicy:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -9052,13 +8759,6 @@ components:
         usage:
           type: integer
           description: The client total usage
-          format: int64
-    GetActiveClientsResponse:
-      type: object
-      properties:
-        count:
-          type: integer
-          description: The connected wireless client count
           format: int64
     XiqApplicationSortField:
       type: string
@@ -14069,6 +13769,49 @@ components:
           type: integer
         max_channel:
           type: integer
+    XiqDuplexDataRateEntity:
+      type: object
+      description: data sequence
+      required:
+      - timestamp
+      - duplex_mode
+      - datarate_mode
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        duplex_mode:
+          type: integer
+        datarate_mode:
+          type: integer
+    XiqCopilotPortEfficiencyStats:
+      type: object
+      properties:
+        duplex_data_rate_entities:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqDuplexDataRateEntity'
+    XiqSpeedDuplexEntity:
+      type: object
+      description: data sequence
+      required:
+      - timestamp
+      - value
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        value:
+          type: integer
+    XiqCopilotPortEfficiencySpeedDuplex:
+      type: object
+      properties:
+        speed_duplex_entities:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqSpeedDuplexEntity'
   responses:
     ErrorResponse:
       description: The generic ExtremeCloud IQ API error response
@@ -14181,13 +13924,6 @@ components:
         items:
           type: integer
           format: int64
-    mac:
-      name: clientMac
-      in: path
-      description: The mac address of client
-      required: true
-      schema:
-        type: string
     n:
       name: n
       in: path
