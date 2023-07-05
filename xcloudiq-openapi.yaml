@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 23.3.2.1
+  version: 23.4.0.41
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -95,7 +95,7 @@ paths:
             schema:
               $ref: '#/components/schemas/XiqLoginRequest'
             examples:
-              Normal login:
+              Normal_login:
                 summary: Login with username and password
                 description: User login with username/email and password
                 value:
@@ -110,7 +110,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/XiqLoginResponse'
               examples:
-                200 example:
+                Login_successful:
                   summary: Login successful
                   description: Login successful response example.
                   value:
@@ -153,7 +153,7 @@ paths:
             schema:
               $ref: '#/components/schemas/XiqGenerateApiTokenRequest'
             examples:
-              Generate API token example 1:
+              Generate_API_token:
                 summary: Generate API token with specific permissions
                 description: Generate API token with a single permission to read account info
                 value:
@@ -734,7 +734,7 @@ paths:
             schema:
               $ref: '#/components/schemas/XiqUpdateExternalUserRequest'
             examples:
-              Update external user info.:
+              Update_external_user_info.:
                 description: Update external user info.
                 value:
                   user_role: ADMINISTRATOR
@@ -1361,6 +1361,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/locationIds'
       - name: locationId
         in: query
         description: Location Id
@@ -1453,7 +1454,7 @@ paths:
       - Device
       summary: Onboard Devices
       description: |-
-        Onboard devices for all devices, such as Extreme/Aerohive, EXOS, VOSS, WiNG, and Dell.
+        Onboard devices for all devices, such as Extreme/Aerohive, EXOS, VOSS, WiNG, Dell, and Digital Twin.
         This is asynchronized operation to support massive device onboarding.
       operationId: onboardDevices
       requestBody:
@@ -1465,6 +1466,35 @@ paths:
       responses:
         '202':
           description: Accepted
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/:advanced-onboard:
+    post:
+      tags:
+      - Device
+      summary: '[LRO] Advanced Onboard Devices'
+      description: Advanced onboard devices for all devices, such as Extreme/Aerohive, EXOS, VOSS, WiNG, and Dell. Advanced onboard devices will allow the user to set the device hostname,  attach the device location, associate network policy, etc. in a single API request. To avoid API timeout when onboarding a large number of devices, please make sure to  enable async mode (set async=true in query parameter) and use long-running operation  API to query the result.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_advanced_onboard_devices
+      operationId: advancedOnboardDevices
+      parameters:
+      - $ref: '#/components/parameters/async'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqAdvancedOnboardDeviceRequest'
+        required: true
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqAdvancedOnboardDeviceResponse'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -2347,6 +2377,46 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /devices/digital-twin:
+    get:
+      tags:
+      - Device
+      summary: List Digital Twin product information
+      description: List of Digital Twin product information with pagination.
+      externalDocs:
+        description: API Reference
+        url: http://extremecloudiq.com/api-docs/api-reference.html#_list_digital_twin_products
+      operationId: listDigitalTwinProducts
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: makes
+        in: query
+        description: List by makes or any with null/empty makes.
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqDigitalTwinMake'
+      - name: models
+        in: query
+        description: List by makes or any with null/empty models.
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqDigitalTwinModel'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqDigitalTwinProducts'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /devices/{id}/bounce-port:
     post:
       tags:
@@ -2628,6 +2698,7 @@ paths:
       externalDocs:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_list_active_clients
+      operationId: getActiveClients
       parameters:
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
@@ -2670,7 +2741,7 @@ paths:
             type: string
       - name: clientConnectionTypes
         in: query
-        description: The client connection types
+        description: The client connection types - 1 - WIRELESS, 2 - WIRED, -1 - UNDETERMINED
         required: false
         schema:
           type: array
@@ -2763,14 +2834,6 @@ paths:
           type: array
           items:
             type: string
-      - name: clientConnectionTypes
-        in: query
-        description: The client connection types
-        required: false
-        schema:
-          type: array
-          items:
-            type: integer
       - name: clientHealthStatus
         in: query
         description: The client health status - 1 - HEALTHY, 2 - POOR
@@ -2860,6 +2923,31 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /clients/alias:
+    put:
+      tags:
+      - Client
+      summary: Set the aliases for multiple clients
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_set_clients_aliases
+      operationId: setClientsAliases
+      description: Bulk update the aliases for multiple clients based on the mac addresses. Empty or null alias value deletes the previous client alias.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/XiqClientMacAddressAlias'
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /clients/active/count:
     get:
       tags:
@@ -2912,7 +3000,7 @@ paths:
             type: string
       - name: clientConnectionTypes
         in: query
-        description: The client connection types
+        description: The client connection types - 1 - WIRELESS, 2 - WIRED, -1 - UNDETERMINED
         required: false
         schema:
           type: array
@@ -3168,6 +3256,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/startTime'
       - name: categories
         in: query
         description: Audit category
@@ -3182,17 +3271,10 @@ paths:
         required: false
         schema:
           type: string
-      - name: startTime
-        in: query
-        description: The start time to query, epoch time in milliseconds since 1/1/1970, default is 0 if not specified or is negative
-        required: false
-        schema:
-          type: integer
-          format: int64
       - name: endTime
         in: query
-        description: The end time to query, epoch time in milliseconds since 1/1/1970, default is now if not specified or is negative, endTime - startTime must be no greater than 2592000000 (30 days)
-        required: false
+        description: 'The end time to query, epoch time in milliseconds since 1/1/1970. Note: endTime - startTime must be no greater than 2592000000 (30 days)'
+        required: true
         schema:
           type: integer
           format: int64
@@ -5767,7 +5849,7 @@ paths:
             schema:
               $ref: '#/components/schemas/XiqCreateLdapServerRequest'
             examples:
-              Create a new LDAP server:
+              Create_a_new_LDAP_server:
                 summary: Create a new LDAP server
                 description: The payload to create a new LDAP server
                 value:
@@ -6025,7 +6107,7 @@ paths:
             schema:
               $ref: '#/components/schemas/XiqCreateRadiusProxyRequest'
             examples:
-              Create a new RADIUS proxy:
+              Create_a_new_RADIUS_proxy:
                 summary: Create a new RADIUS proxy
                 description: The payload to create a new RADIUS proxy
                 value:
@@ -8225,6 +8307,107 @@ components:
             type: string
             description: Serial number -> Service tag
           description: Serial number -> Service tag
+    XiqDigitalTwinMake:
+      type: string
+      description: The Digital Twin device make.
+      enum:
+      - SWITCH_ENGINE
+      - FABRIC_ENGINE
+    XiqDigitalTwinModel:
+      type: string
+      description: The Digital Twin device model.
+      enum:
+      - DT_5320_16P_4XE
+      - DT_5320_16P_4XE_DC
+      - DT_5320_24P_8XE
+      - DT_5320_24T_8XE
+      - DT_5320_48P_8XE
+      - DT_5320_48T_8XE
+      - DT_5420F_16MW_32P_4XE
+      - DT_5420F_16W_32P_4XE
+      - DT_5420F_24P_4XE
+      - DT_5420F_24S_4XE
+      - DT_5420F_24T_4XE
+      - DT_5420F_48P_4XE
+      - DT_5420F_48P_4XL
+      - DT_5420F_48T_4XE
+      - DT_5420F_8W_16P_4XE
+      - DT_5420M_16MW_32P_4YE
+      - DT_5420M_24T_4YE
+      - DT_5420M_24W_4YE
+      - DT_5420M_48T_4YE
+      - DT_5420M_48W_4YE
+      - DT_5520_12MW_36W
+      - DT_5520_24T
+      - DT_5520_24W
+      - DT_5520_24X
+      - DT_5520_48SE
+      - DT_5520_48T
+      - DT_5520_48W
+      - DT_5720_24MW
+      - DT_5720_24MXW
+      - DT_5720_48MW
+      - DT_5720_48MXW
+      - DT_7520_48XT_6C
+      - DT_7520_48Y_8C
+      - DT_7720_32C
+      - DT_7520_48YE_CE
+    XiqDigitalTwinVimModule:
+      type: string
+      description: The Digital Twin VIM modules.
+      enum:
+      - DT_5520_VIM_4X
+      - DT_5520_VIM_4XE
+      - DT_5520_VIM_4YE
+      - DT_5720_VIM_2CE
+      - DT_5720_VIM_6YE
+    XiqDigitalTwinFeatLicense:
+      type: string
+      description: The Digital Twin feature licenses.
+      enum:
+      - PRD_5000_PRMR
+      - PRD_5000_MACSEC
+      - PRD_5320_10G_4P
+      - PRD_5320_10G_8P
+      - PRD_7000_PRMR
+      - PRD_7520_MACSEC
+    XiqDigitalTwinDevice:
+      type: object
+      required:
+      - make
+      - model
+      - os_version
+      properties:
+        make:
+          $ref: '#/components/schemas/XiqDigitalTwinMake'
+        model:
+          $ref: '#/components/schemas/XiqDigitalTwinModel'
+        os_type:
+          type: string
+          description: The Digital Twin device OS type.
+        os_version:
+          type: string
+          description: The Digital Twin device OS version.
+        vim_modules:
+          type: array
+          description: The Digital Twin VIM modules.
+          items:
+            $ref: '#/components/schemas/XiqDigitalTwinVimModule'
+        feat_licenses:
+          type: array
+          description: The Digital Twin feature licenses.
+          items:
+            $ref: '#/components/schemas/XiqDigitalTwinFeatLicense'
+      description: The Digital Twin device to onboard.
+    XiqDigitalTwinDevices:
+      type: object
+      properties:
+        dts:
+          type: array
+          description: The Digital Twin devices to onboard.
+          items:
+            $ref: '#/components/schemas/XiqDigitalTwinDevice'
+      description: Digital Twin devices to onboard
     XiqOnboardDeviceRequest:
       type: object
       description: The payload to onboard devices
@@ -8239,6 +8422,269 @@ components:
           $ref: '#/components/schemas/XiqWingDevices'
         dell:
           $ref: '#/components/schemas/XiqDellDevices'
+        dt:
+          $ref: '#/components/schemas/XiqDigitalTwinDevices'
+    XiqDeviceLocationAssignment:
+      type: object
+      description: Device location assignment
+      required:
+      - location_id
+      properties:
+        location_id:
+          type: integer
+          description: The assigned location ID, it must be FLOOR type
+          format: int64
+        x:
+          type: number
+          description: The horizontal value in the floor map
+          format: double
+        y:
+          type: number
+          description: The vertical value in the floor map
+          format: double
+        latitude:
+          type: number
+          description: The latitude in the geography
+          format: double
+        longitude:
+          type: number
+          description: The longitude in the geography
+          format: double
+    XiqExtremeDevice:
+      required:
+      - serial_number
+      type: object
+      properties:
+        serial_number:
+          type: string
+          description: The serial number
+        location:
+          $ref: '#/components/schemas/XiqDeviceLocationAssignment'
+        network_policy_id:
+          type: integer
+          description: The assigned network policy
+          format: int64
+        hostname:
+          type: string
+          description: The device hostname
+      description: Extreme/Aerohive device to onboard
+    XiqExosDevice:
+      required:
+      - serial_number
+      type: object
+      properties:
+        serial_number:
+          type: string
+          description: The serial number
+        location:
+          $ref: '#/components/schemas/XiqDeviceLocationAssignment'
+        network_policy_id:
+          type: integer
+          description: The assigned network policy
+          format: int64
+        hostname:
+          type: string
+          description: The device hostname
+      description: ExtremeXOS (EXOS) device to onboard
+    XiqVossDevice:
+      required:
+      - serial_number
+      type: object
+      properties:
+        serial_number:
+          type: string
+          description: The serial number
+        location:
+          $ref: '#/components/schemas/XiqDeviceLocationAssignment'
+        network_policy_id:
+          type: integer
+          description: The assigned network policy
+          format: int64
+        hostname:
+          type: string
+          description: The device hostname
+      description: VSP Operating System Software (VOSS) device to onboard
+    XiqWingDevice:
+      required:
+      - mac_address
+      - serial_number
+      type: object
+      properties:
+        serial_number:
+          type: string
+          description: The serial number
+        mac_address:
+          type: string
+          description: The mac address
+        location:
+          $ref: '#/components/schemas/XiqDeviceLocationAssignment'
+        network_policy_id:
+          type: integer
+          description: The assigned network policy
+          format: int64
+        hostname:
+          type: string
+          description: The device hostname
+      description: ExtremeWireless (WiNG) device to onboard
+    XiqDellDevice:
+      required:
+      - serial_number
+      - service_tag
+      type: object
+      properties:
+        serial_number:
+          type: string
+          description: The serial number
+        service_tag:
+          type: string
+          description: The service tag
+        location:
+          $ref: '#/components/schemas/XiqDeviceLocationAssignment'
+        network_policy_id:
+          type: integer
+          description: The assigned network policy
+          format: int64
+        hostname:
+          type: string
+          description: The device hostname
+      description: Dell device to onboard
+    XiqDigitalTwinOnboardDevice:
+      required:
+      - digital_twin_device
+      type: object
+      properties:
+        digital_twin_device:
+          $ref: '#/components/schemas/XiqDigitalTwinDevice'
+        location:
+          $ref: '#/components/schemas/XiqDeviceLocationAssignment'
+        network_policy_id:
+          type: integer
+          description: The assigned network policy
+          format: int64
+        hostname:
+          type: string
+          description: The device hostname
+      description: The Digital Twin device to onboard.
+    XiqAdvancedOnboardDeviceRequest:
+      type: object
+      properties:
+        extreme:
+          type: array
+          description: The selected target devices
+          items:
+            $ref: '#/components/schemas/XiqExtremeDevice'
+        exos:
+          type: array
+          description: The selected target devices
+          items:
+            $ref: '#/components/schemas/XiqExosDevice'
+        voss:
+          type: array
+          description: The selected target devices
+          items:
+            $ref: '#/components/schemas/XiqVossDevice'
+        wing:
+          type: array
+          description: The selected target devices
+          items:
+            $ref: '#/components/schemas/XiqWingDevice'
+        dell:
+          type: array
+          description: The selected target devices
+          items:
+            $ref: '#/components/schemas/XiqDellDevice'
+        dt:
+          type: array
+          description: The selected target devices
+          items:
+            $ref: '#/components/schemas/XiqDigitalTwinOnboardDevice'
+        unmanaged:
+          type: boolean
+          description: Whether to unmanage the devices
+      description: The payload to advanced onboard devices
+    XiqSuccessOnboardDevice:
+      required:
+      - device_id
+      - serial_number
+      type: object
+      properties:
+        serial_number:
+          type: string
+          description: The serial number
+        device_id:
+          type: integer
+          description: The device id
+          format: int64
+      description: The success onboard device
+    XiqOnboardError:
+      type: string
+      description: The onboard error code
+      enum:
+      - UNKNOWN
+      - SUCCEED
+      - EXIST_IN_REDIRECT
+      - FAILED_IN_DB
+      - FAILED_STORE_IN_REDIRECT
+      - SN_IS_NOT_RIGHT
+      - PRODUCT_TYPE_NOT_EXIST
+      - REACH_MAX_SIZE
+      - NOT_SUPPORT_DEVICE
+      - SN_EXISTED_IN_HM
+      - DEVICE_EXISTED
+      - NETMASK_IP_NOT_NULL
+      - BRANCH_ID_USED
+      - INVALID_SERVICE_TAG
+      - RADIO_WIFI1_NOT_SUPPORT
+      - RADIO_PROFILE_NOT_EXIST
+      - SDR_PROFILE_NOT_EXIST
+      - ADMIN_STATE_NOT_SUPPORT
+      - WIFI_POWER_NOT_SUPPORT
+      - OPERATION_MODE_NOT_SUPPORT
+      - COUNTRY_CODE_NOT_SUPPORT
+      - WIFI0_CHANNEL_NOT_SUPPORT
+      - WIFI1_CHANNEL_NOT_SUPPORT
+      - COUNTRY_CODE_IS_NEEDED
+      - MAC_ADDR_REQUIRED
+      - WING_AP_INVALID_ONBOARDING_DATA
+      - NOT_DUAL_BOOT_AP
+      - INVALID_CSV_LOCATION
+      - NOT_SUPPORTED_FOR_CONNECT
+      - DEVICE_EXISTED_ANOTHER_ACCOUNT
+      - FAILED_IN_DTIS_SERVICE
+      - FAILED_IN_DTIS_MAX_CONCURRENT_LIMIT_REACHED
+      - FAILED_DTINSTANCE_ALREADY_ASSOCIATED
+      - FAILED_IN_DTIS_MAX_OVERALL_LIMIT_REACHED
+      - FAILED_IN_DTIS_MAX_LICENSE_LIMIT_REACHED
+      - FAILED_DTINSTANCE_RELAUNCHED_RECENTLY
+      - FAILED_COPILOT_DISABLED
+      - FAILED_IN_DTIS_MAX_CONCURRENT_LIMIT_REACHED_BY_BATCH
+      - FAILED_IN_DTIS_MAX_OVERALL_LIMIT_REACHED_BY_BATCH
+      - NETWORK_POLICY_NOT_FOUND
+    XiqFailureOnboardDevice:
+      required:
+      - serial_number
+      type: object
+      properties:
+        serial_number:
+          type: string
+          description: The serial number
+        error:
+          $ref: '#/components/schemas/XiqOnboardError'
+      description: The fail onboard device
+    XiqAdvancedOnboardDeviceResponse:
+      type: object
+      properties:
+        success_devices:
+          type: array
+          description: The success devices
+          items:
+            $ref: '#/components/schemas/XiqSuccessOnboardDevice'
+        failure_devices:
+          type: array
+          description: The failure devices
+          items:
+            $ref: '#/components/schemas/XiqFailureOnboardDevice'
+      description: The response for advanced onboard devices
     XiqDeviceFilter:
       type: object
       description: The filter to get matched devices
@@ -8354,32 +8800,6 @@ components:
         location_address:
           type: string
           description: The address for the location
-        x:
-          type: number
-          description: The horizontal value in the floor map
-          format: double
-        y:
-          type: number
-          description: The vertical value in the floor map
-          format: double
-        latitude:
-          type: number
-          description: The latitude in the geography
-          format: double
-        longitude:
-          type: number
-          description: The longitude in the geography
-          format: double
-    XiqDeviceLocationAssignment:
-      type: object
-      description: Device location assignment
-      required:
-      - location_id
-      properties:
-        location_id:
-          type: integer
-          description: The assigned location ID, it must be FLOOR type
-          format: int64
         x:
           type: number
           description: The horizontal value in the floor map
@@ -8806,6 +9226,39 @@ components:
           type: integer
           description: The beacon network policy ID.
           format: int64
+    XiqDigitalTwinProducts:
+      type: object
+      description: The Digital Twin product information.
+      required:
+      - make
+      - model
+      - os_versions
+      properties:
+        make:
+          type: string
+          description: The Digital Twin device make.
+        model:
+          type: string
+          description: The Digital Twin device model.
+        os_type:
+          type: string
+          description: The Digital Twin device OS type.
+        os_versions:
+          type: array
+          description: The Digital Twin device OS versions.
+          items:
+            type: string
+            description: The Digital Twin device OS versions.
+    PagedXiqDigitalTwinProducts:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqDigitalTwinProducts'
     XiqBounceDevicePortRequest:
       type: object
       description: The request for bounce port for the given device id.
@@ -9029,9 +9482,10 @@ components:
       - CATEGORY
       - DESCRIPTION
       - DEVICE_MAC_ADDRESS
+      - ALIAS
     XiqClientView:
       type: string
-      description: The logic collections of client fields<br/><br/><b>BASIC:</b> ID, ORG_ID, HOSTNAME, MAC_ADDRESS, IP_ADDRESS, IPV6_ADDRESS, OS_TYPE, DEVICE_ID,CONNECTED, ONLINE_TIME, OFFLINE_TIME, CONNECTION_TYPE, SSID, PORT<br/><b>FULL:</b> All fields<br/><b>STATUS:</b> ID, CONNECTED, ONLINE_TIME, OFFLINE_TIME<br/><b>DETAIL:</b> ID, CREATE_TIME, UPDATE_TIME, ORG_ID, ORG_NAME, LOCATION_ID, HOSTNAME,MAC_ADDRESS, IP_ADDRESS, IPV6_ADDRESS, OS_TYPE, DEVICE_ID, DEVICE_FUNCTION,DEVICE_NAME, DEVICE_MAC_ADDRESS, USERNAME, USER_PROFILE_NAME, CONNECTED, ONLINE_TIME, OFFLINE_TIME, VLAN, CONNECTION_TYPE, SSID, PORT, BSSID, PORT_TYPE_NAME, INTERFACE_NAME, AUTH, ENCRYPTION_METHOD, CHANNEL, RSSI, SNR, WING_AP, VENDOR, RADIO_TYPE<br/><b>LOCATION:</b> ID, LOCATION_ID, LOCATIONS<br/><b>METRICS:</b> ID, CLIENT_HEALTH, APPLICATION_HEALTH, NETWORK_HEALTH, RADIO_HEALTH<br/><b>IOT:</b> ID, MOBILITY, CATEGORY, DESCRIPTION
+      description: The logic collections of client fields<br/><br/><b>BASIC:</b> ID, ORG_ID, HOSTNAME, MAC_ADDRESS, IP_ADDRESS, IPV6_ADDRESS, OS_TYPE, DEVICE_ID,CONNECTED, ONLINE_TIME, OFFLINE_TIME, CONNECTION_TYPE, SSID, PORT<br/><b>FULL:</b> All fields<br/><b>STATUS:</b> ID, CONNECTED, ONLINE_TIME, OFFLINE_TIME<br/><b>DETAIL:</b> ID, CREATE_TIME, UPDATE_TIME, ORG_ID, ORG_NAME, LOCATION_ID, HOSTNAME, MAC_ADDRESS, IP_ADDRESS, IPV6_ADDRESS, OS_TYPE, DEVICE_ID, DEVICE_FUNCTION, DEVICE_NAME, DEVICE_MAC_ADDRESS, USERNAME, USER_PROFILE_NAME, CONNECTED, ONLINE_TIME, OFFLINE_TIME, VLAN, CONNECTION_TYPE, SSID, PORT, BSSID, PORT_TYPE_NAME, INTERFACE_NAME, AUTH, ENCRYPTION_METHOD, CHANNEL, RSSI, SNR, WING_AP, VENDOR, RADIO_TYPE, ALIAS<br/><b>LOCATION:</b> ID, LOCATION_ID, LOCATIONS<br/><b>METRICS:</b> ID, CLIENT_HEALTH, APPLICATION_HEALTH, NETWORK_HEALTH, RADIO_HEALTH<br/><b>IOT:</b> ID, MOBILITY, CATEGORY, DESCRIPTION
       enum:
       - BASIC
       - FULL
@@ -9184,6 +9638,10 @@ components:
             description: The detailed location
             items:
               $ref: '#/components/schemas/XiqLocationLegend'
+          alias:
+            type: string
+            maxLength: 255
+            description: The alias of the client
     PagedXiqClient:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -9218,6 +9676,21 @@ components:
           type: integer
           description: The client total usage
           format: int64
+    XiqClientMacAddressAlias:
+      type: object
+      description: The client's mac address and alias
+      required:
+      - mac_address
+      properties:
+        mac_address:
+          type: string
+          minLength: 12
+          maxLength: 12
+          description: The MAC address of the client
+        alias:
+          type: string
+          maxLength: 255
+          description: The alias of the client
     GetActiveClientsResponse:
       type: object
       properties:
@@ -14446,6 +14919,16 @@ components:
       schema:
         type: integer
         format: int64
+    locationIds:
+      name: locationIds
+      in: query
+      description: The location IDs
+      required: false
+      schema:
+        type: array
+        items:
+          type: integer
+          format: int64
     order:
       name: order
       in: query
@@ -14495,16 +14978,6 @@ components:
         type: array
         items:
           $ref: '#/components/schemas/XiqClientView'
-    locationIds:
-      name: locationIds
-      in: query
-      description: The location IDs
-      required: false
-      schema:
-        type: array
-        items:
-          type: integer
-          format: int64
     deviceIds:
       name: deviceIds
       in: query
