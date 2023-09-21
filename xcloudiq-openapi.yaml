@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 23.5.0.41
+  version: 23.5.3.4
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -1473,6 +1473,12 @@ paths:
         schema:
           $ref: '#/components/schemas/XiqDeviceNullField'
       - $ref: '#/components/parameters/async'
+      - name: configMismatch
+        in: query
+        description: Config audit status(MATCHED(false) or UNMATCHED(true))
+        required: false
+        schema:
+          type: boolean
       responses:
         '200':
           description: OK
@@ -3086,6 +3092,31 @@ paths:
       responses:
         '200':
           description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /clients/getByMac/{clientMac}:
+    get:
+      tags:
+      - Client
+      summary: Get client info by mac
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_client_details_for_one_client
+      operationId: getClientByMac
+      description: Get detailed client information by mac.
+      parameters:
+      - $ref: '#/components/parameters/mac'
+      - $ref: '#/components/parameters/fields'
+      - $ref: '#/components/parameters/views'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqClient'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -6961,6 +6992,52 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /copilot/anomalies/port-efficiency/stats:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get PortEfficiency Device Stats
+      description: Get all the stats for PortEfficiency device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_portefficiency_device_stats
+      operationId: getCopilotPortEfficiencyDeviceStats
+      parameters:
+      - $ref: '#/components/parameters/anomalyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotPortEfficiencyStats'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/port-efficiency/speed-duplex-stats:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get PortEfficiency Device Speed and Duplex Stats
+      description: Get all the speed and duplex for PortEfficiency device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_portefficiency_device_speed_duplex
+      operationId: getCopilotPortEfficiencyDeviceSpeedDuplex
+      parameters:
+      - $ref: '#/components/parameters/anomalyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotPortEfficiencySpeedDuplex'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /copilot/anomalies/dfs-recurrence/count-stats:
     get:
       tags:
@@ -7049,52 +7126,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqCopilotATPPacketCounts'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/anomalies/port-efficiency/stats:
-    get:
-      tags:
-      - Copilot - Anomalies
-      summary: Get PortEfficiency Device Stats
-      description: Get all the stats for PortEfficiency device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_portefficiency_device_stats
-      operationId: getCopilotPortEfficiencyDeviceStats
-      parameters:
-      - $ref: '#/components/parameters/anomalyId'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotPortEfficiencyStats'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/anomalies/port-efficiency/speed-duplex-stats:
-    get:
-      tags:
-      - Copilot - Anomalies
-      summary: Get PortEfficiency Device Speed and Duplex Stats
-      description: Get all the speed and duplex for PortEfficiency device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_portefficiency_device_speed_duplex
-      operationId: getCopilotPortEfficiencyDeviceSpeedDuplex
-      parameters:
-      - $ref: '#/components/parameters/anomalyId'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotPortEfficiencySpeedDuplex'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -7317,6 +7348,129 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqCopilotAnomaliesNotificationsVo'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/anomalies-by-category:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get Anomalies by Categories
+      description: Get all anomalies for a given viewType.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_anomalies-by-category
+      operationId: getCopilotAnomaliesbyCategory
+      parameters:
+      - $ref: '#/components/parameters/startTime1'
+      - $ref: '#/components/parameters/endTime1'
+      - $ref: '#/components/parameters/buildingId'
+      - $ref: '#/components/parameters/severity'
+      - $ref: '#/components/parameters/anomalyType'
+      - $ref: '#/components/parameters/muted'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotAnomaliesByCategory'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/devices-with-locations:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Devices with Locations
+      description: Get all devices for all the anomalies and locations.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_devices_with_locations
+      operationId: getCopilotDevicesWithLocations
+      parameters:
+      - $ref: '#/components/parameters/startTime1'
+      - $ref: '#/components/parameters/endTime1'
+      - $ref: '#/components/parameters/buildingId'
+      - $ref: '#/components/parameters/severity'
+      - $ref: '#/components/parameters/anomalyType'
+      - $ref: '#/components/parameters/muted'
+      - $ref: '#/components/parameters/sortField1'
+      - $ref: '#/components/parameters/sortOrder'
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/searchKey1'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotAnomaliesDevicesWithLocation'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/update-device-action:
+    put:
+      tags:
+      - Copilot - Anomalies
+      summary: Update Devices Action
+      description: Update & save action for Anomaly devices.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#update_copilot_anomalies_devices_action
+      operationId: updateCopilotAnomaliesDevicesAction
+      parameters:
+      - $ref: '#/components/parameters/async1'
+      requestBody:
+        description: The body of update devices
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqUpdateAnomaliesAndDevicesRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/report:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Download Anomalies Report
+      description: Download all devices and locations for all the anomalies.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_download_report
+      operationId: getAnomaliesReport
+      parameters:
+      - $ref: '#/components/parameters/startTime1'
+      - $ref: '#/components/parameters/endTime1'
+      - $ref: '#/components/parameters/buildingId'
+      - $ref: '#/components/parameters/severity'
+      - $ref: '#/components/parameters/anomalyType'
+      - $ref: '#/components/parameters/muted'
+      - $ref: '#/components/parameters/sortField1'
+      - $ref: '#/components/parameters/sortOrder'
+      - $ref: '#/components/parameters/searchKey1'
+      - $ref: '#/components/parameters/fileType'
+      - $ref: '#/components/parameters/offsetTime'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotAnomaliesReport'
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotAnomaliesReport'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -8397,7 +8551,7 @@ components:
       - DESC
     XiqDeviceView:
       type: string
-      description: 'The logic collections of device fields<br/><br/>BASIC: ID, ORG_ID, SERIAL_NUMBER, SERVICE_TAG, MAC_ADDRESS, SIMULATED, DEVICE_FUNCTION, PRODUCT_TYPE, HOSTNAME, IP_ADDRESS, SOFTWARE_VERSION, DEVICE_ADMIN_STATE, CONNECTED<br>FULL: All fields<br/>STATUS: ID, DEVICE_ADMIN_STATE, CONNECTED<br/>LOCATION: ID, LOCATION_ID, LOCATIONS<br>CLIENT: ID, ACTIVE_CLIENTS<br/>DETAIL: ID, ORG_ID, CREATE_TIME, UPDATE_TIME, SERIAL_NUMBER, SERVICE_TAG, MAC_ADDRESS,SIMULATED, DEVICE_FUNCTION, PRODUCT_TYPE, HOSTNAME, IP_ADDRESS, SOFTWARE_VERSION, DEVICE_ADMIN_STATE, CONNECTED, LAST_CONNECT_TIME, DNS_SERVER_ADDRESS, SUBNET_MASK, DEFAULT_GATEWAY, IPV6_ADDRESS, IPV6_NETMASK, DISPLAY_VERSION'
+      description: 'The logic collections of device fields<br/><br/>BASIC: ID, ORG_ID, SERIAL_NUMBER, SERVICE_TAG, MAC_ADDRESS, SIMULATED, DEVICE_FUNCTION, PRODUCT_TYPE, HOSTNAME, IP_ADDRESS, SOFTWARE_VERSION, DEVICE_ADMIN_STATE, CONNECTED, CONFIG_MISMATCH<br>FULL: All fields<br/>STATUS: ID, DEVICE_ADMIN_STATE, CONNECTED<br/>LOCATION: ID, LOCATION_ID, LOCATIONS<br>CLIENT: ID, ACTIVE_CLIENTS<br/>DETAIL: ID, ORG_ID, CREATE_TIME, UPDATE_TIME, SERIAL_NUMBER, SERVICE_TAG, MAC_ADDRESS,SIMULATED, DEVICE_FUNCTION, PRODUCT_TYPE, HOSTNAME, IP_ADDRESS, SOFTWARE_VERSION, DEVICE_ADMIN_STATE, CONNECTED, LAST_CONNECT_TIME, DNS_SERVER_ADDRESS, SUBNET_MASK, DEFAULT_GATEWAY, IPV6_ADDRESS, IPV6_NETMASK, DISPLAY_VERSION, CONFIG_MISMATCH'
       enum:
       - BASIC
       - FULL
@@ -8438,6 +8592,8 @@ components:
       - LOCATIONS
       - DESCRIPTION
       - COUNTRY_CODE
+      - CONFIG_MISMATCH
+      - SYSTEM_UP_TIME
     XiqDeviceNullField:
       type: string
       enum:
@@ -8561,6 +8717,13 @@ components:
             type: integer
             description: The assigned country code on the device
             format: int32
+          configMismatch:
+            type: boolean
+            description: Config audit status(MATCHED(false) or UNMATCHED(true))
+          system_up_time:
+            type: integer
+            description: The device uptime
+            format: int64
           description:
             type: string
             description: The device description
@@ -14840,10 +15003,10 @@ components:
     XiqAnomalyType:
       type: string
       enum:
-      - POE_FLAPPING
+      - POE_STABILITY
       - DFS_RECURRENCE
       - ADVERSE_TRAFFIC
-      - UPLINK_EFFICIENCY
+      - PORT_EFFICIENCY
       - WIFI_CAPACITY
       - WIFI_EFFICIENCY
     XiqLocationType:
@@ -15013,6 +15176,49 @@ components:
           description: The data in the current page
           items:
             $ref: '#/components/schemas/XiqFlapCountEntity'
+    XiqDuplexDataRateEntity:
+      type: object
+      description: data sequence
+      required:
+      - timestamp
+      - duplex_mode
+      - datarate_mode
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        duplex_mode:
+          type: integer
+        datarate_mode:
+          type: integer
+    XiqCopilotPortEfficiencyStats:
+      type: object
+      properties:
+        duplex_data_rate_entities:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqDuplexDataRateEntity'
+    XiqSpeedDuplexEntity:
+      type: object
+      description: data sequence
+      required:
+      - timestamp
+      - value
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        value:
+          type: integer
+    XiqCopilotPortEfficiencySpeedDuplex:
+      type: object
+      properties:
+        speed_duplex_entities:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqSpeedDuplexEntity'
     XiqCountStatsEntity:
       type: object
       description: data sequence
@@ -15137,49 +15343,6 @@ components:
           description: The data in the current page
           items:
             $ref: '#/components/schemas/XiqATPPacketCountsEntity'
-    XiqDuplexDataRateEntity:
-      type: object
-      description: data sequence
-      required:
-      - timestamp
-      - duplex_mode
-      - datarate_mode
-      properties:
-        timestamp:
-          type: integer
-          format: int64
-        duplex_mode:
-          type: integer
-        datarate_mode:
-          type: integer
-    XiqCopilotPortEfficiencyStats:
-      type: object
-      properties:
-        duplex_data_rate_entities:
-          type: array
-          description: The data in the current page
-          items:
-            $ref: '#/components/schemas/XiqDuplexDataRateEntity'
-    XiqSpeedDuplexEntity:
-      type: object
-      description: data sequence
-      required:
-      - timestamp
-      - value
-      properties:
-        timestamp:
-          type: integer
-          format: int64
-        value:
-          type: integer
-    XiqCopilotPortEfficiencySpeedDuplex:
-      type: object
-      properties:
-        speed_duplex_entities:
-          type: array
-          description: The data in the current page
-          items:
-            $ref: '#/components/schemas/XiqSpeedDuplexEntity'
     XiqTxRxStatsDataEntity:
       type: object
       description: data sequence
@@ -15332,7 +15495,7 @@ components:
           description: The data in the current page
           items:
             $ref: '#/components/schemas/XiqClientWifiStatsEntity'
-    XiqAnomaliesCountVoEntity:
+    XiqAnomaliesCount:
       type: object
       description: data sequence
       required:
@@ -15374,23 +15537,21 @@ components:
       description: data sequence
       required:
       - aggregated_scans_count
-      - anomalies_count_vos
+      - anomalies_count
       properties:
         aggregated_scans_count:
           type: integer
           format: int64
-        anomalies_count_vos:
+        anomalies_count:
           type: array
           description: The data in the current page
           items:
-            $ref: '#/components/schemas/XiqAnomaliesCountVoEntity'
+            $ref: '#/components/schemas/XiqAnomaliesCount'
     XiqActionType:
       type: string
       enum:
       - MUTE
       - UNMUTE
-      - PINNED
-      - UNPINNED
       - DISMISSED
     XiqAnomaliesUpdateActionRequest:
       type: object
@@ -15456,6 +15617,247 @@ components:
           description: The data in the current page
           items:
             $ref: '#/components/schemas/XiqCopilotAnomaliesLocationEntity'
+    XiqAnomaliesSiteEntity:
+      type: object
+      description: data sequence
+      required:
+      - building_id
+      - location_name
+      - anomalies_count_by_location
+      properties:
+        building_id:
+          type: integer
+          format: int64
+        location_name:
+          type: string
+        anomalies_count_by_location:
+          type: integer
+          format: int32
+    XiqAnomaliesTypeEntity:
+      type: object
+      description: data sequence
+      required:
+      - anomaly_type
+      - anomalies_count_by_type
+      properties:
+        anomaly_type:
+          $ref: '#/components/schemas/XiqAnomalyType'
+        anomalies_count_by_type:
+          type: integer
+          format: int32
+    XiqCopilotAnomaliesByCategory:
+      type: object
+      description: data sequence
+      required:
+      - anomalies_by_location
+      - anomalies_by_severity
+      - anomalies_by_type
+      properties:
+        anomalies_by_location:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqAnomaliesSiteEntity'
+        anomalies_by_severity:
+          type: object
+          description: The data in the current page
+          required:
+          - low_severity_anomalies_count
+          - medium_severity__anomalies_count
+          - high_severity_anomalies_count
+          - anomalies_count_by_severity
+          properties:
+            low_severity_anomalies_count:
+              type: integer
+              format: int32
+            medium_severity_anomalies_count:
+              type: integer
+              format: int32
+            high_severity_anomalies_count:
+              type: integer
+              format: int32
+            anomalies_count_by_severity:
+              type: integer
+              format: int32
+        anomalies_by_type:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqAnomaliesTypeEntity'
+    XiqDeviceCategory:
+      type: string
+      enum:
+      - WIRED
+      - WIRELESS
+    XiqAnomalyDeviceWithLocation:
+      type: object
+      description: Anomaly Location Entity
+      required:
+      - building_id
+      - location_name
+      - muted
+      - severity
+      - anomaly_type
+      - last_detected_time
+      - device_id
+      - device_name
+      - device_model
+      - device_make
+      - switch_stack
+      - category
+      - interface_name
+      - location_id
+      - anomaly_id
+      - channel_mode
+      - frequency
+      - recommended_action
+      - issue
+      properties:
+        building_id:
+          type: integer
+          format: int64
+        location_name:
+          type: string
+        muted:
+          type: boolean
+        severity:
+          $ref: '#/components/schemas/XiqAnomalySeverity'
+        anomaly_type:
+          $ref: '#/components/schemas/XiqAnomalyType'
+        last_detected_time:
+          type: integer
+          format: int64
+        device_id:
+          type: integer
+          format: int64
+        device_name:
+          type: string
+        device_model:
+          type: string
+        device_make:
+          type: string
+        switch_stack:
+          type: boolean
+        category:
+          $ref: '#/components/schemas/XiqDeviceCategory'
+        interface_name:
+          type: string
+        location_id:
+          type: integer
+          format: int64
+        anomaly_id:
+          type: string
+        channel_mode:
+          type: string
+        frequency:
+          type: string
+        recommended_action:
+          type: string
+        issue:
+          type: string
+    XiqCopilotAnomaliesDevicesWithLocation:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        description: The devices and location entity data
+        required:
+        - anomaly_details
+        - affected_count
+        properties:
+          anomaly_details:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqAnomalyDeviceWithLocation'
+          affected_count:
+            type: object
+            description: The data in the current page
+            required:
+            - total_anomaly_count
+            - affected_location_count
+            - affected_devices_count
+            properties:
+              total_anomaly_count:
+                type: integer
+                format: int32
+              affected_location_count:
+                type: integer
+                format: int32
+              affected_devices_count:
+                type: integer
+                format: int32
+    XiqUpdateActionAnomalyDetails:
+      type: object
+      description: Update Action Anomaly Details Entity
+      required:
+      - buildingId
+      - locationId
+      - anomalyId
+      - anomalyType
+      properties:
+        buildingId:
+          type: integer
+          format: int64
+        locationId:
+          type: integer
+          format: int64
+        anomalyId:
+          type: string
+        anomalyType:
+          $ref: '#/components/schemas/XiqAnomalyType'
+    XiqUpdateAnomaliesAndDevicesRequest:
+      type: object
+      description: The device update action request
+      required:
+      - anomalyDetails
+      - actionType
+      properties:
+        anomalyDetails:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqUpdateActionAnomalyDetails'
+        actionType:
+          $ref: '#/components/schemas/XiqActionType'
+    XiqCopilotAnomaliesDetails:
+      type: object
+      description: Anomaly Devices & Location Entity
+      required:
+      - location_name
+      - severity
+      - anomaly_type
+      - last_detected_time
+      - device_name
+      - category
+      - interface_name
+      properties:
+        location_name:
+          type: string
+        severity:
+          $ref: '#/components/schemas/XiqAnomalySeverity'
+        anomaly_type:
+          $ref: '#/components/schemas/XiqAnomalyType'
+        last_detected_time:
+          type: integer
+          format: int64
+        device_name:
+          type: string
+        category:
+          $ref: '#/components/schemas/XiqDeviceCategory'
+        interface_name:
+          type: string
+    XiqCopilotAnomaliesReport:
+      allOf:
+      - type: object
+        description: The devices and location entity data
+        required:
+        - anomaly_details
+        properties:
+          anomaly_details:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqCopilotAnomaliesDetails'
   responses:
     ErrorResponse:
       description: The generic ExtremeCloud IQ API error response
@@ -15730,7 +16132,7 @@ components:
       name: anomalyType
       in: query
       description: The anomaly type
-      required: true
+      required: false
       schema:
         $ref: '#/components/schemas/XiqAnomalyType'
     sortField1:
@@ -15741,8 +16143,11 @@ components:
       schema:
         type: string
         enum:
-        - LOCATION
+        - DEVICE_NAME
         - SEVERITY
+        - LOCATION
+        - CATEGORY
+        - ANOMALY_TYPE
         - TIME
     muted:
       in: query
@@ -15793,3 +16198,64 @@ components:
       schema:
         type: integer
         format: int64
+    startTime1:
+      in: query
+      description: The start time
+      name: startTime
+      required: false
+      schema:
+        type: integer
+        format: int64
+    endTime1:
+      in: query
+      description: The end time
+      name: endTime
+      required: false
+      schema:
+        type: integer
+        format: int64
+    buildingId:
+      in: query
+      description: The building id
+      name: buildingId
+      required: false
+      schema:
+        type: integer
+        format: int64
+    severity:
+      name: severity
+      in: query
+      description: The anomaly severity
+      required: false
+      schema:
+        $ref: '#/components/schemas/XiqAnomalySeverity'
+    searchKey1:
+      in: query
+      description: The search key
+      name: searchKey
+      required: false
+      schema:
+        type: string
+    async1:
+      in: query
+      name: async
+      description: The Async value
+      required: false
+      schema:
+        type: boolean
+        default: false
+    fileType:
+      name: fileType
+      in: query
+      description: The file type
+      required: false
+      schema:
+        type: string
+    offsetTime:
+      in: query
+      description: The offset value
+      name: offsetTime
+      required: true
+      schema:
+        type: integer
+        format: int32
