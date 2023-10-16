@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 23.5.3.4
+  version: 23.6.0.46
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -73,6 +73,10 @@ tags:
   description: The Copilot Connectivity Experience API
 - name: Copilot - Anomalies
   description: The Copilot Anomalies API
+- name: PacketCaptures
+  description: Packet capture sessions in ExtremeCloud IQ
+- name: Essentials - ExtremeLocation
+  description: The ExtremeLocation and Analytics API
 paths:
   /login:
     post:
@@ -1098,17 +1102,19 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
-  /locations/export:
+  /locations/tree/devices:
     get:
       tags:
       - Location
-      summary: Export of devices and maps on location
-      description: The export of devices and maps on the location and/or its descendants.
+      summary: Get devices on the location hierarchy
+      description: Get devices on the location hierarchy with pagination.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_export_locations
-      operationId: exportLocations
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_location_tree_devices
+      operationId: getLocationDevicesList
       parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
       - name: locationId
         in: query
         description: The location ID, or null for all locations.
@@ -1131,7 +1137,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/XiqLocationExport'
+                $ref: '#/components/schemas/PagedXiqLocationTreeDevice'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /locations/tree/maps:
+    get:
+      tags:
+      - Location
+      summary: Get maps on the location hierarchy
+      description: Get maps on the location hierarchy with pagination.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_location_tree_maps
+      operationId: getLocationMapsList
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: locationId
+        in: query
+        description: The location ID, or null for all locations.
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: expandChildren
+        in: query
+        description: |-
+          Whether to return the child locations recursively, default is true.
+          Set it to false to improve performance when there are a lot of child locations.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqLocationTreeMap'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -1226,6 +1272,37 @@ paths:
       security:
       - BearerAuth: []
   /locations/floor:
+    get:
+      tags:
+      - Location
+      summary: Get floor location
+      description: Get floor location without tree.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_location_floor
+      operationId: getFloors
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: name
+        in: query
+        description: The floor name to search.
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/XiqFloor'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
     post:
       tags:
       - Location
@@ -1302,6 +1379,37 @@ paths:
       security:
       - BearerAuth: []
   /locations/building:
+    get:
+      tags:
+      - Location
+      summary: Get building location
+      description: Get building location without tree.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_location_building
+      operationId: getBuildings
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: name
+        in: query
+        description: The building name to search.
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/XiqBuilding'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
     post:
       tags:
       - Location
@@ -1373,6 +1481,120 @@ paths:
       - name: force_delete
         in: query
         description: Force deletion of this building and its descendants recursively
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /locations/site:
+    get:
+      tags:
+      - Location
+      summary: Get site location
+      description: Get site location without tree.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_location_site
+      operationId: getSites
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: name
+        in: query
+        description: The site name to search.
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/XiqSite'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Location
+      summary: Create site
+      description: Create a new site under the GENERIC folder.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_site
+      operationId: createSite
+      requestBody:
+        description: Create site request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqCreateSiteRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqSite'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /locations/site/{id}:
+    put:
+      tags:
+      - Location
+      summary: Update site by ID
+      description: Update the site information with the site ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_site
+      operationId: updateSite
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: Update site request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqUpdateSiteRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqSite'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Location
+      summary: Delete site by ID
+      description: Delete the site for the specified ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_site
+      operationId: deleteSite
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - name: force_delete
+        in: query
+        description: Force deletion of this site and its descendants recursively
         required: false
         schema:
           type: boolean
@@ -2519,6 +2741,56 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /devices/{id}/thread/commissioner/:start:
+    post:
+      tags:
+      - Device
+      summary: Start the Thread Commissioner
+      description: Start the Thread Commissioner.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_device_thread_commissioner_start
+      operationId: startThreadCommissioner
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqThreadStartCommissionerRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/thread/commissioner/:stop:
+    post:
+      tags:
+      - Device
+      summary: Stop the Thread Commissioner
+      description: Stop the Thread Commissioner.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_device_thread_commissioner_stop
+      operationId: stopThreadCommissioner
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqThreadStopCommissionerRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /network-policies:
     get:
       tags:
@@ -2947,7 +3219,7 @@ paths:
       summary: Get client info
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_client_details_for_one_client
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_client_details
       operationId: getClient
       description: Get client detailed information.
       parameters:
@@ -2972,7 +3244,7 @@ paths:
       summary: Set the aliases for multiple clients
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_set_clients_aliases
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_set_aliases_for_multiple_clients
       operationId: setClientsAliases
       description: Bulk update the aliases for multiple clients based on the mac addresses. Empty or null alias value deletes the previous client alias.
       requestBody:
@@ -2998,7 +3270,7 @@ paths:
       description: List active clients count.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_active_clients_count
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_count_of_active_clients
       operationId: getActiveClientsCount
       parameters:
       - $ref: '#/components/parameters/page'
@@ -3084,7 +3356,7 @@ paths:
       summary: Disconnect the client
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_disconnect_client_by_macAddress_for_one_client
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_client_by_macaddress
       operationId: disconnectClient
       description: Disconnect the client.
       parameters:
@@ -3365,6 +3637,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PagedXiqAuditLog'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /logs/audit/reports:
+    post:
+      tags:
+      - Log
+      summary: Create audit logs report
+      description: Creates a report page of audit logs.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_audit_log_report
+      operationId: createAuditLogReport
+      parameters:
+      - name: categories
+        in: query
+        description: Audit category
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqAuditLogCategory'
+      - name: username
+        in: query
+        description: The user login name
+        required: false
+        schema:
+          type: string
+      - name: startTime
+        in: query
+        description: The start time to query, epoch time in milliseconds since 1/1/1970, default is 0 if not specified or is negative
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: endTime
+        in: query
+        description: The end time to query, epoch time in milliseconds since 1/1/1970, default is now if not specified or is negative, endTime - startTime must be no greater than 2592000000 (30 days)
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: timeZoneOffset
+        in: query
+        description: The time zone off set
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: keyword
+        in: query
+        description: The case-insensitive keyword to search in description
+        required: false
+        schema:
+          type: string
+      - name: sortField
+        in: query
+        description: The field for sorting
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqAuditLogSortField'
+      - $ref: '#/components/parameters/order'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqAuditLogReport'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /logs/audit/reports/{id}:
+    get:
+      tags:
+      - Log
+      summary: Download audit logs
+      description: Download report of audit logs.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_audit_log_download
+      operationId: downloadAuditLogs
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: byte
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -5828,6 +6194,127 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /iot-profiles:
+    get:
+      tags:
+      - Configuration - Policy
+      summary: List IoT profiles
+      description: List a page of IoT profiles.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_the_iot_profiles
+      operationId: listIotProfiles
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqIotProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Configuration - Policy
+      summary: Create an IoT profile
+      description: Create a new IoT profile.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_iot_profile_configuration
+      operationId: createIotProfile
+      requestBody:
+        description: The request body to create new IoT profile.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqIotProfileRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqIotProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /iot-profiles/{id}:
+    get:
+      tags:
+      - Configuration - Policy
+      summary: Get IoT profile by ID
+      description: Get IoT profile details for the specified ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_iot_profile_by_id
+      operationId: getIotProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqIotProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Configuration - Policy
+      summary: Update IoT profile by ID
+      description: Update the existing IoT profile by the profile ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_iot_profile_configuration
+      operationId: updateIotProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The payload of the update IoT profile request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqIotProfileRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqIotProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Configuration - Policy
+      summary: Delete IoT profile by ID
+      description: Delete the existing IoT profile by the profile ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_iot_profile_configuration
+      operationId: deleteIotProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /ad-servers:
     get:
       tags:
@@ -7475,6 +7962,229 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /packetcaptures:
+    get:
+      tags:
+      - PacketCaptures
+      summary: List packet capture sessions
+      operationId: listPacketCaptures
+      description: List packet capture sessions with filters and pagination.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_packet_captures
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: searchString
+        in: query
+        description: The string to be searched in capture session name, interface name and device host name
+        required: false
+        schema:
+          type: string
+      - name: sortField
+        in: query
+        description: Sort field. Available values - NAME, START_TIME and STATUS
+        required: false
+        schema:
+          type: string
+          enum:
+          - NAME
+          - START_TIME
+          - STATUS
+      - $ref: '#/components/parameters/order'
+      - name: fields
+        in: query
+        description: The packet capture fields to return
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqPacketCaptureField'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqPacketCapture'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - PacketCaptures
+      summary: Create a new packet capture session
+      operationId: createPacketCapture
+      description: Create and start a new packet capture session with requested capture location and filter criteria.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_packet_capture
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqPacketCapture'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqPacketCapture'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /packetcaptures/{id}:
+    get:
+      tags:
+      - PacketCaptures
+      summary: Get a packet capture session by ID
+      operationId: getPacketCapture
+      description: Get a packet capture session by id.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_packet_capture
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - name: fields
+        in: query
+        description: The packet capture fields to return
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqPacketCaptureField'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqPacketCapture'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - PacketCaptures
+      summary: Delete a packet capture session
+      operationId: deletePacketCapture
+      description: Delete an existing packet capture session and capture files by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_packet_capture
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /packetcaptures/{id}/:stop:
+    post:
+      tags:
+      - PacketCaptures
+      summary: Stop a packet capture session
+      operationId: stopPacketCapture
+      description: Stop an active packet capture session.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_stop_active_packet_capture
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqCaptureStopRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /packetcaptures/{id}/:upload:
+    post:
+      tags:
+      - PacketCaptures
+      summary: Upload a packet capture session's capture files
+      operationId: uploadPacketCaptureFiles
+      description: Upload the capture files from a packet capture session, if files previously failed to be uploaded to XIQ cloud.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_upload_packet_captures_capture_files
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /packetcaptures/files:
+    get:
+      tags:
+      - PacketCaptures
+      summary: Get an AP packet capture file
+      operationId: getPacketCaptureFile
+      description: Get an AP packet capture file from XIQ cloud storage.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_packet_capture_file
+      parameters:
+      - name: cloudFileUrl
+        in: query
+        description: The packet capture file path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returns requested packet capture file.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                description: Packet capture file
+                format: binary
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /essentials/eloc/clients/{clientMac}/last-known-location:
+    get:
+      tags:
+      - Essentials - ExtremeLocation
+      summary: Get the last known location of the client
+      description: Get the last known location of the client on the floor plan.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_eloc_clients_lastknown_location_by_macAddress_for_one_client
+      operationId: elocLastKnownClientLocation
+      parameters:
+      - $ref: '#/components/parameters/mac'
+      - $ref: '#/components/parameters/floorId'
+      - $ref: '#/components/parameters/parentId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqEssentialsElocClientLastknownLocation'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
 components:
   schemas:
     XiqLoginRequest:
@@ -8235,9 +8945,9 @@ components:
             description: The child locations
             items:
               $ref: '#/components/schemas/XiqLocation'
-    XiqLocationExportDevice:
+    XiqLocationTreeDevice:
       type: object
-      description: The device export on the location.
+      description: The device on the location hierarchy.
       required:
       - device_name
       - serial_number
@@ -8292,9 +9002,19 @@ components:
           type: number
           description: The vertical scale for the background map in meter.
           format: double
-    XiqLocationExportMap:
+    PagedXiqLocationTreeDevice:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqLocationTreeDevice'
+    XiqLocationTreeMap:
       type: object
-      description: The map export on the location.
+      description: The map on the location hierarchy.
       required:
       - map_name
       - width
@@ -8315,23 +9035,16 @@ components:
         data:
           type: string
           description: The base-64 encoded string of the map.
-    XiqLocationExport:
-      type: object
-      description: The export of devices and maps on the location hierarchy
-      required:
-      - devices
-      - maps
-      properties:
-        devices:
-          type: array
-          description: The associated devices on the location hierarchy.
-          items:
-            $ref: '#/components/schemas/XiqLocationExportDevice'
-        maps:
-          type: array
-          description: The associated background map metadata.
-          items:
-            $ref: '#/components/schemas/XiqLocationExportMap'
+    PagedXiqLocationTreeMap:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqLocationTreeMap'
     XiqUpdateLocationRequest:
       type: object
       properties:
@@ -8359,47 +9072,6 @@ components:
       enum:
       - FEET
       - METERS
-    XiqCreateFloorRequest:
-      type: object
-      required:
-      - parent_id
-      - name
-      - db_attenuation
-      - measurement_unit
-      - installation_height
-      - map_size_width
-      - map_size_height
-      properties:
-        parent_id:
-          type: integer
-          description: The parent building ID
-          format: int64
-        name:
-          type: string
-          description: The floor name
-        environment:
-          $ref: '#/components/schemas/XiqRfEnvironmentType'
-        db_attenuation:
-          type: number
-          description: The floor attenuation in dBs
-          format: double
-        measurement_unit:
-          $ref: '#/components/schemas/XiqMeasurementUnit'
-        installation_height:
-          type: number
-          description: The installation height
-          format: double
-        map_size_width:
-          type: number
-          description: The floor map width
-          format: double
-        map_size_height:
-          type: number
-          description: The floor map height
-          format: double
-        map_name:
-          type: string
-          description: The floor map name
     XiqFloor:
       allOf:
       - $ref: '#/components/schemas/XiqViqEntity'
@@ -8447,6 +9119,47 @@ components:
           map_name:
             type: string
             description: The floormap name
+    XiqCreateFloorRequest:
+      type: object
+      required:
+      - parent_id
+      - name
+      - db_attenuation
+      - measurement_unit
+      - installation_height
+      - map_size_width
+      - map_size_height
+      properties:
+        parent_id:
+          type: integer
+          description: The parent building ID
+          format: int64
+        name:
+          type: string
+          description: The floor name
+        environment:
+          $ref: '#/components/schemas/XiqRfEnvironmentType'
+        db_attenuation:
+          type: number
+          description: The floor attenuation in dBs
+          format: double
+        measurement_unit:
+          $ref: '#/components/schemas/XiqMeasurementUnit'
+        installation_height:
+          type: number
+          description: The installation height
+          format: double
+        map_size_width:
+          type: number
+          description: The floor map width
+          format: double
+        map_size_height:
+          type: number
+          description: The floor map height
+          format: double
+        map_name:
+          type: string
+          description: The floor map name
     XiqUpdateFloorRequest:
       type: object
       properties:
@@ -8480,6 +9193,32 @@ components:
         map_name:
           type: string
           description: The floor map name
+    XiqBuilding:
+      allOf:
+      - $ref: '#/components/schemas/XiqViqEntity'
+      - type: object
+        description: The building information
+        required:
+        - name
+        - parent_id
+        - address
+        properties:
+          parent_id:
+            type: integer
+            description: The parent location ID
+            format: int64
+          name:
+            type: string
+            description: The location name
+          unique_name:
+            type: string
+            description: The unique location name
+          type:
+            type: string
+            description: The location type
+          address:
+            type: string
+            description: The address for the location
     XiqCreateBuildingRequest:
       type: object
       required:
@@ -8497,26 +9236,6 @@ components:
         address:
           type: string
           description: The street address
-    XiqBuilding:
-      allOf:
-      - $ref: '#/components/schemas/XiqViqEntity'
-      - type: object
-        description: The building information
-        required:
-        - name
-        - parent_id
-        - address
-        properties:
-          name:
-            type: string
-            description: The building name
-          parent_id:
-            type: integer
-            description: The parent location ID
-            format: int64
-          address:
-            type: string
-            description: The building street address
     XiqUpdateBuildingRequest:
       type: object
       properties:
@@ -8530,6 +9249,54 @@ components:
         address:
           type: string
           description: The street address
+    XiqSite:
+      allOf:
+      - $ref: '#/components/schemas/XiqViqEntity'
+      - type: object
+        description: The site information
+        required:
+        - name
+        - parent_id
+        properties:
+          parent_id:
+            type: integer
+            description: The parent location ID
+            format: int64
+          name:
+            type: string
+            description: The location name
+          unique_name:
+            type: string
+            description: The unique location name
+          type:
+            type: string
+            description: The location type
+          address:
+            type: string
+            description: The address for the location
+    XiqCreateSiteRequest:
+      type: object
+      required:
+      - parent_id
+      - name
+      properties:
+        parent_id:
+          type: integer
+          description: The parent location ID
+          format: int64
+        name:
+          type: string
+          description: The site name
+    XiqUpdateSiteRequest:
+      type: object
+      properties:
+        parent_id:
+          type: integer
+          description: The parent location ID
+          format: int64
+        name:
+          type: string
+          description: The site name
     XiqDeviceAdminState:
       type: string
       enum:
@@ -8834,14 +9601,18 @@ components:
       - DT_5520_48SE
       - DT_5520_48T
       - DT_5520_48W
+      - DT_5520_24T_ACDC
+      - DT_5520_48T_ACDC
+      - DT_5520_24X_ACDC
+      - DT_5520_48SE_ACDC
       - DT_5720_24MW
       - DT_5720_24MXW
       - DT_5720_48MW
       - DT_5720_48MXW
+      - DT_7520_48YE_8CE
       - DT_7520_48XT_6C
       - DT_7520_48Y_8C
       - DT_7720_32C
-      - DT_7520_48YE_CE
     XiqDigitalTwinVimModule:
       type: string
       description: The Digital Twin VIM modules.
@@ -8859,8 +9630,8 @@ components:
       - PRD_5000_MACSEC
       - PRD_5320_10G_4P
       - PRD_5320_10G_8P
+      - PRD_7000_MACSEC
       - PRD_7000_PRMR
-      - PRD_7520_MACSEC
     XiqDigitalTwinDevice:
       type: object
       required:
@@ -9845,6 +10616,26 @@ components:
         installation_images:
           type: boolean
           description: Device contains installation images or not
+    XiqThreadStartCommissionerRequest:
+      type: object
+      description: Start the Thread Commissioner on a thread router device.
+      properties:
+        comm_timeout:
+          type: integer
+          default: 120
+          minimum: 1
+          maximum: 2000000
+          description: After this timeout the Commissioner will shutdown. The default is 120 sec. but the max is approximately 23 days.
+        interface_name:
+          type: string
+          description: The IoT interface on which to start the Commissioner. The default is iot0.
+    XiqThreadStopCommissionerRequest:
+      type: object
+      description: Stop the Thread Commissioner on a thread router device.
+      properties:
+        interface_name:
+          type: string
+          description: The IoT interface on which to stop the Commissioner. The default is iot0.
     PagedXiqNetworkPolicy:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -9960,11 +10751,8 @@ components:
       - APPLICATION_HEALTH
       - NETWORK_HEALTH
       - RADIO_HEALTH
-      - HEALTH_UPDATE_TIME
       - RSSI
-      - RSSI_UPDATE_TIME
       - SNR
-      - SNR_UPDATE_TIME
       - RADIO_TYPE
       - WING_AP
       - VENDOR
@@ -10450,6 +11238,14 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqAuditLog'
+    XiqAuditLogReport:
+      type: object
+      description: ExtremeCloud IQ Audit Log report
+      properties:
+        id:
+          type: integer
+          description: The audit log report ID
+          format: int64
     XiqSmsLogStatus:
       type: string
       description: The SMS status
@@ -13355,6 +14151,125 @@ components:
             type: integer
             description: The device ID list.
             format: int64
+    XiqIotpTgWhiteListEntry:
+      type: object
+      required:
+      - long_eui
+      - pskd
+      properties:
+        long_eui:
+          oneOf:
+          - type: string
+            minLength: 16
+            maxLength: 16
+            pattern: ^[0-9a-fA-F]+$
+            description: The factory-assigned IEEE EUI-64. (16 hex digits). FFFFFFFFFFFFFFFF is reserved.
+          - type: string
+            pattern: ^\*$
+            description: Match any joiner.
+        pskd:
+          type: string
+          minLength: 6
+          maxLength: 32
+          description: 'The PSKd (Pre-Shared-Key for the Device) is the Joining Device Credential encoded using base32-thread. A Joining Device Credential is encoded as uppercase, alphanumeric characters (base32-thread: 0-9,A-Y excluding I,O,Q, and Z for readability)  with a minimum length of 6 such characters and a maximum length of 32 such characters.'
+          pattern: '[0-9ABCDEFGHJKLMNPRSTUVWXY]+'
+    XiqIotProfileThreadGateway:
+      type: object
+      properties:
+        threadGateway:
+          type: object
+          required:
+          - short_pan_id
+          - ext_pan_id
+          - master_key
+          - network_name
+          - channel
+          properties:
+            short_pan_id:
+              type: string
+              minLength: 4
+              maxLength: 4
+              pattern: ^[0-9a-fA-F]+$
+              description: The Personal Area Network (PAN) ID. (4 hex digits). FFFF is reserved.
+            ext_pan_id:
+              type: string
+              minLength: 16
+              maxLength: 16
+              pattern: ^[0-9a-fA-F]+$
+              description: The Extended Personal Area Network (PAN) ID. (16 hex digits)
+            master_key:
+              type: string
+              minLength: 32
+              maxLength: 32
+              pattern: ^[0-9a-fA-F]+$
+              description: The network key is used to secure access to the Thread network. It is used to encrypt and authenticate all messages on the network. (32 hex digits)
+            network_name:
+              type: string
+              minLength: 1
+              maxLength: 16
+              description: A human-readable name for the network, up to 16 bytes in length.
+            channel:
+              type: integer
+              minimum: 0
+              description: 802.15.4 channel number, 11-26
+            enable_nat64:
+              type: boolean
+              default: true
+              description: Enable NAT64 functions including the translator and the prefix publishing.
+            comm_credentials:
+              type: string
+              minLength: 6
+              maxLength: 255
+              pattern: ^.{6,255}$
+              description: The Commissioner Credential is used along with the Extended PAN ID, and Network Name to create the PSKc (Pre-Shared Key for the Commissioner).
+            comm_timeout:
+              type: integer
+              default: 120
+              minimum: 1
+              maximum: 2000000
+              description: After this timeout the Commissioner will shutdown. The default is 120 sec. but the max is approximately 23 days.
+            white_list:
+              type: array
+              items:
+                $ref: '#/components/schemas/XiqIotpTgWhiteListEntry'
+              description: The table of approved Thread end-devices.
+    XiqIotApplicationId:
+      type: string
+      enum:
+      - THREAD_GATEWAY
+      description: IoT supported applications.
+    XiqIotProfileRequest:
+      type: object
+      description: The IoT Profile
+      required:
+      - name
+      - app_id
+      properties:
+        name:
+          type: string
+          description: The IoT profile name
+        app_id:
+          $ref: '#/components/schemas/XiqIotApplicationId'
+      oneOf:
+      - $ref: '#/components/schemas/XiqIotProfileThreadGateway'
+      discriminator:
+        propertyName: app_id
+        mapping:
+          THREAD_GATEWAY: '#/components/schemas/XiqIotProfileThreadGateway'
+    XiqIotProfile:
+      allOf:
+      - $ref: '#/components/schemas/XiqViqEntity'
+      - $ref: '#/components/schemas/XiqIotProfileRequest'
+    PagedXiqIotProfile:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqIotProfile'
     XiqActiveDirectoryServerBaseDnFetchMode:
       type: string
       description: The base DN fetch mode of active directory server
@@ -15858,6 +16773,415 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqCopilotAnomaliesDetails'
+    XiqPacketCaptureField:
+      type: string
+      enum:
+      - ID
+      - ORG_ID
+      - NAME
+      - CAPTURE_ID_TYPE
+      - AP_SERIAL_NUMBER
+      - DEVICE_IDS
+      - LOCATION_ID
+      - DURATION
+      - DESTINATION
+      - FILTER
+      - CAPTURE_IF
+      - START_TIME
+      - END_TIME
+      - STATUS
+      - CLOUD_STORAGE
+      - RESULTS
+    XiqSerialNumber:
+      type: object
+      description: The globally unique serial number of the device being registered. The serial number is represented as a string.
+      properties:
+        ap_serial_number:
+          type: string
+          pattern: "^[\\p{Print}&&[^\t\n\r;:&\\p{Cntrl}'\"]]{1,16}$"
+    XiqDeviceIds:
+      type: object
+      description: The device ID list.
+      properties:
+        device_ids:
+          type: array
+          items:
+            type: integer
+            description: The device ID
+            format: int64
+    XiqLocationId:
+      type: object
+      description: The assigned location ID, it must be FLOOR type
+      properties:
+        location_id:
+          type: integer
+          format: int64
+    XiqCaptureIdentifier:
+      type: object
+      description: Identifier for AP device selections. APs can be selected using the AP serial number, a list of device numeric IDs or the location ID.
+      required:
+      - capture_id_type
+      properties:
+        capture_id_type:
+          description: The capture identifier type for selecting the APs. Depending on the type, one of "AP_SERIAL_NUMBER", "DEVICE_IDS" and "LOCATION" must be provided.
+          type: string
+          enum:
+          - AP_SERIAL_NUMBER
+          - DEVICE_IDS
+          - LOCATION
+      anyOf:
+      - $ref: '#/components/schemas/XiqSerialNumber'
+      - $ref: '#/components/schemas/XiqDeviceIds'
+      - $ref: '#/components/schemas/XiqLocationId'
+      discriminator:
+        propertyName: capture_id_type
+        mapping:
+          AP_SERIAL_NUMBER: '#/components/schemas/XiqSerialNumber'
+          DEVICE_IDS: '#/components/schemas/XiqDeviceIds'
+          LOCATION: '#/components/schemas/XiqLocationId'
+    XiqDestinationType:
+      title: XiqDestinationType
+      type: string
+      description: The destination for the packet capture files. CLOUD for XIQ cloud storage. CLOUD_SHARK for sending the capture files to CloudShark, in addition to XIQ cloud storage.
+      enum:
+      - CLOUD
+      - CLOUD_SHARK
+      example: CLOUD
+    XiqPolicyRuleProtocolType:
+      type: string
+      title: XiqPolicyRuleProtocolType
+      description: Protocol type to filter by.
+      enum:
+      - ANY
+      - USER_DEFINED
+      - ICMP
+      - ICMPV6
+      - TCP
+      - UDP
+      - GRE
+      - IPSEC_ESP
+      - IPSEC_AH
+      default: ANY
+      example: ANY
+    XiqCaptureFilter:
+      title: XiqCaptureFilter
+      description: This represents the properties of filters used for the packet capture.
+      allOf:
+      - type: object
+        properties:
+          mac_addr:
+            type: array
+            items:
+              type: string
+            description: A string containing the client MAC address used for packet capturing.
+          ip_addr:
+            type: array
+            items:
+              type: string
+            description: A string containing the client IP addresses used to filter the packets.
+          protocol:
+            $ref: '#/components/schemas/XiqPolicyRuleProtocolType'
+          protocol_number:
+            type: integer
+            format: int32
+            description: The protocol number if protocol is "USER_DEFINED".
+          port:
+            type: integer
+            format: int32
+            description: The port for packet capture
+          vlan:
+            type: string
+            description: Specific vlan ids in a string, e.g. range "2-100"; single "3"; list "1,2,5,7,122"; mixed "2,4,5-10,19,29". If not specified, default is all VLANs.
+          wlan:
+            type: string
+            description: A WLAN SSID. If not specified, default is all WLANs.
+      example:
+        mac_addr:
+        - '...'
+        - '...'
+        ip_addr:
+        - '...'
+        - '...'
+        protocol: any
+        port: 12345
+        vlan: 2,4,5-10
+    XiqCaptureDirectionSelection:
+      type: string
+      title: XiqCaptureDirectionSelection
+      description: The capture traffic direction
+      enum:
+      - OUT
+      - IN
+      - BOTH
+      default: BOTH
+      example: BOTH
+    XiqCaptureWiredSelection:
+      type: string
+      title: XiqCaptureWiredSelection
+      description: Wired interface to filter by.
+      enum:
+      - ALL
+      - ETH0
+      - ETH1
+      - ETH2
+      - ETH3
+      example: ETH0
+    XiqWiredFilterType:
+      type: string
+      title: XiqWiredFilterType
+      description: Pre-defined filters for wired packet captures.
+      enum:
+      - DHCP
+      - RADIUS
+      - LLDP
+      - ARP
+      - MDNS
+      example: DHCP
+    XiqCaptureRadioSelection:
+      type: string
+      title: XiqCaptureRadioSelection
+      description: Wireless radio type to filter by.
+      enum:
+      - ALL
+      - RADIO1
+      - RADIO2
+      - RADIO3
+      example: RADIO1
+    XiqCaptureBandSelection:
+      type: string
+      title: XiqCaptureBandSelection
+      description: Wireless band to filter by.
+      enum:
+      - ALL
+      - 2.4GHZ
+      - 5GHZ
+      - 6GHZ
+      default: ALL
+      example: 2.4GHZ
+    XiqWirelessFilterType:
+      type: string
+      title: XiqWirelessFilterType
+      description: Pre-defined filters for wireless packet captures.
+      enum:
+      - MANAGEMENT
+      - CONTROL
+      - DATA
+      - EAPOL
+      - BEACONS
+      - PROBES
+      example: DATA
+    XiqCaptureLocation:
+      title: XiqCaptureLocation
+      description: This represents the options for location packet capture.
+      allOf:
+      - type: object
+        properties:
+          direction:
+            $ref: '#/components/schemas/XiqCaptureDirectionSelection'
+          wired_interface:
+            description: The name of the wired interface to capture. Set to ALL for all interfaces.
+            $ref: '#/components/schemas/XiqCaptureWiredSelection'
+          wired_filters:
+            type: array
+            description: The list of pre-defined wired filters for packet capture
+            items:
+              $ref: '#/components/schemas/XiqWiredFilterType'
+          radio:
+            description: The wireless radio to capture. Set to ALL for all radios.
+            $ref: '#/components/schemas/XiqCaptureRadioSelection'
+          wireless_band:
+            description: The wireless band to capture. Set to ALL for all bands.
+            $ref: '#/components/schemas/XiqCaptureBandSelection'
+          wireless_filters:
+            type: array
+            description: The list of pre-defined wireless filters for packet capture
+            items:
+              $ref: '#/components/schemas/XiqWirelessFilterType'
+      example:
+        direction: Both
+        wired_interface: ETH0
+        wireless_band: 2.4GHZ
+        wireless_filters:
+        - MANAGEMENT
+        - CONTROL
+    XiqPktCaptureStatus:
+      type: string
+      title: XiqPktCaptureStatus
+      description: The status of the overall packet capture session or a packet capture result on an AP device's interface.
+      enum:
+      - INITIAL
+      - ACTIVE
+      - SUCCESS
+      - PARTIAL_SUCCESS
+      - FAILED
+      default: INITIAL
+      example: ACTIVE
+    XiqCloudSharkStorage:
+      type: object
+      title: XiqCloudSharkStorage
+      description: The packet capture file name and URL in CloudShark.
+      properties:
+        file_name:
+          type: string
+        file_url:
+          type: string
+      example:
+        file_name: 2023051105924UTC-241FBD8FEDC0-wifi0.pcap
+        file_url: https://www.cloudshark.org/captures/f27d1494400c
+    XiqCaptureResult:
+      title: XiqCaptureResult
+      description: This represents the packet capture result on an AP's interface. A packet capture session may involve multiple APs on multiple interfaces.
+      allOf:
+      - type: object
+        properties:
+          id:
+            type: integer
+            description: The unique identifier
+            format: int64
+          start_time:
+            type: string
+            description: The packet capture start time
+            format: date-time
+          end_time:
+            type: string
+            description: The packet capture end time
+            format: date-time
+          org_id:
+            type: integer
+            description: The organization identifier, valid when enabling HIQ feature
+            format: int64
+          device_id:
+            type: integer
+            description: The device identifier
+            format: int64
+          interface:
+            type: string
+            description: The interface name such as "WIFI0", "WIFI1", "ETH0", etc.
+          hostname:
+            type: string
+            description: The device host name such as "US-MIL-1"
+          mac_address:
+            type: string
+            description: The device MAC address such as "AABBCC001122"
+          location_id:
+            type: integer
+            description: The location ID
+            format: int64
+          locations:
+            type: array
+            description: The detailed location
+            items:
+              $ref: '#/components/schemas/XiqLocationLegend'
+          status:
+            description: The status of the packet capture result
+            allOf:
+            - $ref: '#/components/schemas/XiqPktCaptureStatus'
+          error_message:
+            type: string
+            description: The error message (may be empty).
+          storage:
+            type: object
+            description: The packet capture file storage
+            properties:
+              cloud_shark_storage:
+                description: CloudShark file info when destination is CloudShark
+                allOf:
+                - $ref: '#/components/schemas/XiqCloudSharkStorage'
+              cloud_storage:
+                description: XIQ cloud storage location after a packet capture is completed.
+                type: string
+    XiqPacketCapture:
+      title: XiqPacketCapture
+      description: This represents the packet capture session
+      allOf:
+      - $ref: '#/components/schemas/XiqCaptureIdentifier'
+      - type: object
+        properties:
+          id:
+            type: integer
+            description: The unique identifier
+            format: int64
+          org_id:
+            type: integer
+            description: The organization identifier, valid when enabling HIQ feature
+            format: int64
+          name:
+            description: The packet capture session name. If the name is null or empty, it will be auto generated.
+            type: string
+            pattern: ^[A-Z0-9.-_]{0,128}$
+          duration:
+            type: integer
+            format: int32
+            maximum: 604800
+            minimum: 5
+            description: An integer containing the set packet capture duration in seconds, from 5 to a maximum of 604800 seconds (1 week). If not manually stopped, packet capture continues until the specified duration is reached, or the platform-maximum file size of the AP is reached. If duration is set to 0 or unspecified, capture stops when platform-maximum size is reached.
+          destination:
+            $ref: '#/components/schemas/XiqDestinationType'
+          filter:
+            $ref: '#/components/schemas/XiqCaptureFilter'
+          capture_if:
+            $ref: '#/components/schemas/XiqCaptureLocation'
+          start_time:
+            type: string
+            readOnly: true
+            description: The packet capture start time
+            format: date-time
+          end_time:
+            type: string
+            readOnly: true
+            description: The packet capture end time
+            format: date-time
+          status:
+            readOnly: true
+            description: The status of the packet capture session
+            allOf:
+            - $ref: '#/components/schemas/XiqPktCaptureStatus'
+          cloud_storage:
+            description: XIQ cloud storage location for the archive of all capture files in this capture session, if available.
+            type: string
+          results:
+            type: array
+            readOnly: true
+            description: The list of packet capture results - a PacketCaptureResult for each device's interface
+            items:
+              $ref: '#/components/schemas/XiqCaptureResult'
+    PagedXiqPacketCapture:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqPacketCapture'
+    XiqCaptureStopRequest:
+      title: XiqCaptureStopRequest
+      description: This represents the request for stopping a packet capture session.
+      properties:
+        device_ids:
+          type: array
+          description: The IDs of the devices for which the active packet capture is to be stopped.  If empty, packet capture is to be stopped on all devices in this packet capture.
+          items:
+            type: integer
+            description: The device ID
+            format: int64
+    XiqEssentialsElocClientLastknownLocation:
+      type: object
+      description: The client's last known location on the floor plan
+      properties:
+        timestamp:
+          type: string
+          description: The located client's last known timestamp in format of date, time and abbreviated timezone
+          format: date-time
+        x:
+          type: number
+          description: The located client's last known horizontal value on the floor plan
+          format: double
+        y:
+          type: number
+          description: The located client's last known vertical value on the floor plan
+          format: double
   responses:
     ErrorResponse:
       description: The generic ExtremeCloud IQ API error response
@@ -16259,3 +17583,17 @@ components:
       schema:
         type: integer
         format: int32
+    floorId:
+      in: query
+      description: The location ID of the floor
+      name: floorId
+      required: true
+      schema:
+        type: string
+    parentId:
+      in: query
+      description: The location ID of the floor's parent
+      name: parentId
+      required: true
+      schema:
+        type: string
