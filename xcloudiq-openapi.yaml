@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 23.7.1.1
+  version: 23.7.0.64
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -8190,8 +8190,6 @@ paths:
       - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/searchKey'
       - $ref: '#/components/parameters/clientType'
-      - $ref: '#/components/parameters/qualityIndex'
-      - $ref: '#/components/parameters/forensicBucket'
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
       - $ref: '#/components/parameters/sortField'
@@ -8202,35 +8200,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/XiqCopilotConnectivityByLocations'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/connectivity/client-type:
-    get:
-      tags:
-      - Copilot - Connectivity Experience
-      summary: Get Connectivity By Client Type
-      description: Get Connectivity details by client type in the widgets.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_connectivity_by_client_type
-      operationId: getConnectivityDetailsByClientType
-      parameters:
-      - $ref: '#/components/parameters/startTime'
-      - $ref: '#/components/parameters/endTime'
-      - $ref: '#/components/parameters/locationId'
-      - $ref: '#/components/parameters/clientType'
-      - $ref: '#/components/parameters/qualityIndex'
-      - $ref: '#/components/parameters/forensicBucket'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotConnectivityByClientType'
+                $ref: '#/components/schemas/XiqCopilotConnectivityExperience'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -8249,7 +8219,7 @@ paths:
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
       - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/viewId'
+      - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
       responses:
@@ -8258,7 +8228,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/XiqCopilotWirelessQualityIndexByLocation'
+                $ref: '#/components/schemas/XiqCopilotWirelessQualityIndex'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -8277,7 +8247,7 @@ paths:
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
       - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/viewId'
+      - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
       responses:
@@ -8305,7 +8275,7 @@ paths:
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
       - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/viewId'
+      - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
       responses:
@@ -8339,7 +8309,7 @@ paths:
       - $ref: '#/components/parameters/wirelessScoreType'
       - $ref: '#/components/parameters/forensicBucket'
       - $ref: '#/components/parameters/searchKey'
-      - $ref: '#/components/parameters/viewId'
+      - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/timestamp'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
@@ -10320,18 +10290,17 @@ components:
         required:
         - name
         - parent_id
-        - country_code
         properties:
           parent_id:
             type: integer
-            description: The parent site group ID
+            description: The parent location ID
             format: int64
           name:
             type: string
-            description: The site name
+            description: The location name
           unique_name:
             type: string
-            description: The site unique name
+            description: The unique location name
           type:
             type: string
             description: The location type
@@ -10346,11 +10315,10 @@ components:
       required:
       - parent_id
       - name
-      - country_code
       properties:
         parent_id:
           type: integer
-          description: The parent site group ID
+          description: The parent location ID
           format: int64
         name:
           type: string
@@ -10366,11 +10334,10 @@ components:
       required:
       - parent_id
       - name
-      - country_code
       properties:
         parent_id:
           type: integer
-          description: The parent site group ID
+          description: The parent location ID
           format: int64
         name:
           type: string
@@ -17698,135 +17665,6 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqCopilotWiredEventEntity'
-    XiqQualityIndex:
-      type: string
-      enum:
-      - LOW
-      - MEDIUM
-      - HIGH
-    XiqCopilotConnectivityByLocationsEntity:
-      type: object
-      description: Copilot Experience Entity
-      required:
-      - id
-      - name
-      - quality_index
-      - quality_index_value
-      - client_type
-      - quality_index_graph
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        quality_index:
-          type: integer
-          minimum: 1
-          maximum: 10
-        quality_index_value:
-          $ref: '#/components/schemas/XiqQualityIndex'
-        client_type:
-          $ref: '#/components/schemas/XiqClientType'
-        quality_index_graph:
-          type: array
-          description: The data in the current page
-          items:
-            type: object
-            description: Connectivity experience quality sequence
-            required:
-            - timestamp
-            - value
-            properties:
-              timestamp:
-                type: integer
-                format: int64
-              value:
-                type: integer
-                minimum: 1
-                maximum: 10
-    XiqCopilotConnectivityByLocations:
-      allOf:
-      - $ref: '#/components/schemas/XiqPage'
-      - type: object
-        properties:
-          data:
-            type: array
-            description: The data in the current page
-            items:
-              $ref: '#/components/schemas/XiqCopilotConnectivityByLocationsEntity'
-    XiqCopilotConnectivityByClientType:
-      type: object
-      description: data sequence
-      required:
-      - sites_by_wireless
-      - sites_by_wired
-      properties:
-        sites_by_wireless:
-          type: object
-          description: The data in the current page
-          required:
-          - low_quality_score_count
-          - medium_quality_score_count
-          - high_quality_score_count
-          - total_quality_score_count
-          properties:
-            low_quality_score_count:
-              type: integer
-              format: int32
-            medium_quality_score_count:
-              type: integer
-              format: int32
-            high_quality_score_count:
-              type: integer
-              format: int32
-            total_quality_score_count:
-              type: integer
-              format: int32
-        sites_by_wired:
-          type: object
-          description: The data in the current page
-          required:
-          - low_quality_score_count
-          - medium_quality_score_count
-          - high_quality_score_count
-          - total_quality_score_count
-          properties:
-            low_quality_score_count:
-              type: integer
-              format: int32
-            medium_quality_score_count:
-              type: integer
-              format: int32
-            high_quality_score_count:
-              type: integer
-              format: int32
-            total_quality_score_count:
-              type: integer
-              format: int32
-    XiqCopilotWirelessQualityIndexByLocation:
-      type: object
-      description: Wireless Connectivity Experience QualityIndex
-      required:
-      - quality_index
-      - time_to_connect_score
-      - performance_score
-      - total_clients
-      properties:
-        quality_index:
-          type: integer
-          minimum: 1
-          maximum: 10
-        time_to_connect_score:
-          type: integer
-          minimum: 1
-          maximum: 10
-        performance_score:
-          type: integer
-          minimum: 1
-          maximum: 10
-        total_clients:
-          type: integer
-          format: int32
     XiqCopilotHardwareByLocation:
       type: object
       description: Wired Connectivity Experience Hardware
@@ -19478,7 +19316,7 @@ components:
       in: query
       description: The wired experience view type
       name: viewType
-      required: false
+      required: true
       schema:
         type: string
         enum:
@@ -19515,21 +19353,6 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/XiqClientType'
-    qualityIndex:
-      name: qualityIndex
-      in: query
-      description: The quality index score
-      required: false
-      schema:
-        $ref: '#/components/schemas/XiqQualityIndex'
-    viewId:
-      in: query
-      description: The location id
-      name: locationId
-      required: true
-      schema:
-        type: integer
-        format: int64
     ssid:
       in: query
       description: The ssid value
