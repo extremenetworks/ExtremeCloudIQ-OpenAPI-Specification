@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 23.7.0.64
+  version: 23.7.1.7
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
