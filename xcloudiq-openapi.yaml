@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 23.7.1.7
+  version: ' 24.1.0.65'
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -47,6 +47,8 @@ tags:
   description: 'Supported device platforms: Cloud Engine, IQ Engine, WiNG, VOSS, EXOS...'
 - name: Network Policy
   description: Unified configuration management for wireless and wired network devices
+- name: Network Scorecard
+  description: The network scorecard containing device, client, network, Wi-Fi, services health of the selected location.
 - name: Client
   description: The clients associate to the devices of ExtremeCloud IQ
 - name: Application
@@ -65,6 +67,8 @@ tags:
   description: User Group/End User/PCG/PPSK Classification
 - name: Configuration - Policy
   description: SSID/User Profile/Classification Rule/CCG/Radio Profile/...
+- name: Configuration - Network
+  description: Tunnel Concentrator Service
 - name: Configuration - Authentication
   description: AD/LDAP/RADIUS/CWP/...
 - name: Configuration - Certificate
@@ -79,6 +83,8 @@ tags:
   description: The ExtremeLocation and Analytics API
 - name: Misc
   description: Metadata - Country/...
+- name: SDWAN
+  description: The SDWAN API
 paths:
   /login:
     post:
@@ -1277,8 +1283,8 @@ paths:
     get:
       tags:
       - Location
-      summary: Get floor location
-      description: Get floor location without tree.
+      summary: List floors
+      description: List pages of floors by filter.
       externalDocs:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_list_floors
@@ -1288,10 +1294,19 @@ paths:
       - $ref: '#/components/parameters/limit'
       - name: name
         in: query
-        description: The floor name to search.
+        description: List floors by name (case insensitive)
         required: false
         schema:
           type: string
+      - name: ids
+        in: query
+        description: List floors by IDs
+        required: false
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
       responses:
         '200':
           description: OK
@@ -1333,6 +1348,28 @@ paths:
       security:
       - BearerAuth: []
   /locations/floor/{id}:
+    get:
+      tags:
+      - Location
+      summary: Get a floor by ID
+      description: Get the floor for the specified ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_floor
+      operationId: getFloor
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClsFloor'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
     put:
       tags:
       - Location
@@ -1384,8 +1421,8 @@ paths:
     get:
       tags:
       - Location
-      summary: Get building location
-      description: Get building location without tree.
+      summary: List buildings
+      description: List pages of buildings by filter.
       externalDocs:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_list_buildings
@@ -1395,10 +1432,19 @@ paths:
       - $ref: '#/components/parameters/limit'
       - name: name
         in: query
-        description: The building name to search.
+        description: List buildings by name (case insensitive)
         required: false
         schema:
           type: string
+      - name: ids
+        in: query
+        description: List buildings by IDs
+        required: false
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
       responses:
         '200':
           description: OK
@@ -1440,6 +1486,28 @@ paths:
       security:
       - BearerAuth: []
   /locations/building/{id}:
+    get:
+      tags:
+      - Location
+      summary: Get a building by ID
+      description: Get the building for the specified ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_building
+      operationId: getBuilding
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClsBuilding'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
     put:
       tags:
       - Location
@@ -1498,8 +1566,8 @@ paths:
     get:
       tags:
       - Location
-      summary: Get a list of site location
-      description: Get list of site location without tree.
+      summary: List sites
+      description: List pages of sites by filter.
       externalDocs:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_list_sites
@@ -1509,10 +1577,19 @@ paths:
       - $ref: '#/components/parameters/limit'
       - name: name
         in: query
-        description: The site name to search.
+        description: List sites by name (case insensitive)
         required: false
         schema:
           type: string
+      - name: ids
+        in: query
+        description: List sites by IDs
+        required: false
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
       responses:
         '200':
           description: OK
@@ -1881,6 +1958,14 @@ paths:
       summary: Delete devices
       description: Bulk delete the devices matching the filter criteria.
       operationId: deleteDevices
+      parameters:
+      - name: force_delete
+        in: query
+        description: Force deletion of devices
+        required: false
+        schema:
+          type: boolean
+          default: false
       requestBody:
         content:
           application/json:
@@ -2230,6 +2315,13 @@ paths:
       operationId: deleteDevice
       parameters:
       - $ref: '#/components/parameters/id'
+      - name: force_delete
+        in: query
+        description: Force deletion of device
+        required: false
+        schema:
+          type: boolean
+          default: false
       responses:
         '200':
           description: OK
@@ -2734,6 +2826,38 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /devices/{id}/monitor/vlan-attr:
+    get:
+      tags:
+      - Device
+      summary: Get VLAN attributes for all VLANs on a device
+      description: Get the VLAN Attributes for each VLAN on a specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_vlan_monitor_attributes
+      operationId: getDeviceVlanAttributes
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/XiqDeviceVlanPageLimit'
+      - name: sortField
+        in: query
+        description: The sort field
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqDeviceVlanSortField'
+      - $ref: '#/components/parameters/order'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqDeviceMonitorVlanAttributes'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /devices/installation-report:
     get:
       tags:
@@ -2866,6 +2990,76 @@ paths:
               schema:
                 format: binary
                 type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/ftm-settings:
+    get:
+      tags:
+      - Device
+      summary: Get FTM Settings by device ID
+      description: Get FTM Settings for the specified device ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_ftm_settings_by_device_id
+      operationId: getFtmSettings
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqFtmSettings'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Device
+      summary: Configure (create / update) device FTM Settings
+      description: Configure (create / update) device FTM Settings.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_configure_ftm_settings
+      operationId: configureFtmSettings
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The payload of the configure device FTM Settings request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqFtmSettingsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqFtmSettings'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Device
+      summary: Delete FTM Settings by device ID
+      description: Delete FTM Settings by device ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_ftm_settings
+      operationId: deleteFtmSettings
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -3078,6 +3272,123 @@ paths:
       responses:
         '200':
           description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /network-scorecard/locations/{id}/device-health:
+    get:
+      tags:
+      - Network Scorecard
+      summary: Get device's overall health for given location
+      operationId: getDeviceHealth
+      description: Get the device's overall health details for given location.
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/startTime'
+      - $ref: '#/components/parameters/endTime'
+      - name: topN
+        in: query
+        description: The top N
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceOverallHealth'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /network-scorecard/locations/{id}/client-health:
+    get:
+      tags:
+      - Network Scorecard
+      summary: Get clients' overall health for given location
+      operationId: getClientHealth
+      description: Get the clients' overall health details for given location.
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/startTime'
+      - $ref: '#/components/parameters/endTime'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientOverallHealth'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /network-scorecard/locations/{id}/wifi-health:
+    get:
+      tags:
+      - Network Scorecard
+      summary: Get devices' Wi-Fi health for given location
+      operationId: getWifiHealth
+      description: Get the devices' Wi-Fi health details for given location.
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/startTime'
+      - $ref: '#/components/parameters/endTime'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WiFiOverallHealth'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /network-scorecard/locations/{id}/network-health:
+    get:
+      tags:
+      - Network Scorecard
+      summary: Get devices' network health for given location
+      operationId: getNetworkHealth
+      description: Get the devices' network health details for given location.
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/startTime'
+      - $ref: '#/components/parameters/endTime'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkOverallHealth'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /network-scorecard/locations/{id}/services-health:
+    get:
+      tags:
+      - Network Scorecard
+      summary: Get devices' services health for given location
+      operationId: getServicesHealth
+      description: Get the devices' services health details for given location.
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/startTime'
+      - $ref: '#/components/parameters/endTime'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicesOverallHealth'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -3653,6 +3964,13 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The data in the current page
+                items:
+                  $ref: '#/components/schemas/XiqAlert'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -6842,6 +7160,58 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /ssids/advanced-settings/{id}:
+    get:
+      tags:
+      - Configuration - Policy
+      summary: Get advanced settings for SSID
+      description: Get the advanced settings belonging to a SSID profile.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_ssid_advanced_settings_by_id
+      operationId: getSsidAdvancedSettings
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqSsidAdvancedSettings'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Configuration - Policy
+      summary: Update SSID advanced settings
+      description: Update the advanced settings belonging to a SSID profile.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_ssid_advanced_settings_by_id
+      operationId: updateSsidAdvancedSettings
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The payload of the update advanced settings request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqUpdateSsidAdvancedSettingsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqSsidAdvancedSettings'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /ccgs:
     get:
       tags:
@@ -7075,6 +7445,127 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_iot_profile_configuration
       operationId: deleteIotProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /tunnel-concentrators:
+    get:
+      tags:
+      - Configuration - Network
+      summary: List Tunnel Concentrator services
+      description: Get a page of Tunnel Concentrator services.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_the_tunnel_concentrators
+      operationId: listTunnelConcentrators
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqTunnelConcentrator'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Configuration - Network
+      summary: Create Tunnel Concentrator Service
+      description: Create a new Tunnel Concentrator Service.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_tunnel_concentrator_configuration
+      operationId: createTunnelConcentrator
+      requestBody:
+        description: The payload to create new Tunnel Concentrator Service
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqTunnelConcentratorRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqTunnelConcentrator'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /tunnel-concentrators/{id}:
+    get:
+      tags:
+      - Configuration - Network
+      summary: Get a Tunnel Concentrator Service
+      description: Get a specific Tunnel Concentrator Service by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_tunnel_concentrator_by_id
+      operationId: getTunnelConcentrator
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqTunnelConcentrator'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Configuration - Network
+      summary: Update a Tunnel Concentrator Service
+      description: Update a specific Tunnel Concentrator Service.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_tunnel_concentrator_configuration
+      operationId: updateTunnelConcentrator
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The payload to update Tunnel Concentrator Service
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqTunnelConcentratorRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqTunnelConcentrator'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Configuration - Network
+      summary: Delete a Tunnel Concentrator Service
+      description: Delete a specific Tunnel Concentrator Service by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_tunnel_concentrator_configuration
+      operationId: deleteTunnelConcentrator
       parameters:
       - $ref: '#/components/parameters/id'
       responses:
@@ -8190,8 +8681,6 @@ paths:
       - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/searchKey'
       - $ref: '#/components/parameters/clientType'
-      - $ref: '#/components/parameters/qualityIndex'
-      - $ref: '#/components/parameters/forensicBucket'
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
       - $ref: '#/components/parameters/sortField'
@@ -8202,35 +8691,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/XiqCopilotConnectivityByLocations'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/connectivity/client-type:
-    get:
-      tags:
-      - Copilot - Connectivity Experience
-      summary: Get Connectivity By Client Type
-      description: Get Connectivity details by client type in the widgets.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_connectivity_by_client_type
-      operationId: getConnectivityDetailsByClientType
-      parameters:
-      - $ref: '#/components/parameters/startTime'
-      - $ref: '#/components/parameters/endTime'
-      - $ref: '#/components/parameters/locationId'
-      - $ref: '#/components/parameters/clientType'
-      - $ref: '#/components/parameters/qualityIndex'
-      - $ref: '#/components/parameters/forensicBucket'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotConnectivityByClientType'
+                $ref: '#/components/schemas/XiqCopilotConnectivityExperience'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -8249,7 +8710,7 @@ paths:
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
       - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/viewId'
+      - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
       responses:
@@ -8258,7 +8719,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/XiqCopilotWirelessQualityIndexByLocation'
+                $ref: '#/components/schemas/XiqCopilotWirelessQualityIndex'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -8277,7 +8738,7 @@ paths:
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
       - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/viewId'
+      - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
       responses:
@@ -8305,7 +8766,7 @@ paths:
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
       - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/viewId'
+      - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
       responses:
@@ -8339,7 +8800,7 @@ paths:
       - $ref: '#/components/parameters/wirelessScoreType'
       - $ref: '#/components/parameters/forensicBucket'
       - $ref: '#/components/parameters/searchKey'
-      - $ref: '#/components/parameters/viewId'
+      - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/timestamp'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
@@ -10238,7 +10699,6 @@ components:
       required:
       - address
       - city
-      - postal_code
       - state
       properties:
         address:
@@ -10280,6 +10740,14 @@ components:
             description: The location type
           address:
             $ref: '#/components/schemas/ClsAddress'
+          latitude:
+            type: number
+            description: The latitude coordinate for the building
+            format: double
+          longitude:
+            type: number
+            description: The longitude coordinate for the building
+            format: double
     ClsCreateBuildingRequest:
       type: object
       required:
@@ -10296,6 +10764,14 @@ components:
           description: The building name
         address:
           $ref: '#/components/schemas/ClsAddress'
+        latitude:
+          type: number
+          description: The latitude coordinate for the building
+          format: double
+        longitude:
+          type: number
+          description: The longitude coordinate for the building
+          format: double
     ClsUpdateBuildingRequest:
       type: object
       required:
@@ -10312,6 +10788,14 @@ components:
           description: The building name
         address:
           $ref: '#/components/schemas/ClsAddress'
+        latitude:
+          type: number
+          description: The latitude coordinate for the building
+          format: double
+        longitude:
+          type: number
+          description: The longitude coordinate for the building
+          format: double
     ClsSite:
       allOf:
       - $ref: '#/components/schemas/XiqViqEntity'
@@ -10319,7 +10803,6 @@ components:
         description: The site information
         required:
         - name
-        - parent_id
         - country_code
         properties:
           parent_id:
@@ -10331,7 +10814,7 @@ components:
             description: The site name
           unique_name:
             type: string
-            description: The site unique name
+            description: The unique site name
           type:
             type: string
             description: The location type
@@ -10341,10 +10824,21 @@ components:
             description: The site country code. Get the list of country codes from /countries XAPI
           address:
             $ref: '#/components/schemas/ClsAddress'
+          created_by:
+            type: integer
+            description: The user ID used to create the site
+            format: int64
+          latitude:
+            type: number
+            description: The latitude coordinate for the site address
+            format: double
+          longitude:
+            type: number
+            description: The longitude coordinate for the site address
+            format: double
     ClsCreateSiteRequest:
       type: object
       required:
-      - parent_id
       - name
       - country_code
       properties:
@@ -10361,10 +10855,17 @@ components:
           description: The site country code. Get the list of country codes from /countries XAPI
         address:
           $ref: '#/components/schemas/ClsAddress'
+        latitude:
+          type: number
+          description: The latitude coordinate for the site
+          format: double
+        longitude:
+          type: number
+          description: The longitude coordinate for the site
+          format: double
     ClsUpdateSiteRequest:
       type: object
       required:
-      - parent_id
       - name
       - country_code
       properties:
@@ -10381,6 +10882,14 @@ components:
           description: The site country code. Get the list of country codes from /countries XAPI
         address:
           $ref: '#/components/schemas/ClsAddress'
+        latitude:
+          type: number
+          description: The latitude coordinate for the site
+          format: double
+        longitude:
+          type: number
+          description: The longitude coordinate for the site
+          format: double
     XiqDeviceAdminState:
       type: string
       enum:
@@ -11651,6 +12160,113 @@ components:
         properties:
           data:
             $ref: '#/components/schemas/XiqBounceDevicePortData'
+    XiqDeviceVlanSortField:
+      type: string
+      description: All available VLAN Attributes sort fields for a device<br/><br/> VLAN_ID = VLAN ID<br/> ACTIVE_PORTS = Number of total active ports in the VLAN<br/> IGMP_SNOOPING_ENABLED = Disabled or Enabled<br/> DHCP_SNOOPING_ENABLED = Disabled or Enabled<br/> STP_INSTANCE = STP Instance name
+      enum:
+      - VLAN_ID
+      - ACTIVE_PORTS
+      - IGMP_SNOOPING_ENABLED
+      - DHCP_SNOOPING_ENABLED
+      - STP_INSTANCE
+    XiqDeviceMonitorVlanAttributesInfo:
+      type: object
+      description: The VLAN attributes that are monitored per VLAN on the device.
+      required:
+      - vlan_id
+      properties:
+        vlan_id:
+          type: integer
+          description: The VLAN ID
+          format: int32
+        vlan_name:
+          type: string
+          description: The VLAN Name
+        active_ports:
+          type: array
+          description: The active ports in the VLAN
+          items:
+            type: string
+            description: The active ports in the VLAN
+        stp_instance:
+          type: string
+          description: The STP instance name for the VLAN
+        stp_enabled:
+          type: boolean
+          description: Indicates whether or not STP is enabled or disabled on the VLAN
+        igmp_snooping_enabled:
+          type: boolean
+          description: Indicates whether or not IGMP Snooping is enabled or disabled on the VLAN
+        dhcp_snooping_enabled:
+          type: boolean
+          description: Indicates whether or not DCHP Snooping is enabled or disabled on the VLAN
+        vrf_name:
+          type: string
+          description: The name of the VRF for the VLAN
+        dynamic_enabled:
+          type: boolean
+          description: Indicates whether or not this is a Dynamic VLAN
+        member_ports:
+          type: array
+          description: The member ports in the VLAN
+          items:
+            type: string
+            description: The member ports in the VLAN
+        tagged_ports:
+          type: array
+          description: The tagged ports in the VLAN
+          items:
+            type: string
+            description: The tagged ports in the VLAN
+        untagged_ports:
+          type: array
+          description: The untagged ports in the VLAN
+          items:
+            type: string
+            description: The untagged ports in the VLAN
+        dynamic_ports:
+          type: array
+          description: The dynamic ports in the VLAN
+          items:
+            type: string
+            description: The dynamic ports in the VLAN
+        non_forwarding_vlan_enabled:
+          type: boolean
+          description: Indicates whether or not this VLAN is a Non-Forwarding VLAN (learning VLAN)
+    XiqDeviceMonitorVlanAttributes:
+      type: object
+      description: The VLAN attributes information for the device.
+      required:
+      - earliest_refresh_time
+      - latest_refresh_time
+      - latest_refresh_timestamp
+      - vlan_attributes_info
+      properties:
+        earliest_refresh_time:
+          type: string
+          description: The time of the earliest refresh of VLAN Attributes information from the device
+        latest_refresh_time:
+          type: string
+          description: The time of the latest refresh of VLAN Attributes information from the device
+        latest_refresh_timestamp:
+          type: integer
+          description: The latest successful refresh timestamp of VLAN Attributes information from the device
+          format: int64
+        vlan_attributes_info:
+          type: array
+          description: The VLAN attributes monitored per VLAN from the device
+          items:
+            $ref: '#/components/schemas/XiqDeviceMonitorVlanAttributesInfo'
+    PagedXiqDeviceMonitorVlanAttributes:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page for VLAN attributes
+            items:
+              $ref: '#/components/schemas/XiqDeviceMonitorVlanAttributes'
     XiqDeviceInstallationReportResponse:
       type: object
       description: The device installation response
@@ -11816,6 +12432,169 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqRadioEntity'
+    XiqDeviceVlanAttrDhcpSnoopingAction:
+      type: string
+      enum:
+      - NONE
+      - DROP_PACKET
+    XiqDeviceBaseVlanAttributes:
+      type: object
+      description: The payload of a VLAN attribute object
+      properties:
+        name:
+          type: string
+          description: Name of the VLAN
+        dhcp_snooping_enabled:
+          type: boolean
+          description: Whether dhcp snooping is enabled on this VLAN
+        dhcp_snooping_action:
+          type: object
+          $ref: '#/components/schemas/XiqDeviceVlanAttrDhcpSnoopingAction'
+          description: Action to take when rogue DHCP packets are detected when dhcp snooping is enabled.
+        igmp_snooping_enabled:
+          type: boolean
+          description: Whether igmp snooping is enabled on this VLAN
+        immediate_leave:
+          type: boolean
+          description: When enabled, the multicast host is removed immediately if it leaves the group. Applicable when igmp snooping is enabled.
+        always_create:
+          type: boolean
+          description: Whether the VLAN should be created even if not assigned to any port
+    XiqDeviceVlanAttributes:
+      allOf:
+      - type: object
+        description: The payload of a VLAN attribute object
+        properties:
+          vlan_id:
+            type: integer
+            description: The VLAN ID
+            format: int32
+      - $ref: '#/components/schemas/XiqDeviceBaseVlanAttributes'
+    PagedXiqDeviceVlanAttributes:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqDeviceVlanAttributes'
+    XiqDeviceCreateVlanAttributes:
+      allOf:
+      - type: object
+        description: The payload of a VLAN attribute object
+        required:
+        - vlan_id
+        - name
+        - dhcp_snooping_enabled
+        - igmp_snooping_enabled
+        - always_create
+        properties:
+          vlan_id:
+            type: integer
+            description: The VLAN ID
+            format: int32
+      - $ref: '#/components/schemas/XiqDeviceBaseVlanAttributes'
+    XiqDeviceUpdateVlanAttributes:
+      allOf:
+      - $ref: '#/components/schemas/XiqDeviceBaseVlanAttributes'
+      - minProperties: 1
+    XiqWgs84:
+      type: object
+      required:
+      - latitude
+      - longitude
+      - altitude
+      properties:
+        latitude:
+          type: number
+          format: double
+          description: Degrees of latitude. Positive values indicate latitudes north of the equator; negative values indicate latitudes south of the equator.
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          format: double
+          description: Degrees of longitude. Measurements are relative to the zero meridian, with positive values extending east of the meridian and negative values extending west of the meridian.
+          minimum: -180
+          maximum: 180
+        altitude:
+          type: number
+          format: double
+          description: Meters above sea level.
+          minimum: -500
+          maximum: 1000
+    XiqZsubelementAboveFloor:
+      type: object
+      required:
+      - height
+      - height_uncertainty
+      properties:
+        height:
+          type: number
+          format: double
+          description: Height above the floor in meters.
+          minimum: 0
+          maximum: 250
+        height_uncertainty:
+          type: number
+          format: double
+          description: Height uncertainty in meters.
+          minimum: 0
+          maximum: 10
+    XiqZsubelement:
+      type: object
+      required:
+      - expected_to_move
+      - floor_number
+      properties:
+        expected_to_move:
+          type: boolean
+          description: Indicates whether the device is expected to move.
+        floor_number:
+          type: integer
+          description: The floor number where the device is installed.
+          minimum: -25
+          maximum: 250
+        above_floor:
+          $ref: '#/components/schemas/XiqZsubelementAboveFloor'
+    XiqFtmSettingsRequest:
+      type: object
+      description: Fine Time Measurement (FTM) settings for 802.11mc device support.
+      required:
+      - wgs84_override
+      - zsubelement_override
+      - civic_address_override
+      properties:
+        wgs84_override:
+          type: boolean
+          description: |
+            World Geodetic System 1984 (WGS84) override.
+            If 'false' and GPS or AP-to-AP ranging or XIQ location has provided these values they will be used.
+            If 'true', the manually entered values for latitude, longitude, and altitude will be used.
+        wgs84:
+          $ref: '#/components/schemas/XiqWgs84'
+        zsubelement_override:
+          type: boolean
+          description: |
+            Z-subelement override.
+            If 'false' and XIQ location has provided these values they will be used.
+            If 'true', the manually entered values will be used.
+        zsubelement:
+          $ref: '#/components/schemas/XiqZsubelement'
+        civic_address_override:
+          type: boolean
+          description: Civic Address override.
+        civic_address:
+          type: string
+          description: Civic Address as hex encoded RFC4776 formatted string.
+          maxLength: 480
+          minLength: 2
+    XiqFtmSettings:
+      allOf:
+      - $ref: '#/components/schemas/XiqViqEntity'
+      - $ref: '#/components/schemas/XiqFtmSettingsRequest'
     PagedXiqNetworkPolicy:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -11884,6 +12663,10 @@ components:
           predefined:
             type: boolean
             description: Whether it is predefined
+          advanced_settings_id:
+            type: integer
+            description: The SSID advanced settings ID
+            format: int64
     PagedXiqSsid:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -11894,6 +12677,106 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqSsid'
+    DeviceOverallHealth:
+      type: object
+      description: The devices health score over the period
+      properties:
+        overall_score:
+          type: integer
+          description: The overall health score
+          format: int32
+        device_availability_score:
+          type: integer
+          description: The device availability score
+          format: int32
+        device_hardware_health_score:
+          type: integer
+          description: The device hardware health score
+          format: int32
+        config_and_firmware_score:
+          type: integer
+          description: The config and firmware score
+          format: int32
+    ClientOverallHealth:
+      type: object
+      description: The clients health score over the period
+      properties:
+        overall_score:
+          type: integer
+          description: The overall health score
+          format: int32
+        wifi_health_score:
+          type: integer
+          description: The health score of Wi-Fi
+          format: int32
+        network_health_score:
+          type: integer
+          description: The health score of network
+          format: int32
+        application_health_score:
+          type: integer
+          description: The health score of application
+          format: int32
+    WiFiOverallHealth:
+      type: object
+      description: The clients health score over the period
+      properties:
+        overall_score:
+          type: integer
+          description: The overall health score
+          format: int32
+        snr_health_score:
+          type: integer
+          description: The health score of snr
+          format: int32
+        utilization_health_score:
+          type: integer
+          description: The health score of utilization
+          format: int32
+        association_health_score:
+          type: integer
+          description: The health score of association
+          format: int32
+    NetworkOverallHealth:
+      type: object
+      description: The network health score over the period
+      properties:
+        overall_score:
+          type: integer
+          description: The overall health score
+          format: int32
+        internet_availability_score:
+          type: integer
+          description: The overall network health score
+          format: int64
+        average_internet_latency:
+          type: integer
+          description: The internet performance value in milli-seconds
+          format: int64
+        total_usage:
+          type: integer
+          description: The network usage value in bytes
+          format: int64
+    ServicesOverallHealth:
+      type: object
+      description: The network health score over the period
+      properties:
+        overall_score:
+          type: integer
+          description: The overall health score
+          format: int32
+        network_services_score:
+          type: integer
+          description: The health score of network services
+          format: int32
+        authentication_services_score:
+          type: integer
+          description: The health score of authentication services
+          format: int32
+        management_services_score:
+          type: integer
+          description: The health score of management services
+          format: int32
     XiqClientField:
       type: string
       enum:
@@ -15839,6 +16722,21 @@ components:
           type: integer
           description: The RADIUS server group ID if using WEP_8021x as the key management
           format: int64
+    XiqSsidAdvancedSettings:
+      allOf:
+      - $ref: '#/components/schemas/XiqBaseEntity'
+      - type: object
+        description: The advanced settings for the SSID
+        properties:
+          enable802_dot11mc:
+            type: boolean
+            description: Whether to enable 802.11mc on SSID
+    XiqUpdateSsidAdvancedSettingsRequest:
+      type: object
+      properties:
+        enable802_dot11mc:
+          type: boolean
+          description: Whether to enable 802.11mc on SSID.
     XiqCloudConfigGroup:
       allOf:
       - $ref: '#/components/schemas/XiqViqEntity'
@@ -16004,6 +16902,10 @@ components:
               items:
                 $ref: '#/components/schemas/XiqIotpTgWhiteListEntry'
               description: The table of approved Thread end-devices.
+            default_user_profile_id:
+              type: integer
+              description: The default user-profile ID.
+              format: int64
     XiqIotApplicationId:
       type: string
       enum:
@@ -16041,6 +16943,137 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqIotProfile'
+    XiqTunnelConcentratorRequest:
+      type: object
+      required:
+      - name
+      - redundant
+      - primary_tc
+      - primary_listening_interface
+      - primary_vlan
+      - primary_tagged
+      - primary_bridging_interface
+      - tunnel_address
+      - native_vlan
+      description: |-
+        Tunnel Concentrator Service object. Tunnel Concentrator Service can be configured in two modes:
+          - Single
+          - Redundant
+
+        In single mode one instance of Tunnel Concentrator application terminates tunnels. Tunnel destination is defined by "tunnel_address" field. Port, VLAN and bridge interface of the "tunnel_address" are identified by fields:
+          - primary_listening_interface
+          - primary_vlan
+          - primary_tagged
+          - primary_bridged_interface
+        In case of single Tunnel Concentrator "backup_*" fields are not used.
+        In redundant mode a pair of Tunnel Concentrators applications form VRRP cluster. Each of the paired Tunnel Concentrators gets separate configuration via "primary_*" and "backup_*" fields. IP address of each Tunnel Concentrator is provided in the "primary_ip" and "backup_ip" fields. Tunnel IP address, provided in the "tunnel_address", is VRRP address. "router_id" defines VRRP router ID. Router priority is not configurable and assigned automatically, 100 to primary Tunnel Concentrator, 50 to backup.
+      properties:
+        name:
+          type: string
+          description: The Tunnel Concentrator Service name
+          minLength: 1
+          maxLength: 255
+        decription:
+          type: string
+          description: The Tunnel Concentrator Service decription
+          minLength: 0
+          maxLength: 1024
+        primary_tc:
+          type: integer
+          description: The Primary Tunnel Concentrator device ID
+          format: int64
+        backup_tc:
+          type: integer
+          description: The Backup Tunnel Concentrator device ID
+          format: int64
+        redundant:
+          type: boolean
+          description: Indicates if redundant Tunnel Concentrators (primary and backup) are configured
+        primary_listening_interface:
+          type: integer
+          description: Primary Listening Interface ID
+          format: int32
+          minimum: 1
+          maximum: 4
+        backup_listening_interface:
+          type: integer
+          description: Backup Listening Interface ID
+          format: int32
+          minimum: 1
+          maximum: 4
+        primary_bridging_interface:
+          type: integer
+          description: Primary Bridging Interface ID
+          format: int32
+          minimum: 1
+          maximum: 4
+        backup_bridging_interface:
+          type: integer
+          description: Backup Bridging Interface ID
+          format: int32
+          minimum: 1
+          maximum: 4
+        primary_vlan:
+          type: integer
+          description: The VLAN ID for the primary listening interface
+          format: int32
+          minimum: 1
+          maximum: 4094
+        backup_vlan:
+          type: integer
+          description: The VLAN ID for the backup listening interface
+          format: int32
+          minimum: 1
+          maximum: 4094
+        primary_tagged:
+          type: boolean
+          description: Indicates if primary VLAN is tagged.
+        backup_tagged:
+          type: boolean
+          description: Indicates if backup VLAN is tagged.
+        primary_ip:
+          type: string
+          description: The primary IP address of network interface for accepting connections from APs (listening interface).
+          format: ipv4
+        backup_ip:
+          type: string
+          description: The backup IP address of network interface for accepting connections from APs (listening interface).
+          format: ipv4
+        tunnel_address:
+          type: string
+          pattern: ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])/([1-9]|[12][0-9]|3[012])$
+          description: IP address/CIDR of listening interface.
+        router_id:
+          type: integer
+          description: Virtual Router group ID. Routers with the same VR ID cooperate in election of main router and must have the same VRRP IP address.
+          format: int32
+          minimum: 1
+          maximum: 254
+          default: 1
+        native_vlan:
+          type: integer
+          description: Specifies which VLAN ID is transmitted untagged on the bridged interface.
+          format: int32
+          minimum: 1
+          maximum: 4094
+        gateway:
+          type: string
+          description: Default gateway for the listening interface.
+          format: ipv4
+    XiqTunnelConcentrator:
+      allOf:
+      - $ref: '#/components/schemas/XiqViqEntity'
+      - $ref: '#/components/schemas/XiqTunnelConcentratorRequest'
+    PagedXiqTunnelConcentrator:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqTunnelConcentrator'
     XiqActiveDirectoryServerBaseDnFetchMode:
       type: string
       description: The base DN fetch mode of active directory server
@@ -17698,135 +18731,6 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqCopilotWiredEventEntity'
-    XiqQualityIndex:
-      type: string
-      enum:
-      - LOW
-      - MEDIUM
-      - HIGH
-    XiqCopilotConnectivityByLocationsEntity:
-      type: object
-      description: Copilot Experience Entity
-      required:
-      - id
-      - name
-      - quality_index
-      - quality_index_value
-      - client_type
-      - quality_index_graph
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        quality_index:
-          type: integer
-          minimum: 1
-          maximum: 10
-        quality_index_value:
-          $ref: '#/components/schemas/XiqQualityIndex'
-        client_type:
-          $ref: '#/components/schemas/XiqClientType'
-        quality_index_graph:
-          type: array
-          description: The data in the current page
-          items:
-            type: object
-            description: Connectivity experience quality sequence
-            required:
-            - timestamp
-            - value
-            properties:
-              timestamp:
-                type: integer
-                format: int64
-              value:
-                type: integer
-                minimum: 1
-                maximum: 10
-    XiqCopilotConnectivityByLocations:
-      allOf:
-      - $ref: '#/components/schemas/XiqPage'
-      - type: object
-        properties:
-          data:
-            type: array
-            description: The data in the current page
-            items:
-              $ref: '#/components/schemas/XiqCopilotConnectivityByLocationsEntity'
-    XiqCopilotConnectivityByClientType:
-      type: object
-      description: data sequence
-      required:
-      - sites_by_wireless
-      - sites_by_wired
-      properties:
-        sites_by_wireless:
-          type: object
-          description: The data in the current page
-          required:
-          - low_quality_score_count
-          - medium_quality_score_count
-          - high_quality_score_count
-          - total_quality_score_count
-          properties:
-            low_quality_score_count:
-              type: integer
-              format: int32
-            medium_quality_score_count:
-              type: integer
-              format: int32
-            high_quality_score_count:
-              type: integer
-              format: int32
-            total_quality_score_count:
-              type: integer
-              format: int32
-        sites_by_wired:
-          type: object
-          description: The data in the current page
-          required:
-          - low_quality_score_count
-          - medium_quality_score_count
-          - high_quality_score_count
-          - total_quality_score_count
-          properties:
-            low_quality_score_count:
-              type: integer
-              format: int32
-            medium_quality_score_count:
-              type: integer
-              format: int32
-            high_quality_score_count:
-              type: integer
-              format: int32
-            total_quality_score_count:
-              type: integer
-              format: int32
-    XiqCopilotWirelessQualityIndexByLocation:
-      type: object
-      description: Wireless Connectivity Experience QualityIndex
-      required:
-      - quality_index
-      - time_to_connect_score
-      - performance_score
-      - total_clients
-      properties:
-        quality_index:
-          type: integer
-          minimum: 1
-          maximum: 10
-        time_to_connect_score:
-          type: integer
-          minimum: 1
-          maximum: 10
-        performance_score:
-          type: integer
-          minimum: 1
-          maximum: 10
-        total_clients:
-          type: integer
-          format: int32
     XiqCopilotHardwareByLocation:
       type: object
       description: Wired Connectivity Experience Hardware
@@ -19170,6 +20074,882 @@ components:
         name_ko:
           description: The country official name in Korean.
           type: string
+    ViewDeviceSimpleReferenceObject:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        name:
+          type: string
+    ViewDeviceResponse:
+      type: object
+      allOf:
+      - type: object
+        properties:
+          id:
+            type: integer
+            format: int64
+            minimum: 1
+          owner_id:
+            type: integer
+            format: int64
+          org_id:
+            type: integer
+            format: int64
+          name:
+            type: string
+          type:
+            type: string
+            enum:
+            - appliance
+            description: Type of the device.
+          serial_number:
+            type: string
+            description: Serial number of the device.
+          mac_address:
+            type: string
+            description: MAC address of the device.
+          model:
+            type: string
+            description: Model of the device.
+          firmware_version:
+            type: string
+            description: Version of agent software running on the device.
+          configuration:
+            type: object
+            properties:
+              status:
+                type: string
+                description: |
+                  Status providing assessment of configuration status.
+                  - UNKNOWN: system error.
+                  - NOT_CONFIGURED: no template assigned.
+                  - TO_BE_CONFIGURED: never deployed.
+                  - UPDATING: a validated deployment has been triggered, orchestration is pending.
+                  - CONFIGURATION_FAILED: configuration was not successful (orchestration error or appliance error). "message" should contain indications.
+                  - CONFIGURATION_UPDATED: appliance has received and loaded deployed configuration.
+                enum:
+                - UNKNOWN
+                - NOT_CONFIGURED
+                - TO_BE_CONFIGURED
+                - UPDATING
+                - CONFIGURATION_FAILED
+                - CONFIGURATION_UPDATED
+              message:
+                type: string
+                description: |
+                  Message that may follow up a warning or error status.
+              last_deployed_at:
+                type: string
+                format: date-time
+                description: When the last valid deployment was requested by a User.
+              last_updated_at:
+                type: string
+                format: date-time
+                description: When the device received its last configuration (null if never deployed or not configured).
+              in_sync:
+                type: boolean
+                description: |
+                  **true** indicates that latest deployed configuration is the one running on the device.
+          connectivity:
+            type: object
+            properties:
+              connected:
+                type: boolean
+                description: |
+                  **true** indicates the device is actively connected to the communicator.
+              last_connected_at:
+                type: string
+                format: date-time
+                description: Time since the device is connected to communicator. null when not connected.
+              disconnected_at:
+                type: string
+                format: date-time
+                description: Time since the device is disconnected to communicator. null when connected or never connected.
+          site:
+            description: Site which the device is bound to.
+            allOf:
+            - $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
+          description:
+            type: string
+          device_template:
+            description: Device template applied to the device.
+            allOf:
+            - $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
+          management_network:
+            type: object
+            description: Management interface IP address.
+            properties:
+              ip_address:
+                type: string
+                format: ipv4
+              subnet_mask:
+                type: integer
+                minimum: 0
+                maximum: 32
+          wans:
+            type: array
+            description: WAN interfaces of the device.
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  enum:
+                  - WAN1
+                  - WAN2
+                  - WAN3
+                  description: WAN interface name.
+                enabled:
+                  type: boolean
+                  description: |
+                    If **false** other properties will be **null**.
+                transport_network:
+                  $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
+                overlays:
+                  type: array
+                  items:
+                    type: object
+                    allOf:
+                    - $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
+                    - type: object
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                          - hub_and_spoke
+                          - third_party_vpn
+                          - cloud_mesh
+          cloud_mesh_enabled:
+            type: boolean
+            description: |
+              **true** if Cloud Mesh service is enabled on this device.
+          as_number:
+            description: AS Number.
+            type: integer
+            format: int64
+            minimum: 0
+            maximum: 65535
+          last_updated_at:
+            type: string
+            format: date-time
+            description: When the device received its last configuration (null if never deployed or not configured).
+    ViewDevicesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/ViewDeviceResponse'
+    ViewDevicesResponsePaged:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - $ref: '#/components/schemas/ViewDevicesResponse'
+    Error:
+      required:
+      - status
+      - title
+      - detail
+      type: object
+      properties:
+        status:
+          type: integer
+        title:
+          type: string
+        detail:
+          type: string
+    ApplianceGetStatus:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                description: Time of the response in epoch format (milliseconds)
+                type: integer
+                format: unix-epoch
+                example: 1651743308000
+              info:
+                type: object
+                properties:
+                  id:
+                    description: Appliance ID
+                    type: integer
+                    format: int64
+                    example: 1
+                  name:
+                    description: Appliance Name
+                    type: string
+                    example: Branch-01-IPE1
+              state:
+                type: object
+                properties:
+                  orchestrator_connected:
+                    description: True if appliance is connected to the orchestrator
+                    type: boolean
+                    example: true
+                  configuration_synchronized:
+                    description: True if appliance configuration in sync with orchestrator
+                    type: boolean
+                    example: true
+                  time_synchronized:
+                    description: True if appliance is in sync with time servers
+                    type: boolean
+                    example: true
+                  last_configuration_update_timestamp:
+                    description: Last configuration update timestamp in epoch format (milliseconds)
+                    type: integer
+                    format: unix-epoch
+                    example: 1651743308000
+                  firmware_version:
+                    description: Current applied appliance firmware
+                    type: string
+                    example: 22.03.0.2
+                  system:
+                    type: object
+                    properties:
+                      uptime:
+                        description: System uptime in milliseconds
+                        type: integer
+                        format: int64
+                        example: 1651743308000
+                      cpu:
+                        type: object
+                        properties:
+                          usage:
+                            description: Average CPU load in percentage
+                            type: integer
+                            format: int32
+                            example: 50
+                      network:
+                        type: object
+                        properties:
+                          interface:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  description: Name of the interface
+                                  type: string
+                                  example: wan1
+                                type:
+                                  description: Indicates the interface protocol type.
+                                  type: string
+                                  enum:
+                                  - eth
+                                  - lo
+                                  - gre
+                                  - ipip
+                                  example: eth
+                                state:
+                                  description: Operational status of link.
+                                  type: string
+                                  enum:
+                                  - up
+                                  - down
+                                  - dormant
+                                  - testing
+                                  - lowerlayerdown
+                                  - notpresent
+                                  - unknown
+                                  example: up
+                                rx_bytes:
+                                  description: Bytes received
+                                  type: integer
+                                  format: int64
+                                  example: 420
+                                tx_bytes:
+                                  description: Bytes sent
+                                  type: integer
+                                  format: int64
+                                  example: 1071
+                                throughput:
+                                  description: Throughput in bps
+                                  type: number
+                                  format: double
+                                  example: 24
+    ApplicationsSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: Applications Summary Response
+          type: array
+          items:
+            properties:
+              saas_applications:
+                description: saas applications count
+                type: integer
+                format: int32
+                example: 300
+              dpi_applications:
+                description: dpi applications count
+                type: integer
+                format: int32
+                example: 100
+              average_eqs:
+                description: average eqs across all the applications as of now
+                type: number
+                example: 6.5
+    FlowDirection:
+      type: string
+      enum:
+      - lan_to_wan
+      - wan_to_lan
+      example: lan_to_wan
+    QuerryPage:
+      type: integer
+      format: int32
+      example: 5
+    QuerryPageSize:
+      type: integer
+      format: int32
+      example: 10
+    ApplicationGroupsEqsPerCriticality:
+      type: object
+      properties:
+        top:
+          description: application groups for criticality top
+          type: array
+          items:
+            description: List of application groups
+            type: object
+            properties:
+              application_group_id:
+                description: application group id
+                type: integer
+                format: int64
+                example: 12234
+              application_group_name:
+                description: application group name
+                type: string
+                example: BusinessApp
+              application_group_eqs:
+                description: EQS value between 0 - 10
+                type: number
+                example: 9.85
+        high:
+          description: application groups for criticality high
+          type: array
+          items:
+            description: List of application groups
+            type: object
+            properties:
+              application_group_id:
+                description: application group id
+                type: integer
+                format: int64
+                example: 12231
+              application_group_name:
+                description: application group name
+                type: string
+                example: ThinClient
+              application_group_eqs:
+                description: EQS value between 0 - 10
+                type: number
+                example: 9.85
+        medium:
+          description: application groups for criticality medium
+          type: array
+          items:
+            description: List of application groups
+            type: object
+            properties:
+              application_group_id:
+                description: application group id
+                type: integer
+                format: int64
+                example: 12234
+              application_group_name:
+                description: application group name
+                type: string
+                example: BackOffice
+              application_group_eqs:
+                description: EQS value between 0 - 10
+                type: number
+                example: 9.85
+        low:
+          description: application groups for criticality low
+          type: array
+          items:
+            description: List of application groups
+            type: object
+            properties:
+              application_group_id:
+                description: application group id
+                type: integer
+                format: int64
+                example: 12234
+              application_group_name:
+                description: application group name
+                type: string
+                example: Internet
+              application_group_eqs:
+                description: EQS value between 0 - 10
+                type: number
+                example: 9.85
+    SitesOverview:
+      type: array
+      items:
+        properties:
+          site_id:
+            description: site_src_id/site_dst_id
+            type: integer
+            format: int64
+            example: 1234
+          site_name:
+            description: The site name.
+            type: string
+            example: Cloud Services
+          appliance_id:
+            description: appliance_src_id/appliance_dst_id
+            type: integer
+            format: int64
+            example: 1234
+          appliance_name:
+            description: appliance name.
+            type: string
+            example: app1
+          wan_interface:
+            description: nap_src_index/nap_dst_index
+            type: integer
+            format: int8
+            example: 1
+          flow_direction:
+            allOf:
+            - $ref: '#/components/schemas/FlowDirection'
+            description: Flow data direction.
+          capacity:
+            description: capacity
+            type: number
+            example: 2.5
+          throughput:
+            description: throughput
+            type: number
+            example: 2.5
+          utilization:
+            description: utilization
+            type: number
+            format: double
+            example: 85
+          eqs:
+            description: EQS value between 0 - 10
+            type: number
+            example: 9.85
+          application_groups_per_criticality:
+            description: application_groups grouped by criticality
+            $ref: '#/components/schemas/ApplicationGroupsEqsPerCriticality'
+    TimeRange:
+      type: object
+      properties:
+        start_time:
+          description: start of the time-range. unit is seconds
+          type: integer
+          format: int64
+          example: 1654150860
+        end_time:
+          description: end of the time-range. unit is seconds
+          type: integer
+          format: int64
+          example: 1654236480
+        resolution:
+          description: time interval for aggregation. unit is seconds
+          type: integer
+          format: int64
+          example: 600
+    SitesOverviewResponsePaged:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            description: The data in the current page
+            $ref: '#/components/schemas/SitesOverview'
+          time_range:
+            description: The time range response
+            $ref: '#/components/schemas/TimeRange'
+    TunnelSite:
+      type: array
+      items:
+        properties:
+          id:
+            description: Site ID
+            type: integer
+            example: 5420248827679
+            format: int64
+          site_name:
+            description: Site name
+            type: string
+            example: SITE-01
+          location:
+            description: Site location
+            type: string
+            example: 23 Av. Carnot | Massy | Île-de-France | 91300 |France
+          map_position:
+            description: Site coordinates
+            type: object
+            properties:
+              lat:
+                description: Latitude
+                type: number
+                format: double
+                example: 48.7270491
+              lng:
+                description: Longitude
+                type: number
+                format: double
+                example: 2.2644208
+          alarm:
+            description: The site alarmed condition, if set to true it means site is at active alarmed state.
+            type: boolean
+            example: true
+    TunnelSiteResponse:
+      type: object
+      properties:
+        data:
+          description: Connection site data
+          $ref: '#/components/schemas/TunnelSite'
+    SitesSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: Sites Summary Response
+          type: array
+          items:
+            properties:
+              sites_count:
+                description: total sites count
+                type: integer
+                format: int32
+                example: 14
+              average_throughput:
+                description: average throughput across all the sites as of now
+                type: number
+                format: double
+                example: 370
+    ViewAppliancesSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: Appliances Summary Response
+          type: array
+          items:
+            type: object
+            properties:
+              appliances_connected:
+                description: connected appliances count
+                type: integer
+                format: int32
+                example: 18
+              appliances_disconnected:
+                description: disconnected appliances count
+                type: integer
+                format: int32
+                example: 2
+    ViewWansSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: Wan Services Summary Response
+          type: array
+          items:
+            type: object
+            properties:
+              wans_count:
+                description: total wan services count
+                type: integer
+                format: int32
+                example: 4
+    ViewConnectionsResponse:
+      type: array
+      items:
+        properties:
+          initiator_appliance_id:
+            description: The initiator appliance ID
+            type: integer
+            format: int64
+            example: 542024882680
+          responder_appliance_id:
+            description: The responder appliance ID
+            type: integer
+            format: int64
+            example: 542024882681
+          initiator_appliance_name:
+            description: The initiator appliance name
+            type: string
+            example: APPLIANCE-01
+          responder_appliance_name:
+            description: The responder appliance name
+            type: string
+            example: APPLIANCE-02
+          initiator_site_id:
+            description: This is the initiator site ID
+            type: integer
+            format: int64
+            example: 542024882780
+          responder_site_id:
+            description: This is the responder site ID
+            type: integer
+            format: int64
+            example: 5420248827781
+          initiator_site_name:
+            description: The initiator site name
+            type: string
+            example: SITE-01
+          responder_site_name:
+            description: The responder site name
+            type: string
+            example: SITE-02
+          initiator_interface:
+            description: The initiator interface name
+            type: string
+            minLength: 1
+            example: wan1
+          responder_interface:
+            description: The responder interface name
+            type: string
+            minLength: 1
+            example: wan2
+          overlay_id:
+            description: The overlay ID
+            type: integer
+            format: int64
+            example: 20
+          overlay_name:
+            description: The overlay name
+            type: string
+            minLength: 1
+            example: MPLS1
+          status_id:
+            description: The overlay status ID
+            type: string
+            enum:
+            - up
+            - down
+            minLength: 1
+            example: up
+          status:
+            description: The overlay status
+            type: string
+            minLength: 1
+            example: Up
+          type_id:
+            description: The overlay type ID
+            type: string
+            enum:
+            - vti
+            - gre
+            - gre_user
+            - zsc
+            - csec
+            - sdi
+            - aws
+            - azure
+            minLength: 1
+            example: gre
+          type:
+            description: The overlay type
+            type: string
+            minLength: 1
+            example: Overlay
+    ViewConnectionsResponsePaged:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            allOf:
+            - $ref: '#/components/schemas/ViewConnectionsResponse'
+    application-metrics-summary:
+      type: object
+      description: Array of Object containing application overview summary details group by Application, Application Group or criticality
+      properties:
+        application_id:
+          description: application Id
+          type: number
+          example: 5455656
+        application_name:
+          description: application name
+          type: string
+          example: webex
+        criticality:
+          description: criticality
+          type: string
+          example: Top
+        eqs:
+          description: eqs value
+          type: number
+          format: double
+          example: 9.55
+        throughput:
+          description: throughput value
+          type: number
+          format: double
+          example: 5553434.56
+        volume:
+          description: volume value
+          type: number
+          format: double
+          example: 44567.55
+    ApplicationMetricsSummaryInfoList_application-metrics-summary:
+      type: array
+      description: Array of Object containing application overview summary details group by Application, Application Group or criticality
+      items:
+        description: Object containing application summary Data
+        $ref: '#/components/schemas/application-metrics-summary'
+    ApplicationsMetricsSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: Returns Filtered summary data
+          $ref: '#/components/schemas/ApplicationMetricsSummaryInfoList_application-metrics-summary'
+        time_range:
+          description: The timeRange response
+          $ref: '#/components/schemas/TimeRange'
+        pagination:
+          description: The pagination response
+          $ref: '#/components/schemas/XiqPage'
+    AlarmSeverityCountResponseObject:
+      type: object
+      properties:
+        total:
+          description: total count of active alarms
+          type: integer
+          format: int32
+          example: 10
+        detail:
+          description: count of active alarms for each severity(critical, major, minor)
+          type: array
+          items:
+            properties:
+              severity:
+                description: severity of the alarm
+                type: string
+                minLength: 4
+                example: major
+              count:
+                description: count of alarms for the given severity
+                type: integer
+                format: int32
+                example: 10
+    AlarmSeverityCountResponse:
+      type: object
+      properties:
+        data:
+          description: Alarm active count per severity
+          $ref: '#/components/schemas/AlarmSeverityCountResponseObject'
+    ViewAlarmsResponse:
+      type: array
+      items:
+        properties:
+          id:
+            description: internal id of the alarm instance
+            type: string
+            minLength: 4
+            example: 5cedee19-2219-404e-bc4b-964a5e3b6bae
+          raised_date_time:
+            description: timestamp when the alarm was raised
+            type: integer
+            format: int64
+            example: 1652607240
+          cleared_date_time:
+            description: timestamp when the alarm was cleared (applicable only to cleared alarms)
+            type: integer
+            format: int64
+            example: 1652607380
+          local_appliance_id:
+            description: local appliance id
+            type: integer
+            format: int64
+            example: 64102141172
+          local_appliance_name:
+            description: local appliance name
+            type: string
+            minLength: 4
+            example: ebx-02
+          local_appliance_serial_number:
+            description: local appliance serial number
+            type: string
+            minLength: 4
+            example: A0518X0005A0
+          remote_appliance_id:
+            description: remote appliance id
+            type: integer
+            format: int64
+            example: 64108151319
+          remote_appliance_name:
+            description: remote appliance name
+            type: string
+            minLength: 4
+            example: ebx-03
+          remote_appliance_serial_number:
+            description: remote appliance serial number
+            type: string
+            minLength: 4
+            example: N0815K0319A0
+          local_site_id:
+            description: local site id
+            type: integer
+            format: int64
+            example: 2
+          local_site_name:
+            description: local site name
+            type: string
+            minLength: 4
+            example: Site 02
+          remote_site_id:
+            description: local site id
+            type: integer
+            format: int64
+            example: 3
+          remote_site_name:
+            description: remote site name
+            type: string
+            minLength: 4
+            example: Site 03
+          alarm_name:
+            description: unique alarm name
+            type: string
+            minLength: 4
+            example: tunnel-failure
+          alarm_description:
+            description: human readable alarm name
+            type: string
+            minLength: 4
+            example: Tunnel Failure
+          details:
+            description: specific details about the alarm
+            type: string
+            minLength: 4
+            example: No other appliance in local site
+          severity:
+            description: severity of the alarm
+            type: string
+            minLength: 4
+            example: critical
+          layer:
+            description: category
+            type: string
+            minLength: 4
+            example: Underlay
+          state:
+            description: status of the alarm
+            type: string
+            minLength: 4
+            example: cleared
+    ViewAlarmsResponsePaged:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            allOf:
+            - $ref: '#/components/schemas/ViewAlarmsResponse'
   responses:
     ErrorResponse:
       description: The generic ExtremeCloud IQ API error response
@@ -19177,6 +20957,83 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/XiqError'
+    400BadRequestError:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Error'
+            - type: object
+              properties:
+                violations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                      message:
+                        type: string
+          example:
+            status: 400
+            title: Bad Request
+            detail: Constraint Violation
+            violations:
+            - field: id
+              message: may not be null
+            - field: name
+              message: may not be empty
+    401UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 401
+            title: Unauthorized
+            detail: You are not authenticated
+    403ForbiddenError:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 403
+            title: Forbidden
+            detail: Resource not authorized
+    404NotFoundError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 404
+            title: Not Found
+            detail: Resource not found
+    405MethodNotAllowedError:
+      description: Method Not Allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 405
+            title: Method Not Allowed
+            detail: Only POST is allowed
+    500InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 500
+            title: Internal Server Error
+            detail: Things are a little unstable
   securitySchemes:
     BearerAuth:
       type: http
@@ -19254,6 +21111,17 @@ components:
       schema:
         type: integer
         format: int64
+    XiqDeviceVlanPageLimit:
+      name: XiqDeviceVlanPageLimit
+      in: query
+      description: Page Size, min = 1, max = 4095
+      required: false
+      schema:
+        maximum: 4095
+        minimum: 1
+        type: integer
+        format: int32
+        default: 10
     deviceIds:
       name: deviceIds
       in: query
@@ -19478,7 +21346,7 @@ components:
       in: query
       description: The wired experience view type
       name: viewType
-      required: false
+      required: true
       schema:
         type: string
         enum:
@@ -19515,21 +21383,6 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/XiqClientType'
-    qualityIndex:
-      name: qualityIndex
-      in: query
-      description: The quality index score
-      required: false
-      schema:
-        $ref: '#/components/schemas/XiqQualityIndex'
-    viewId:
-      in: query
-      description: The location id
-      name: locationId
-      required: true
-      schema:
-        type: integer
-        format: int64
     ssid:
       in: query
       description: The ssid value
@@ -19682,3 +21535,9 @@ components:
       required: true
       schema:
         type: string
+  headers:
+    ExpiresAfter:
+      description: date in UTC when token expires
+      schema:
+        type: string
+        format: date-time
