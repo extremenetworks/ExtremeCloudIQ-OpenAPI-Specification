@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: ' 24.1.0.65'
+  version: 24.2.0.39
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -2826,6 +2826,242 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /devices/{id}/config/vlan-ipv4-intf:
+    get:
+      tags:
+      - Device
+      summary: Get IPv4 Interfaces for a device
+      description: Get the IPv4 Interfaces for a specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_configure_ipv4_interfaces
+      operationId: getDeviceIpv4Interfaces
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqDeviceConfigureIpv4Interfaces'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Device
+      summary: Create an IPv4 Interface for a device
+      description: Create the IPv4 Interface for a specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_configure_ipv4_interface
+      operationId: createDeviceIpv4Interface
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The payload to create a new IPv4 Interface attributes entry
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqDeviceCreateConfigureIpv4Interface'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDeviceConfigureIpv4InterfacesResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Device
+      summary: Delete one or more IPv4 Interfaces
+      description: Delete one or more IPv4 Interfaces and the static routes related to these interfaces via nex hop ip.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_configure_ipv4_interfaces
+      operationId: deleteDeviceIpv4Interfaces
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - name: interfaceIds
+        in: query
+        description: IPv4 Interfaces IDs of the entries to be deleted
+        required: true
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/config/vlan-ipv4-intf/{ipv4InterfaceId}:
+    patch:
+      tags:
+      - Device
+      summary: Update an IPv4 Interface for a device
+      description: Update attributes of a IPv4 Interface for the specific device. Returns the updated entry.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_device_ipv4_interface
+      operationId: updateDeviceIpv4Interface
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - name: ipv4InterfaceId
+        in: path
+        description: IPv4 Interface ID of the entry to be updated
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: The payload to update a IPv4 Interface attributes entry
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqDeviceUpdateConfigureIpv4Interface'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDeviceConfigureIpv4InterfacesResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/config/vlan-ipv4-static:
+    get:
+      tags:
+      - Device
+      summary: Get IPv4 Static Routes for a device
+      description: Get the IPv4 Static Routes for a specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_configure_ipv4_static_routes
+      operationId: getDeviceIpv4StaticRoutes
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqDeviceConfigureIpv4StaticRoutes'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Device
+      summary: Create an IPv4 Static Route for a device
+      description: Create the IPv4 Static Route for a specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_configure_ipv4_static_route
+      operationId: createDeviceIpv4StaticRoute
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The payload to create a new IPv4 Static Route attributes entry
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqDeviceCreateConfigureIpv4StaticRoute'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDeviceUpdateConfigureIpv4StaticRoute'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Device
+      summary: Delete one or more IPv4 Static Routes for a device
+      description: Delete one or more IPv4 Static Routes for a specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_configure_ipv4_static_routes
+      operationId: deleteDeviceIpv4StaticRoutes
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - name: staticRouteIds
+        in: query
+        description: IPv4 Static IDs of the entries to be deleted
+        required: true
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/config/vlan-ipv4-static/{ipv4StaticRouteId}:
+    patch:
+      tags:
+      - Device
+      summary: Update an IPv4 Static Route for a device
+      description: Update attributes of a IPv4 Static Route for the specific device. Returns the updated entry.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_device_ipv4_static_route
+      operationId: updateDeviceIpv4StaticRoute
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - name: ipv4StaticRouteId
+        in: path
+        description: IPv4 Static Route ID of the entry to be updated
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: The payload to update a IPv4 Static Route attributes entry
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqDeviceCreateConfigureIpv4StaticRoute'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDeviceUpdateConfigureIpv4StaticRoute'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /devices/{id}/monitor/vlan-attr:
     get:
       tags:
@@ -2854,6 +3090,111 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PagedXiqDeviceMonitorVlanAttributes'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/monitor/vlan-ipv4-intf:
+    get:
+      tags:
+      - Device
+      summary: Get IPv4 Interfaces for all VLANs on a device
+      description: Get the IPv4 Interfaces for each VLAN on a specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_vlan_monitor_ipv4_interfaces
+      operationId: getDeviceVlanIpv4Interfaces
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/XiqDeviceVlanIpv4InterfacesPageLimit'
+      - name: sortField
+        in: query
+        description: The sort field
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqDeviceVlanIpv4InterfacesSortField'
+      - $ref: '#/components/parameters/order'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqDeviceMonitorVlanIpv4Interfaces'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/monitor/ipv4-routing:
+    get:
+      tags:
+      - Device
+      summary: Get IPv4 Routing information on a device
+      description: Get the IPv4 Routing information on a specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_monitor_ipv4_routing
+      operationId: getDeviceIpv4Routing
+      parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/XiqDeviceIpv4RoutePageLimit'
+      - name: sortField
+        in: query
+        description: The sort field
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqDeviceIpv4RoutingSortField'
+      - $ref: '#/components/parameters/order'
+      - name: vlanId
+        in: query
+        description: The VLAN id
+        schema:
+          type: integer
+          format: int32
+      - name: routeOrigin
+        in: query
+        description: The Route Origin - 1 - DIRECT, 2 - STATIC, 3 - OSPF
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqDeviceIpv4RoutingRouteOriginField'
+      - name: status
+        in: query
+        description: The Status of the route - 1 - UP, 2 - DOWN
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqDeviceIpv4RoutingStatusField'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqDeviceMonitorIpv4Routing'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/monitor/ipv4-routing-timeline:
+    get:
+      tags:
+      - Device
+      summary: Get IPv4 Routing timeline info per RI on device
+      description: Get IPv4 Routing Summary timeline info per Routing Instance on specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_monitor_ipv4_routing_timeline
+      operationId: getDeviceIpv4RoutingTimeline
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDeviceMonitorIpv4RoutingTimeline'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -12080,6 +12421,74 @@ components:
           type: integer
           description: The beacon network policy ID.
           format: int64
+    XiqDeviceVlanAttrDhcpSnoopingAction:
+      type: string
+      enum:
+      - NONE
+      - DROP_PACKET
+    XiqDeviceBaseVlanAttributes:
+      type: object
+      description: The payload of a VLAN attribute object
+      properties:
+        name:
+          type: string
+          description: Name of the VLAN
+        dhcp_snooping_enabled:
+          type: boolean
+          description: Whether dhcp snooping is enabled on this VLAN
+        dhcp_snooping_action:
+          type: object
+          $ref: '#/components/schemas/XiqDeviceVlanAttrDhcpSnoopingAction'
+          description: Action to take when rogue DHCP packets are detected when dhcp snooping is enabled.
+        igmp_snooping_enabled:
+          type: boolean
+          description: Whether igmp snooping is enabled on this VLAN
+        immediate_leave:
+          type: boolean
+          description: When enabled, the multicast host is removed immediately if it leaves the group. Applicable when igmp snooping is enabled.
+        always_create:
+          type: boolean
+          description: Whether the VLAN should be created even if not assigned to any port
+    XiqDeviceVlanAttributes:
+      allOf:
+      - type: object
+        description: The payload of a VLAN attribute object
+        properties:
+          vlan_id:
+            type: integer
+            description: The VLAN ID
+            format: int32
+      - $ref: '#/components/schemas/XiqDeviceBaseVlanAttributes'
+    PagedXiqDeviceVlanAttributes:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqDeviceVlanAttributes'
+    XiqDeviceCreateVlanAttributes:
+      allOf:
+      - type: object
+        description: The payload of a VLAN attribute object
+        required:
+        - vlan_id
+        - name
+        - dhcp_snooping_enabled
+        - igmp_snooping_enabled
+        - always_create
+        properties:
+          vlan_id:
+            type: integer
+            description: The VLAN ID
+            format: int32
+      - $ref: '#/components/schemas/XiqDeviceBaseVlanAttributes'
+    XiqDeviceUpdateVlanAttributes:
+      allOf:
+      - $ref: '#/components/schemas/XiqDeviceBaseVlanAttributes'
+      - minProperties: 1
     XiqDigitalTwinProducts:
       type: object
       description: The Digital Twin product information.
@@ -12160,6 +12569,301 @@ components:
         properties:
           data:
             $ref: '#/components/schemas/XiqBounceDevicePortData'
+    XiqDeviceGatewayIpType:
+      type: string
+      enum:
+      - FIRST
+      - LAST
+    XiqDeviceDhcpServiceType:
+      type: string
+      enum:
+      - DHCP_RELAY_AGENT
+      - DHCP_SERVER
+    XiqDeviceDhcpPlatform:
+      type: string
+      enum:
+      - SWITCH_ENGINE_OR_FABRIC_ENGINE
+      - XR_OR_AP
+    XiqDeviceDhcpRelay:
+      type: object
+      description: DHCP relay agent and server.
+      required:
+      - name
+      - service_type
+      - platform
+      properties:
+        id:
+          type: integer
+          description: The DHCP relay agent and server ID
+          format: int64
+        name:
+          type: string
+          description: Name of DHCP relay agent or server
+        description:
+          type: string
+          description: Description of DHCP relay agent or server
+        service_type:
+          type: object
+          $ref: '#/components/schemas/XiqDeviceDhcpServiceType'
+          description: Service type DHCP Agent or DHCP Server
+        platform:
+          type: object
+          $ref: '#/components/schemas/XiqDeviceDhcpPlatform'
+          description: Platform type selection XR / AP or VOSS / EXOS
+        primary_server:
+          type: string
+          description: Primary Ip server of DHCP agent
+        secondary_server:
+          type: string
+          description: Secondary Ip server of DHCP agent
+    XiqDeviceSubnetworkIpv4:
+      type: object
+      description: The IPv4 Subnetwork Interface that is configured on the device.
+      required:
+      - name
+      - ip_addr_space
+      - gateway_ip_type
+      - vlan_profile
+      - clients_number
+      properties:
+        id:
+          type: integer
+          description: The IPv4 Subnetwork Interface ID
+          format: int64
+        name:
+          type: string
+          description: Subnetwork name
+        description:
+          type: string
+          description: Subnetwork description
+        ip_addr_space:
+          type: string
+          description: Subnetwork Ipv4 address
+        gateway_ip_type:
+          type: object
+          $ref: '#/components/schemas/XiqDeviceGatewayIpType'
+          description: Subnetwork gateway type first or last IP address available
+        vlan_profile:
+          type: string
+          description: VLAN profile ID
+        enable_dhcp:
+          type: boolean
+          description: Enable DHCP relay server
+        dhcp_relay:
+          $ref: '#/components/schemas/XiqDeviceDhcpRelay'
+        clients_number:
+          type: integer
+          description: Number of clients available for subnetwork
+          format: int64
+    XiqDeviceConfigureIpv4InterfacesInfo:
+      type: object
+      description: The IPv4 Interface that is configured on the device.
+      properties:
+        subnetwork:
+          $ref: '#/components/schemas/XiqDeviceSubnetworkIpv4'
+        vlan_attribute:
+          $ref: '#/components/schemas/XiqDeviceVlanAttributes'
+        ip_address:
+          type: string
+          description: The IPv4 address set on the interface
+        routing_instance:
+          type: string
+          description: The Routing Instance
+        enable_forwarding:
+          type: boolean
+          description: Indicates whether or not IPv4 is forwarding on the VLAN
+        enable_vlan_loopback:
+          type: boolean
+          description: Indicates whether or not Vlan Loopback is enabled on the interface
+        use_ip_addr_as_ospf_router_id:
+          type: boolean
+          description: Indicates whether or not to use ip address as ospf router id on the interface
+        override_dhcp_relay:
+          type: boolean
+          description: Indicates whether or not to override DHCP relay on the interface
+        enable_dhcp:
+          type: boolean
+          description: Indicates whether or not to enable DHCP relay on the interface if override DHCP relay is enabled
+        primary_dhcp_server:
+          type: string
+          description: Primary DHCP Server can be set if DHCP is enabled
+        secondary_dhcp_server:
+          type: string
+          description: Secondary DHCP Server can be set if DHCP is enabled
+    XiqDeviceConfigureIpv4Interface:
+      allOf:
+      - type: object
+        description: The payload of a IPv4 Interface
+        properties:
+          ipv4_interface_id:
+            type: integer
+            description: The IPv4 Interface ID
+            format: int64
+      - $ref: '#/components/schemas/XiqDeviceConfigureIpv4InterfacesInfo'
+    PagedXiqDeviceConfigureIpv4Interfaces:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqDeviceConfigureIpv4Interface'
+    XiqDeviceConfigureIpv4InterfacesRequest:
+      type: object
+      description: The IPv4 Interface Request that is configured on the device.
+      properties:
+        ip_address:
+          type: string
+          description: The IPv4 address set on the interface
+        routing_instance:
+          type: string
+          description: The Routing Instance
+        enable_forwarding:
+          type: boolean
+          description: Indicates whether or not IPv4 is forwarding on the VLAN
+        enable_vlan_loopback:
+          type: boolean
+          description: Indicates whether or not Vlan Loopback is enabled on the interface
+        use_ip_addr_as_ospf_router_id:
+          type: boolean
+          description: Indicates whether or not to use ip address as ospf router id on the interface
+        override_dhcp_relay:
+          type: boolean
+          description: Indicates whether or not to override DHCP relay on the interface
+        enable_dhcp:
+          type: boolean
+          description: Indicates whether or not to enable DHCP relay on the interface if override DHCP relay is enabled
+        primary_dhcp_server:
+          type: string
+          description: Primary DHCP Server can be set if DHCP is enabled
+        secondary_dhcp_server:
+          type: string
+          description: Secondary DHCP Server can be set if DHCP is enabled
+    XiqDeviceCreateConfigureIpv4Interface:
+      allOf:
+      - type: object
+        description: The payload of a IPv4 Interface
+        required:
+        - ip_address
+        properties:
+          vlan_id:
+            type: integer
+            description: VLAN attribute ID
+            format: int32
+      - $ref: '#/components/schemas/XiqDeviceConfigureIpv4InterfacesRequest'
+    XiqDeviceConfigureIpv4InterfacesResponse:
+      allOf:
+      - type: object
+        description: The payload of a IPv4 Interface
+        required:
+        - subnetwork_id
+        - vlan_attribute
+        - ip_address
+        - ipv4_interface_id
+        properties:
+          subnetwork_id:
+            type: integer
+            description: Subnetwork ID
+            format: int64
+          ipv4_interface_id:
+            type: integer
+            description: IPv4 Interface ID
+            format: int64
+          vlan_attribute:
+            $ref: '#/components/schemas/XiqDeviceVlanAttributes'
+      - $ref: '#/components/schemas/XiqDeviceConfigureIpv4InterfacesRequest'
+      - minProperties: 1
+    XiqDeviceUpdateConfigureIpv4Interface:
+      allOf:
+      - type: object
+        description: The payload of a IPv4 Interface
+        required:
+        - subnetwork_id
+        - vlan_profile
+        - ip_address
+        properties:
+          subnetwork_id:
+            type: integer
+            description: Subnetwork ID
+            format: int64
+          vlan_id:
+            type: integer
+            description: VLAN attribute ID
+            format: int32
+      - $ref: '#/components/schemas/XiqDeviceConfigureIpv4InterfacesRequest'
+      - minProperties: 1
+    XiqDeviceConfigureIpv4StaticRoutesInfo:
+      type: object
+      description: The IPv4 Static Route that is configured on the device.
+      properties:
+        name:
+          type: string
+          description: Name of the static route
+        dest_subnetwork:
+          type: string
+          description: Destination subnetwork IP and mask
+        next_hop_ip:
+          type: string
+          description: Next hop IP
+        next_hop_ip_ping_protection:
+          type: boolean
+          description: Next hop IP ping protection
+        metric:
+          type: integer
+          description: Metric set up on a static route
+          format: int32
+        routing_instance:
+          type: string
+          description: The Routing Instance
+    XiqDeviceConfigureIpv4StaticRoute:
+      allOf:
+      - type: object
+        description: The payload of a IPv4 Static Route
+        properties:
+          ipv4_static_route_id:
+            type: integer
+            description: The IPv4 Static Route ID
+            format: int64
+      - $ref: '#/components/schemas/XiqDeviceConfigureIpv4StaticRoutesInfo'
+    PagedXiqDeviceConfigureIpv4StaticRoutes:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqDeviceConfigureIpv4StaticRoute'
+    XiqDeviceCreateConfigureIpv4StaticRoute:
+      allOf:
+      - type: object
+        description: The payload of a IPv4 Static Route
+        required:
+        - name
+        - dest_subnetwork
+        - next_hop_ip
+        - metric
+      - $ref: '#/components/schemas/XiqDeviceConfigureIpv4StaticRoutesInfo'
+    XiqDeviceUpdateConfigureIpv4StaticRoute:
+      allOf:
+      - type: object
+        description: The payload of a IPv4 Interface
+        required:
+        - ipv4_static_route_id
+        - name
+        - dest_subnetwork
+        - next_hop_ip
+        - metric
+        properties:
+          ipv4_static_route_id:
+            type: integer
+            description: The IPv4 Static Route ID
+            format: int64
+      - $ref: '#/components/schemas/XiqDeviceConfigureIpv4StaticRoutesInfo'
+      - minProperties: 1
     XiqDeviceVlanSortField:
       type: string
       description: All available VLAN Attributes sort fields for a device<br/><br/> VLAN_ID = VLAN ID<br/> ACTIVE_PORTS = Number of total active ports in the VLAN<br/> IGMP_SNOOPING_ENABLED = Disabled or Enabled<br/> DHCP_SNOOPING_ENABLED = Disabled or Enabled<br/> STP_INSTANCE = STP Instance name
@@ -12267,6 +12971,282 @@ components:
             description: The data in the current page for VLAN attributes
             items:
               $ref: '#/components/schemas/XiqDeviceMonitorVlanAttributes'
+    XiqDeviceVlanIpv4InterfacesSortField:
+      type: string
+      description: All available VLAN IPv4 Interfaces sort fields for a device<br/><br/> VLAN_ID = VLAN ID<br/> IPV4_FORWARDING_ENABLED = Indicates if IPv4 Forwarding is enabled or not on the IPv4 interface<br/> ROUTING_INSTANCE = The Routing instance of the IPv4 interface<br/> IPV4_ADDRESS = IPv4 Address of the interface<br/> IPV4_SUBNET = IPv4 subnet of the interface
+      enum:
+      - VLAN_ID
+      - IPV4_FORWARDING_ENABLED
+      - ROUTING_INSTANCE
+      - IPV4_ADDRESS
+      - IPV4_SUBNET
+    XiqDeviceMonitorVlanIpv4InterfacesDetails:
+      type: object
+      description: The IPv4 Interfaces that are monitored per VLAN on the device.
+      required:
+      - vlan_id
+      properties:
+        vlan_id:
+          type: integer
+          description: The VLAN ID
+          format: int32
+        vlan_name:
+          type: string
+          description: The VLAN Name
+        ipv4_forwarding_enabled:
+          type: boolean
+          description: Indicates whether or not IPv4 is forwarding on the VLAN
+        routing_instance:
+          type: string
+          description: The Routing instance name where the IPv4 interface is configured
+        ipv4_address:
+          type: string
+          description: The IPv4 Address
+        ipv4_subnet:
+          type: string
+          description: The IPv4 Subnet
+        member_ports:
+          type: array
+          description: The member ports in the VLAN
+          items:
+            type: string
+            description: The member ports in the VLAN
+        tagged_ports:
+          type: array
+          description: The tagged ports in the VLAN
+          items:
+            type: string
+            description: The tagged ports in the VLAN
+        untagged_ports:
+          type: array
+          description: The untagged ports in the VLAN
+          items:
+            type: string
+            description: The untagged ports in the VLAN
+        non_forwarding_vlan_enabled:
+          type: boolean
+          description: Indicates whether or not this VLAN is a Non-Forwarding VLAN (learning VLAN)
+    XiqDeviceMonitorVlanIpv4Interfaces:
+      type: object
+      description: The VLAN IPv4 Interfaces information for the device.
+      required:
+      - earliest_refresh_time
+      - latest_refresh_time
+      - latest_refresh_timestamp
+      - vlan_ipv4_interfaces_details
+      properties:
+        earliest_refresh_time:
+          type: string
+          description: The time of the earliest refresh of VLAN IPv4 Interfaces information from the device
+        latest_refresh_time:
+          type: string
+          description: The time of the latest refresh of VLAN IPv4 Interfaces information from the device
+        latest_refresh_timestamp:
+          type: integer
+          description: The latest successful refresh timestamp of VLAN IPv4 Interfaces information from the device
+          format: int64
+        vlan_ipv4_interfaces_details:
+          type: array
+          description: The IPv4 Interfaces monitored per VLAN from the device
+          items:
+            $ref: '#/components/schemas/XiqDeviceMonitorVlanIpv4InterfacesDetails'
+    PagedXiqDeviceMonitorVlanIpv4Interfaces:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page for VLAN IPv4 Interfaces
+            items:
+              $ref: '#/components/schemas/XiqDeviceMonitorVlanIpv4Interfaces'
+    XiqDeviceIpv4RoutingSortField:
+      type: string
+      description: All available IPv4 Routing sort fields for a device<br/><br/> DESTINATION = IPv4 Route Destination<br/> NEXTHOP = Nexthop of the IPv4 Route Destination<br/> VLAN_NAME = VLAN Name of the IPv4 Route<br/> VLAN_ID = VLAN ID of the IPv4 Route<br/> ROUTE_ORIGIN = The route origin of the IPv4 Route<br/> STATUS = The status of the IPv4 Route<br/> METRIC = The metric of the IPv4 Route<br/> AGE = The age of the IPv4 route<br/> ROUTE_TYPE_PRIORITY = The route type priority of the IPv4 Route<br/> ROUTING_INSTANCE = The Routing Instance of the IPv4 Route
+      enum:
+      - DESTINATION
+      - NEXTHOP
+      - VLAN_NAME
+      - VLAN_ID
+      - ROUTE_ORIGIN
+      - STATUS
+      - METRIC
+      - AGE
+      - ROUTE_TYPE_PRIORITY
+      - ROUTING_INSTANCE
+    XiqDeviceIpv4RoutingRouteOriginField:
+      type: string
+      description: All available Route origin types for a route on a device<br/><br/> DIRECT = Direct Routes<br/> STATIC = Static Routes<br/> OSPF = OSPF Routes
+      enum:
+      - DIRECT
+      - STATIC
+      - OSPF
+    XiqDeviceIpv4RoutingStatusField:
+      type: string
+      description: All available Status types for a route on a device<br/><br/> UP = Routes that have up status<br/> DOWN = Routes that have down status
+      enum:
+      - UP
+      - DOWN
+    XiqDeviceMonitorIpv4RoutingInfoNexthop:
+      type: object
+      description: The Neighbor information for an IPv4 Route.
+      required:
+      - nexthop_ipv4_address
+      properties:
+        nexthop_ipv4_address:
+          type: string
+          description: The nexthop IPv4 address of the IPv4 route
+        nexthop_device_id:
+          type: integer
+          description: Device id of the Nexthop
+          format: int64
+        nexthop_host_name:
+          type: string
+          description: The host name of the Nexthop
+        ping_protection_enabled:
+          type: boolean
+          description: Indicates whether or not ping route protection is enabled for Static Routes
+        ping_protection_state:
+          type: string
+          description: The state of the IPv4 ping protection gateway
+        ping_protection_last_uptime:
+          type: string
+          description: The last time the gateway transitioned to the UP state
+        ping_protection_last_downtime:
+          type: string
+          description: The last time the gateway transitioned to the DOWN state
+    XiqDeviceMonitorIpv4RoutingDetails:
+      type: object
+      description: The IPv4 Routing details information that is monitored on the device.
+      required:
+      - destination
+      properties:
+        destination:
+          type: string
+          description: The IPv4 route destination (IPv4 address/masklength)
+        nexthop:
+          type: object
+          $ref: '#/components/schemas/XiqDeviceMonitorIpv4RoutingInfoNexthop'
+          description: The IPv4 address of the nexthop for the IPv4 route
+        vlan_id:
+          type: integer
+          description: The VLAN ID
+          format: int32
+        vlan_name:
+          type: string
+          description: The VLAN Name
+        route_origin:
+          type: string
+          description: The route type (Static, OSPF, VRRP, Direct, etc.)
+        status:
+          type: string
+          description: The status of the IPv4 route (Unknown, Inactive, Active)
+        metric:
+          type: integer
+          description: The metric of the Route
+          format: int32
+        age:
+          type: integer
+          description: The number of seconds since this route was last updated or otherwise determined to be correct.
+          format: int32
+        route_type_priority:
+          type: string
+          description: The priority of the IPv4 Route based on route type
+        routing_instance:
+          type: string
+          description: The Routing instance name of the IPv4 Route
+    XiqDeviceMonitorIpv4Routing:
+      type: object
+      description: The IPv4 Routing information for the device.
+      required:
+      - earliest_refresh_time
+      - latest_refresh_time
+      - latest_refresh_timestamp
+      - ipv4_routing_details
+      properties:
+        earliest_refresh_time:
+          type: string
+          description: The time of the earliest refresh of IPv4 Routing information from the device
+        latest_refresh_time:
+          type: string
+          description: The time of the latest refresh of IPv4 Routing information from the device
+        latest_refresh_timestamp:
+          type: integer
+          description: The latest successful refresh timestamp of IPv4 Routing information from the device
+          format: int64
+        ipv4_routing_details:
+          type: array
+          description: The IPv4 Routing information monitored from the device
+          items:
+            $ref: '#/components/schemas/XiqDeviceMonitorIpv4RoutingDetails'
+    PagedXiqDeviceMonitorIpv4Routing:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page for IPv4 Routing
+            items:
+              $ref: '#/components/schemas/XiqDeviceMonitorIpv4Routing'
+    XiqDeviceMonitorIpv4RoutingTimelineInfo:
+      type: object
+      description: The IPv4 Routing timeline information that is monitored on the device.
+      properties:
+        static_routes_count:
+          type: integer
+          description: The number of Static routes
+          format: int32
+        direct_routes_count:
+          type: integer
+          description: The number of Direct routes
+          format: int32
+        ospf_routes_count:
+          type: integer
+          description: The number of OSPF routes
+          format: int32
+        total_routes_count:
+          type: integer
+          description: The total number of routes
+          format: int32
+        timestamp:
+          type: integer
+          description: The timestamp for when route information was collected
+          format: int64
+        routingInstance:
+          type: string
+          description: The Routing instance name for the routing timeline information
+    XiqDeviceMonitorIpv4RoutingTimeline:
+      type: object
+      description: The IPv4 Routing timeline information for the device.
+      required:
+      - ipv4_routing_timelines
+      properties:
+        response_code:
+          type: integer
+          description: The response code
+          format: int32
+        range_start_time:
+          type: integer
+          description: The range start time
+          format: int64
+        range_stop_time:
+          type: integer
+          description: The range stop time
+          format: int64
+        updated:
+          type: integer
+          description: The time last updated
+          format: int64
+        precision:
+          type: integer
+          description: The precision value
+          format: int64
+        ipv4_routing_timelines:
+          type: array
+          description: The IPv4 Routing Summary timeline information per Routing Instance monitored from the device
+          items:
+            $ref: '#/components/schemas/XiqDeviceMonitorIpv4RoutingTimelineInfo'
     XiqDeviceInstallationReportResponse:
       type: object
       description: The device installation response
@@ -12432,74 +13412,6 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqRadioEntity'
-    XiqDeviceVlanAttrDhcpSnoopingAction:
-      type: string
-      enum:
-      - NONE
-      - DROP_PACKET
-    XiqDeviceBaseVlanAttributes:
-      type: object
-      description: The payload of a VLAN attribute object
-      properties:
-        name:
-          type: string
-          description: Name of the VLAN
-        dhcp_snooping_enabled:
-          type: boolean
-          description: Whether dhcp snooping is enabled on this VLAN
-        dhcp_snooping_action:
-          type: object
-          $ref: '#/components/schemas/XiqDeviceVlanAttrDhcpSnoopingAction'
-          description: Action to take when rogue DHCP packets are detected when dhcp snooping is enabled.
-        igmp_snooping_enabled:
-          type: boolean
-          description: Whether igmp snooping is enabled on this VLAN
-        immediate_leave:
-          type: boolean
-          description: When enabled, the multicast host is removed immediately if it leaves the group. Applicable when igmp snooping is enabled.
-        always_create:
-          type: boolean
-          description: Whether the VLAN should be created even if not assigned to any port
-    XiqDeviceVlanAttributes:
-      allOf:
-      - type: object
-        description: The payload of a VLAN attribute object
-        properties:
-          vlan_id:
-            type: integer
-            description: The VLAN ID
-            format: int32
-      - $ref: '#/components/schemas/XiqDeviceBaseVlanAttributes'
-    PagedXiqDeviceVlanAttributes:
-      allOf:
-      - $ref: '#/components/schemas/XiqPage'
-      - type: object
-        properties:
-          data:
-            type: array
-            description: The data in the current page
-            items:
-              $ref: '#/components/schemas/XiqDeviceVlanAttributes'
-    XiqDeviceCreateVlanAttributes:
-      allOf:
-      - type: object
-        description: The payload of a VLAN attribute object
-        required:
-        - vlan_id
-        - name
-        - dhcp_snooping_enabled
-        - igmp_snooping_enabled
-        - always_create
-        properties:
-          vlan_id:
-            type: integer
-            description: The VLAN ID
-            format: int32
-      - $ref: '#/components/schemas/XiqDeviceBaseVlanAttributes'
-    XiqDeviceUpdateVlanAttributes:
-      allOf:
-      - $ref: '#/components/schemas/XiqDeviceBaseVlanAttributes'
-      - minProperties: 1
     XiqWgs84:
       type: object
       required:
@@ -21118,6 +22030,28 @@ components:
       required: false
       schema:
         maximum: 4095
+        minimum: 1
+        type: integer
+        format: int32
+        default: 10
+    XiqDeviceVlanIpv4InterfacesPageLimit:
+      name: XiqDeviceVlanIpv4InterfacesPageLimit
+      in: query
+      description: Page Size, min = 1, max = 2048
+      required: false
+      schema:
+        maximum: 2048
+        minimum: 1
+        type: integer
+        format: int32
+        default: 10
+    XiqDeviceIpv4RoutePageLimit:
+      name: XiqDeviceIpv4RoutePageLimit
+      in: query
+      description: Page Size, min = 1, max = 300
+      required: false
+      schema:
+        maximum: 300
         minimum: 1
         type: integer
         format: int32
