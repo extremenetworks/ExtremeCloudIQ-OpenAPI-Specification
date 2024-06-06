@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 24.3.1.2
+  version: 24.4.0.61
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -508,6 +508,154 @@ paths:
       responses:
         '200':
           description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /account/export:
+    post:
+      tags:
+      - Account
+      summary: Create VIQ export data
+      description: Export VIQ reports.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_viq_export_report
+      operationId: viqExportReport
+      parameters:
+      - name: timeoutInSeconds
+        in: query
+        description: The maximum export duration
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: excludeDeviceFirmware
+        in: query
+        description: Whether exclude device firmwares from VIQ export file or not
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqViqExportReport'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /account/import:
+    post:
+      tags:
+      - Account
+      summary: Import VIQ details from a file
+      description: Import Viq details.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_viq_import
+      operationId: viqImport
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  description: The import file to import VIQ data(.tar/.tar.gz)
+                  format: binary
+        required: true
+      parameters:
+      - name: timeoutInSeconds
+        in: query
+        description: The maximum import duration
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: resendUserNotifications
+        in: query
+        description: Resend Cloud PPSK/RADIUS password through email/SMS.
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqViqImportReport'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /account/download:
+    get:
+      tags:
+      - Account
+      summary: Download VIQ reports or logs
+      description: Download VIQ exports reports and export or import logs.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_viq_reports_download
+      operationId: downloadViqReports
+      parameters:
+      - name: reportName
+        in: query
+        description: The name of the report
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: byte
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /account/export-import-status:
+    get:
+      tags:
+      - Account
+      summary: Status of VIQ export/import operation
+      description: Check the current VIQ export or import status.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_viq_export_import_status
+      operationId: exportImportStatus
+      parameters:
+      - name: reportName
+        in: query
+        description: The name of the report
+        required: true
+        schema:
+          type: string
+      - name: statusType
+        in: query
+        description: The operation type- export or import
+        required: true
+        schema:
+          type: string
+          items:
+            $ref: '#/components/schemas/XiqViqStatusType'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqViqExportImportResponse'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -2755,6 +2903,75 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqDeviceIbeacon'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/iot:
+    get:
+      tags:
+      - Device
+      summary: Get the device IoT Wireless Interface settings
+      description: Get the device IoT profile Wireless Interface settings by device ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_iot
+      operationId: getDeviceIot
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDeviceIot'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/iot/:enable:
+    post:
+      tags:
+      - Device
+      summary: Enable IoT Wireless Interface settings on device
+      description: Enable and attach IoT profile Wireless Interface settings by device ID and IoT profile ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_enable_and_attach_iot_on_device
+      operationId: enableIotOnDevice
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The IoT profile ID.
+        content:
+          application/json:
+            schema:
+              type: integer
+              format: int64
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/{id}/iot/:disable:
+    post:
+      tags:
+      - Device
+      summary: Disable IoT Wireless Interface settings on device
+      description: Disable and detach IoT profile Wireless Interface settings by device ID and IoT profile ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_disable_and_detach_iot_on_device
+      operationId: disableIotOnDevice
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -8686,6 +8903,18 @@ paths:
       parameters:
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
+      - name: appSupported
+        in: query
+        description: IoT profile app supported type
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqIotApplicationSupported'
+      - name: appId
+        in: query
+        description: IoT profile app ID type
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqIotApplicationId'
       responses:
         '200':
           description: OK
@@ -8947,6 +9176,34 @@ paths:
       responses:
         '200':
           description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /radio-operating-modes/{productType}:
+    get:
+      tags:
+      - Configuration - Policy
+      summary: Get AP Radio Operating Mode
+      description: "Modern AP hardware types include dual or triple band radios.\nA limited subset of band combinations are supported.\nOperating mode defines the supported band combinations per radio.    \nAccess Points with fixed band radios use GENERIC operating mode.  \nSERVICE_2_5_6:   wifi0-2.4Ghz, wifi1-5Ghz, wifi2-6Ghz\nSENSOR_SERVICE_5_6: wifi0-Tri-band sensor, wifi1-5Ghz, wifi2-6Ghz\nSERVICE_5L_5H_6: wifi0-5G Low, wifi1-5G High, wifi2-6Ghz\nSENSOR_SERVICE_5_2: wifi0-Tri-band sensor, wifi1-5GHz, wifi2-2.4Ghz\nSERVICE_5L_5H_2: wifi0-5G Low, wifi1-5G High, wifi2-2.4Ghz\nSERVICE_6L_5_6H: wifi0-6G Low, wifi1-5GHz, wifi2-6Ghz."
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_operation_mode
+      operationId: getDeviceOperationMode
+      parameters:
+      - name: productType
+        in: path
+        description: Product/AP Model
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDeviceRadioModesSettings'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -10266,6 +10523,8 @@ paths:
       - $ref: '#/components/parameters/locationId'
       - $ref: '#/components/parameters/searchKey'
       - $ref: '#/components/parameters/clientType'
+      - $ref: '#/components/parameters/qualityIndex'
+      - $ref: '#/components/parameters/forensicBucket'
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
       - $ref: '#/components/parameters/sortField'
@@ -10276,7 +10535,35 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/XiqCopilotConnectivityExperience'
+                $ref: '#/components/schemas/XiqCopilotConnectivityByLocations'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/connectivity/client-type:
+    get:
+      tags:
+      - Copilot - Connectivity Experience
+      summary: Get Connectivity By Client Type
+      description: Get Connectivity details by client type in the widgets.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_connectivity_by_client_type
+      operationId: getConnectivityDetailsByClientType
+      parameters:
+      - $ref: '#/components/parameters/startTime'
+      - $ref: '#/components/parameters/endTime'
+      - $ref: '#/components/parameters/locationId'
+      - $ref: '#/components/parameters/clientType'
+      - $ref: '#/components/parameters/qualityIndex'
+      - $ref: '#/components/parameters/forensicBucket'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotConnectivityByClientType'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -10295,7 +10582,7 @@ paths:
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
       - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/locationId'
+      - $ref: '#/components/parameters/viewId'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
       responses:
@@ -10304,7 +10591,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/XiqCopilotWirelessQualityIndex'
+                $ref: '#/components/schemas/XiqCopilotWirelessQualityIndexByLocation'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -10323,7 +10610,7 @@ paths:
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
       - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/locationId'
+      - $ref: '#/components/parameters/viewId'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
       responses:
@@ -10351,7 +10638,7 @@ paths:
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
       - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/locationId'
+      - $ref: '#/components/parameters/viewId'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
       responses:
@@ -10385,7 +10672,7 @@ paths:
       - $ref: '#/components/parameters/wirelessScoreType'
       - $ref: '#/components/parameters/forensicBucket'
       - $ref: '#/components/parameters/searchKey'
-      - $ref: '#/components/parameters/locationId'
+      - $ref: '#/components/parameters/viewId'
       - $ref: '#/components/parameters/timestamp'
       - $ref: '#/components/parameters/ssid'
       - $ref: '#/components/parameters/osType'
@@ -10514,6 +10801,7 @@ paths:
       operationId: getCopilotPortEfficiencyDeviceStats
       parameters:
       - $ref: '#/components/parameters/anomalyId'
+      - $ref: '#/components/parameters/offsetTime'
       responses:
         '200':
           description: OK
@@ -10985,6 +11273,54 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /copilot/anomalies/poeflapping/trends:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get POE Flapping Anomaly Device Power Mode Trends
+      description: Get all the poe trends for anomalous device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_poe-flapping_trends
+      operationId: getPoeFlappingTrends
+      parameters:
+      - $ref: '#/components/parameters/anomalyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqPoeTrendGraphsResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/poeflapping/lldp-cdp-info:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get POE anomalous device lldp cdp Info details
+      description: Get LLDP-CDP information and location details for poe flapping anomalous devices.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_poe-flapping_lldp-cdp-info
+      operationId: getLldpCdpInfo
+      parameters:
+      - $ref: '#/components/parameters/anomalyId'
+      - $ref: '#/components/parameters/deviceId'
+      - $ref: '#/components/parameters/lastDetectedTime'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotLldpCdpInfo'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /packetcaptures:
     get:
       tags:
@@ -11228,8 +11564,7 @@ paths:
                 $ref: '#/components/schemas/XiqCountry'
         default:
           $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
+      security: []
   /countries/{countryCode}/:validate:
     get:
       tags:
@@ -11257,8 +11592,35 @@ paths:
                 type: boolean
         default:
           $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
+      security: []
+  /countries/{countryAlpha2Code}/states:
+    get:
+      tags:
+      - Misc
+      summary: Get state list in a country
+      description: Get list of states or provinces in a country with country alpha2 code.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_country_states
+      operationId: getStateListByCountryCode
+      parameters:
+      - name: countryAlpha2Code
+        in: path
+        description: The country ISO 2-letter code.
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                $ref: '#/components/schemas/XiqCountryState'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security: []
   /thread/networks:
     get:
       tags:
@@ -11952,6 +12314,74 @@ components:
         password:
           type: string
           description: The default device password
+    XiqViqExportReport:
+      type: object
+      description: ExtremeCloud IQ Viq Export data
+      properties:
+        export_status:
+          type: string
+          description: The viq export status
+        export_file_name:
+          type: string
+          description: The viq export report file name
+        log_file_name:
+          type: string
+          description: The viq export log file name
+    XiqViqImportReport:
+      type: object
+      description: ExtremeCloud IQ Viq Import data
+      properties:
+        import_status:
+          type: string
+          description: The viq import status
+        log_file_name:
+          type: string
+          description: The viq import log file name
+    XiqViqStatusType:
+      type: string
+      enum:
+      - EXPORT
+      - IMPORT
+    XiqViqTasks:
+      type: object
+      properties:
+        tesk:
+          type: string
+          description: The name of the task
+        finish_percentage:
+          type: integer
+          description: Task finish percentage
+          format: int64
+        detail:
+          type: string
+          description: Details of task
+        status:
+          type: string
+          description: Status of the task
+    XiqViqExportImportResponse:
+      type: object
+      properties:
+        user_name:
+          type: string
+          description: The user name of the user
+        vhm_id:
+          type: string
+          description: The VIQ ID
+        operation:
+          type: string
+          description: Type of Operation export/import
+        status:
+          type: string
+          description: Status of the request
+        total_finish_percentage:
+          type: integer
+          description: Total finish percentage of the operation
+          format: int64
+        task_progress:
+          type: array
+          description: The tasks list
+          items:
+            $ref: '#/components/schemas/XiqViqTasks'
     XiqPage:
       required:
       - count
@@ -12616,6 +13046,7 @@ components:
         description: The site information
         required:
         - name
+        - parent_id
         - country_code
         properties:
           parent_id:
@@ -13781,6 +14212,7 @@ components:
       enum:
       - WIFI0
       - WIFI1
+      - WIFI2
     XiqUpdateDeviceLevelSsidStatus:
       type: object
       description: The request for disable/enable device level ssid.
@@ -13893,6 +14325,391 @@ components:
           type: integer
           description: The beacon network policy ID.
           format: int64
+    XiqIotApplicationId:
+      type: string
+      enum:
+      - THREAD_GATEWAY
+      description: IoT application identifiers.
+    XiqIotApplicationSupported:
+      type: string
+      enum:
+      - SINGLE
+      - MULTI
+      description: IoT profile supported type.
+    XiqIotpTgWhiteListEntry:
+      type: object
+      required:
+      - long_eui
+      - pskd
+      properties:
+        long_eui:
+          oneOf:
+          - type: string
+            minLength: 16
+            maxLength: 16
+            pattern: ^[0-9a-fA-F]+$
+            description: The factory-assigned IEEE EUI-64. (16 hex digits). FFFFFFFFFFFFFFFF is reserved.
+          - type: string
+            pattern: ^\*$
+            description: Match any joiner.
+        pskd:
+          type: string
+          minLength: 6
+          maxLength: 32
+          description: 'The PSKd (Pre-Shared-Key for the Device) is the Joining Device Credential encoded using base32-thread. A Joining Device Credential is encoded as uppercase, alphanumeric characters (base32-thread: 0-9,A-Y excluding I,O,Q, and Z for readability)  with a minimum length of 6 such characters and a maximum length of 32 such characters.'
+          pattern: '[0-9ABCDEFGHJKLMNPRSTUVWXY]+'
+    XiqIotProfileThreadGateway:
+      type: object
+      required:
+      - name
+      - app_supported
+      properties:
+        app_id:
+          $ref: '#/components/schemas/XiqIotApplicationId'
+        app_supported:
+          $ref: '#/components/schemas/XiqIotApplicationSupported'
+        name:
+          type: string
+          description: The IoT profile name
+        threadGateway:
+          type: object
+          required:
+          - short_pan_id
+          - ext_pan_id
+          - master_key
+          - network_name
+          - channel
+          properties:
+            short_pan_id:
+              type: string
+              minLength: 4
+              maxLength: 4
+              pattern: ^[0-9a-fA-F]+$
+              description: The Personal Area Network (PAN) ID. (4 hex digits). FFFF is reserved.
+            ext_pan_id:
+              type: string
+              minLength: 16
+              maxLength: 16
+              pattern: ^[0-9a-fA-F]+$
+              description: The Extended Personal Area Network (PAN) ID. (16 hex digits)
+            master_key:
+              type: string
+              minLength: 32
+              maxLength: 32
+              pattern: ^[0-9a-fA-F]+$
+              description: The network key is used to secure access to the Thread network. It is used to encrypt and authenticate all messages on the network. (32 hex digits)
+            network_name:
+              type: string
+              minLength: 1
+              maxLength: 16
+              description: A human-readable name for the network, up to 16 bytes in length.
+            channel:
+              type: integer
+              minimum: 0
+              description: 802.15.4 channel number, 11-26
+            enable_nat64:
+              type: boolean
+              default: true
+              description: Enable NAT64 functions including the translator and the prefix publishing.
+            comm_credentials:
+              type: string
+              minLength: 6
+              maxLength: 255
+              pattern: ^.{6,255}$
+              description: The Commissioner Credential is used along with the Extended PAN ID, and Network Name to create the PSKc (Pre-Shared Key for the Commissioner).
+            comm_timeout:
+              type: integer
+              default: 120
+              minimum: 1
+              maximum: 2000000
+              description: After this timeout the Commissioner will shutdown. The default is 120 sec. but the max is approximately 23 days.
+            white_list:
+              type: array
+              items:
+                $ref: '#/components/schemas/XiqIotpTgWhiteListEntry'
+              description: The table of approved Thread end-devices.
+            default_user_profile_id:
+              type: integer
+              description: The default user-profile ID.
+              format: int64
+    XiqIotpMaBleBeaconAppType:
+      type: string
+      description: The BLE Beacon application type.
+      enum:
+      - IBEACON
+      - EDDYSTONE_URL
+    XiqIotpMaBleBeaconIBeacon:
+      type: object
+      required:
+      - app_type
+      - major
+      - minor
+      - uuid
+      properties:
+        app_type:
+          $ref: '#/components/schemas/XiqIotpMaBleBeaconAppType'
+        major:
+          maximum: 65535
+          minimum: 0
+          default: 0
+          type: integer
+          format: int32
+          description: BLE Beacon iBeacon application major value.
+        minor:
+          maximum: 65535
+          minimum: 0
+          default: 0
+          type: integer
+          format: int32
+          description: BLE Beacon iBeacon application minor value.
+        uuid:
+          type: string
+          default: 00000000-0000-0000-0000-000000000000
+          format: uuid
+          description: BLE Beacon iBeacon application UUID.
+        measured_rss:
+          maximum: 15
+          minimum: -120
+          default: -52
+          type: integer
+          format: int32
+          description: BLE Beacon iBeacon application measured Received Signal Strength value, in dBm.
+        advertise_interval:
+          maximum: 10240
+          minimum: 100
+          default: 500
+          type: integer
+          format: int32
+          description: BLE Beacon iBeacon application advertising interval value in milliseconds.
+        tx_power:
+          maximum: 3
+          minimum: -16
+          default: 3
+          type: integer
+          format: int32
+          description: BLE Beacon Eddystone-url transmit power, measured in dBm.
+    XiqIotpMaBleBeaconEddystoneUrl:
+      type: object
+      required:
+      - app_type
+      - url
+      properties:
+        app_type:
+          $ref: '#/components/schemas/XiqIotpMaBleBeaconAppType'
+        url:
+          type: string
+          maxLength: 34
+          format: uri
+          description: BLE Beacon Eddystone-url application URL.
+        measured_rss:
+          maximum: 15
+          minimum: -120
+          default: -30
+          type: integer
+          format: int32
+          description: BLE Beacon Eddystone-url application measured Received Signal Strength Indication value.
+        advertise_interval:
+          maximum: 10240
+          minimum: 100
+          default: 500
+          type: integer
+          format: int32
+          description: BLE Beacon Eddystone-url application advertising interval value in milliseconds.
+        tx_power:
+          maximum: 3
+          minimum: -16
+          default: 3
+          type: integer
+          format: int32
+          description: BLE Beacon Eddystone-url transmit power, measured in dBm.
+    XiqIotpMaBleBeaconApplication:
+      type: object
+      description: The BLE Beacon application
+      oneOf:
+      - $ref: '#/components/schemas/XiqIotpMaBleBeaconIBeacon'
+      - $ref: '#/components/schemas/XiqIotpMaBleBeaconEddystoneUrl'
+      discriminator:
+        propertyName: app_type
+        mapping:
+          IBEACON: '#/components/schemas/XiqIotpMaBleBeaconIBeacon'
+          EDDYSTONE_URL: '#/components/schemas/XiqIotpMaBleBeaconEddystoneUrl'
+    XiqIotpMaBleBeacon:
+      type: object
+      properties:
+        applications:
+          type: array
+          maxItems: 2
+          description: Collection of BLE Beacon applications
+          items:
+            $ref: '#/components/schemas/XiqIotpMaBleBeaconApplication'
+    XiqHttpServer:
+      type: object
+      required:
+      - url
+      properties:
+        url:
+          type: string
+          maxLength: 256
+          format: uri
+          description: The HTTP server URL.
+        interval:
+          maximum: 60
+          minimum: 1
+          default: 10
+          type: integer
+          format: int32
+          description: The HTTP server interval, in seconds.
+    XiqIotpMaBleScanDestination:
+      type: object
+      description: The BLE Scan destination.
+      properties:
+        http_server:
+          $ref: '#/components/schemas/XiqHttpServer'
+    XiqIotpMaBleScanAppType:
+      type: string
+      description: The BLE Scan application type.
+      enum:
+      - IBEACON
+      - EDDYSTONE_URL
+      - GENERIC
+    XiqIotpMaBleScanIBeacon:
+      type: object
+      required:
+      - app_type
+      properties:
+        app_type:
+          $ref: '#/components/schemas/XiqIotpMaBleScanAppType'
+        min_rss:
+          maximum: 20
+          minimum: -120
+          default: -100
+          type: integer
+          format: int32
+          description: BLE Scan iBeacon application minimum Received Signal Strength value, in dBm.
+        uuid:
+          type: string
+          default: 00000000-0000-0000-0000-000000000000
+          format: uuid
+          description: BLE Scan iBeacon application UUID. A value of "00000000-0000-0000-0000-000000000000" indicates no filtering is applied.
+    XiqIotpMaBleScanEddystoneUrl:
+      type: object
+      required:
+      - app_type
+      properties:
+        app_type:
+          $ref: '#/components/schemas/XiqIotpMaBleScanAppType'
+        min_rss:
+          maximum: 20
+          minimum: -120
+          default: -100
+          type: integer
+          format: int32
+          description: BLE Scan Eddystone-url application minimum Received Signal Strength value, in dBm.
+    XiqIotpMaBleScanVendorType:
+      type: string
+      description: The BLE Scan Vendor types for BLE Scan applications.
+      enum:
+      - ANY
+      - CHORUS
+      - CUSTOM
+    XiqIotpMaBleScanVendor:
+      type: object
+      required:
+      - company_id
+      properties:
+        vendor_type:
+          $ref: '#/components/schemas/XiqIotpMaBleScanVendorType'
+        vendor_name:
+          type: string
+          description: Custom Vendor name, for CUSTOM Vendor type.
+        company_id:
+          maximum: 65535
+          minimum: -1
+          default: -1
+          type: integer
+          format: int32
+          description: Unique company identifier. This value will be used as a filter, whereby if specified the AP will only forward frames for beacons  with matching value on the 2 byte field 6 - 7. A value of "-1" indicates no filtering is applied.  Company IDs provided at https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers/
+    XiqIotpMaBleScanGeneric:
+      type: object
+      required:
+      - app_type
+      properties:
+        app_type:
+          $ref: '#/components/schemas/XiqIotpMaBleScanAppType'
+        min_rss:
+          maximum: 20
+          minimum: -120
+          default: -100
+          type: integer
+          format: int32
+          description: BLE Scan Eddystone-url application minimum Received Signal Strength value, in dBm.
+        vendors:
+          type: array
+          maxItems: 5
+          description: Collection of BLE Scan vendor filters for Generic Scan applications.
+          items:
+            $ref: '#/components/schemas/XiqIotpMaBleScanVendor'
+    XiqIotpMaBleScanApplication:
+      type: object
+      description: The BLE Scan application
+      oneOf:
+      - $ref: '#/components/schemas/XiqIotpMaBleScanIBeacon'
+      - $ref: '#/components/schemas/XiqIotpMaBleScanEddystoneUrl'
+      - $ref: '#/components/schemas/XiqIotpMaBleScanGeneric'
+      discriminator:
+        propertyName: app_type
+        mapping:
+          IBEACON: '#/components/schemas/XiqIotpMaBleScanIBeacon'
+          EDDYSTONE_URL: '#/components/schemas/XiqIotpMaBleScanEddystoneUrl'
+          GENERIC: '#/components/schemas/XiqIotpMaBleScanGeneric'
+    XiqIotpMaBleScan:
+      type: object
+      properties:
+        destination:
+          $ref: '#/components/schemas/XiqIotpMaBleScanDestination'
+        applications:
+          type: array
+          maxItems: 3
+          description: Collection of BLE Scan applications
+          items:
+            $ref: '#/components/schemas/XiqIotpMaBleScanApplication'
+    XiqIotProfileMultiApplication:
+      type: object
+      required:
+      - name
+      - app_supported
+      properties:
+        app_supported:
+          $ref: '#/components/schemas/XiqIotApplicationSupported'
+        name:
+          type: string
+          description: The IoT profile name
+        ble_beacon:
+          $ref: '#/components/schemas/XiqIotpMaBleBeacon'
+        ble_scan:
+          $ref: '#/components/schemas/XiqIotpMaBleScan'
+    XiqIotProfileRequest:
+      type: object
+      description: The IoT Profile
+      oneOf:
+      - $ref: '#/components/schemas/XiqIotProfileThreadGateway'
+      - $ref: '#/components/schemas/XiqIotProfileMultiApplication'
+      discriminator:
+        propertyName: app_supported
+        mapping:
+          SINGLE: '#/components/schemas/XiqIotProfileThreadGateway'
+          MULTI: '#/components/schemas/XiqIotProfileMultiApplication'
+    XiqDeviceIot:
+      type: object
+      description: The device IoT profile Wireless Interface settings.
+      required:
+      - enabled
+      properties:
+        enabled:
+          type: boolean
+          description: Whether the device IoT profile Wireless Interface is enabled.
+        iot_profile:
+          $ref: '#/components/schemas/XiqIotProfileRequest'
     XiqDeviceVlanAttrDhcpSnoopingAction:
       type: string
       enum:
@@ -14138,6 +14955,10 @@ components:
         ip_address:
           type: string
           description: The IPv4 address set on the interface
+        ip_address_to_int:
+          type: integer
+          description: The IPv4 address set on the interface to numeric format
+          format: int32
         routing_instance:
           type: string
           description: The Routing Instance
@@ -14276,9 +15097,17 @@ components:
         dest_subnetwork:
           type: string
           description: Destination subnetwork IP and mask
+        dest_subnetwork_to_int:
+          type: integer
+          description: Destination subnetwork IP and mask to numeric format
+          format: int32
         next_hop_ip:
           type: string
           description: Next hop IP
+        next_hop_ip_to_int:
+          type: integer
+          description: Next hop IP to numeric format
+          format: int32
         next_hop_ip_ping_protection:
           type: boolean
           description: Next hop IP ping protection
@@ -14582,11 +15411,13 @@ components:
           type: string
           description: The state of the IPv4 ping protection gateway
         ping_protection_last_uptime:
-          type: string
+          type: integer
           description: The last time the gateway transitioned to the UP state
+          format: int64
         ping_protection_last_downtime:
-          type: string
+          type: integer
           description: The last time the gateway transitioned to the DOWN state
+          format: int64
     XiqDeviceMonitorIpv4RoutingDetails:
       type: object
       description: The IPv4 Routing details information that is monitored on the device.
@@ -18577,6 +19408,9 @@ components:
       - AX_2_4_GHZ
       - AX_5_GHZ
       - AX_6_GHZ
+      - BE_2_4_GHZ
+      - BE_5_GHZ
+      - BE_6_GHZ
     XiqRadioProfile:
       allOf:
       - $ref: '#/components/schemas/XiqBaseEntity'
@@ -20266,115 +21100,6 @@ components:
             type: integer
             description: The device ID list.
             format: int64
-    XiqIotpTgWhiteListEntry:
-      type: object
-      required:
-      - long_eui
-      - pskd
-      properties:
-        long_eui:
-          oneOf:
-          - type: string
-            minLength: 16
-            maxLength: 16
-            pattern: ^[0-9a-fA-F]+$
-            description: The factory-assigned IEEE EUI-64. (16 hex digits). FFFFFFFFFFFFFFFF is reserved.
-          - type: string
-            pattern: ^\*$
-            description: Match any joiner.
-        pskd:
-          type: string
-          minLength: 6
-          maxLength: 32
-          description: 'The PSKd (Pre-Shared-Key for the Device) is the Joining Device Credential encoded using base32-thread. A Joining Device Credential is encoded as uppercase, alphanumeric characters (base32-thread: 0-9,A-Y excluding I,O,Q, and Z for readability)  with a minimum length of 6 such characters and a maximum length of 32 such characters.'
-          pattern: '[0-9ABCDEFGHJKLMNPRSTUVWXY]+'
-    XiqIotProfileThreadGateway:
-      type: object
-      properties:
-        threadGateway:
-          type: object
-          required:
-          - short_pan_id
-          - ext_pan_id
-          - master_key
-          - network_name
-          - channel
-          properties:
-            short_pan_id:
-              type: string
-              minLength: 4
-              maxLength: 4
-              pattern: ^[0-9a-fA-F]+$
-              description: The Personal Area Network (PAN) ID. (4 hex digits). FFFF is reserved.
-            ext_pan_id:
-              type: string
-              minLength: 16
-              maxLength: 16
-              pattern: ^[0-9a-fA-F]+$
-              description: The Extended Personal Area Network (PAN) ID. (16 hex digits)
-            master_key:
-              type: string
-              minLength: 32
-              maxLength: 32
-              pattern: ^[0-9a-fA-F]+$
-              description: The network key is used to secure access to the Thread network. It is used to encrypt and authenticate all messages on the network. (32 hex digits)
-            network_name:
-              type: string
-              minLength: 1
-              maxLength: 16
-              description: A human-readable name for the network, up to 16 bytes in length.
-            channel:
-              type: integer
-              minimum: 0
-              description: 802.15.4 channel number, 11-26
-            enable_nat64:
-              type: boolean
-              default: true
-              description: Enable NAT64 functions including the translator and the prefix publishing.
-            comm_credentials:
-              type: string
-              minLength: 6
-              maxLength: 255
-              pattern: ^.{6,255}$
-              description: The Commissioner Credential is used along with the Extended PAN ID, and Network Name to create the PSKc (Pre-Shared Key for the Commissioner).
-            comm_timeout:
-              type: integer
-              default: 120
-              minimum: 1
-              maximum: 2000000
-              description: After this timeout the Commissioner will shutdown. The default is 120 sec. but the max is approximately 23 days.
-            white_list:
-              type: array
-              items:
-                $ref: '#/components/schemas/XiqIotpTgWhiteListEntry'
-              description: The table of approved Thread end-devices.
-            default_user_profile_id:
-              type: integer
-              description: The default user-profile ID.
-              format: int64
-    XiqIotApplicationId:
-      type: string
-      enum:
-      - THREAD_GATEWAY
-      description: IoT supported applications.
-    XiqIotProfileRequest:
-      type: object
-      description: The IoT Profile
-      required:
-      - name
-      - app_id
-      properties:
-        name:
-          type: string
-          description: The IoT profile name
-        app_id:
-          $ref: '#/components/schemas/XiqIotApplicationId'
-      oneOf:
-      - $ref: '#/components/schemas/XiqIotProfileThreadGateway'
-      discriminator:
-        propertyName: app_id
-        mapping:
-          THREAD_GATEWAY: '#/components/schemas/XiqIotProfileThreadGateway'
     XiqIotProfile:
       allOf:
       - $ref: '#/components/schemas/XiqViqEntity'
@@ -20442,6 +21167,62 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqClientMonitorProfile'
+    XiqDeviceRadioOperatingMode:
+      title: OperatingMode
+      description: 'Modern AP hardware types include dual or triple band radios. A limited subset of band combinations are supported. Operating mode defines the supported band combinations per radio. Access Points with fixed band radios use GENERIC operating mode.   SERVICE_2_5_6:   wifi0-2.4Ghz, wifi1-5Ghz, wifi2-6Ghz SENSOR_SERVICE_5_6: wifi0-Tri-band sensor, wifi1-5Ghz, wifi2-6Ghz SERVICE_5L_5H_6: wifi0-5G Low, wifi1-5G High, wifi2-6Ghz SENSOR_SERVICE_5_2: wifi0-Tri-band sensor, wifi1-5GHz, wifi2-2.4Ghz SERVICE_5L_5H_2: wifi0-5G Low, wifi1-5G High, wifi2-2.4Ghz SERVICE_6L_5_6H: wifi0-6G Low, wifi1-5GHz, wifi2-6Ghz'
+      enum:
+      - GENERIC
+      - SERVICE_2_5_6
+      - SENSOR_SERVICE_5_6
+      - SERVICE_5L_5H_6
+      - SENSOR_SERVICE_5_2
+      - SERVICE_5L_5H_2
+      - SERVICE_6L_5_6H
+      type: string
+      default: GENERIC
+      example: SERVICE_2_5_6
+    XiqDeviceRadioBand:
+      type: string
+      description: Radio Interface Bands
+      enum:
+      - BAND24
+      - BAND5
+      - BAND6
+      - BAND5LOW
+      - BAND5HIGH
+      - BAND6LOW
+      - BAND6HIGH
+      - BANDNONE
+      example: BAND24
+    XiqDeviceInterfaceRadioMode:
+      type: object
+      description: Device Radio Interface Band.
+      required:
+      - name
+      - band
+      - default_radio_mode
+      properties:
+        name:
+          $ref: '#/components/schemas/XiqWirelessIfName'
+        band:
+          $ref: '#/components/schemas/XiqDeviceRadioBand'
+        default_radio_mode:
+          $ref: '#/components/schemas/XiqRadioMode'
+    XiqDeviceRadioModesSettings:
+      type: array
+      description: Device Radio Operating Mode settings based on AP Model.
+      items:
+        type: object
+        required:
+        - key
+        properties:
+          key:
+            $ref: '#/components/schemas/XiqDeviceRadioOperatingMode'
+          wireless_interfaces:
+            description: Wireless Interface
+            type: array
+            items:
+              $ref: '#/components/schemas/XiqDeviceInterfaceRadioMode'
     XiqTunnelConcentratorRequest:
       type: object
       required:
@@ -22240,6 +23021,135 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqCopilotWiredEventEntity'
+    XiqQualityIndex:
+      type: string
+      enum:
+      - LOW
+      - MEDIUM
+      - HIGH
+    XiqCopilotConnectivityByLocationsEntity:
+      type: object
+      description: Copilot Experience Entity
+      required:
+      - id
+      - name
+      - quality_index
+      - quality_index_value
+      - client_type
+      - quality_index_graph
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        quality_index:
+          type: integer
+          minimum: 1
+          maximum: 10
+        quality_index_value:
+          $ref: '#/components/schemas/XiqQualityIndex'
+        client_type:
+          $ref: '#/components/schemas/XiqClientType'
+        quality_index_graph:
+          type: array
+          description: The data in the current page
+          items:
+            type: object
+            description: Connectivity experience quality sequence
+            required:
+            - timestamp
+            - value
+            properties:
+              timestamp:
+                type: integer
+                format: int64
+              value:
+                type: integer
+                minimum: 1
+                maximum: 10
+    XiqCopilotConnectivityByLocations:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqCopilotConnectivityByLocationsEntity'
+    XiqCopilotConnectivityByClientType:
+      type: object
+      description: data sequence
+      required:
+      - sites_by_wireless
+      - sites_by_wired
+      properties:
+        sites_by_wireless:
+          type: object
+          description: The data in the current page
+          required:
+          - low_quality_score_count
+          - medium_quality_score_count
+          - high_quality_score_count
+          - total_quality_score_count
+          properties:
+            low_quality_score_count:
+              type: integer
+              format: int32
+            medium_quality_score_count:
+              type: integer
+              format: int32
+            high_quality_score_count:
+              type: integer
+              format: int32
+            total_quality_score_count:
+              type: integer
+              format: int32
+        sites_by_wired:
+          type: object
+          description: The data in the current page
+          required:
+          - low_quality_score_count
+          - medium_quality_score_count
+          - high_quality_score_count
+          - total_quality_score_count
+          properties:
+            low_quality_score_count:
+              type: integer
+              format: int32
+            medium_quality_score_count:
+              type: integer
+              format: int32
+            high_quality_score_count:
+              type: integer
+              format: int32
+            total_quality_score_count:
+              type: integer
+              format: int32
+    XiqCopilotWirelessQualityIndexByLocation:
+      type: object
+      description: Wireless Connectivity Experience QualityIndex
+      required:
+      - quality_index
+      - time_to_connect_score
+      - performance_score
+      - total_clients
+      properties:
+        quality_index:
+          type: integer
+          minimum: 1
+          maximum: 10
+        time_to_connect_score:
+          type: integer
+          minimum: 1
+          maximum: 10
+        performance_score:
+          type: integer
+          minimum: 1
+          maximum: 10
+        total_clients:
+          type: integer
+          format: int32
     XiqCopilotHardwareByLocation:
       type: object
       description: Wired Connectivity Experience Hardware
@@ -23117,6 +24027,111 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqCopilotAnomaliesDetails'
+    XiqTrendGraphEntity:
+      type: object
+      description: power mode trends
+      required:
+      - timestamp
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        power_mode:
+          type: string
+    XiqPoeTrendGraphsResponse:
+      type: object
+      properties:
+        trend_graph_entities:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqTrendGraphEntity'
+    XiqAffectedDownlinkDevice:
+      type: object
+      description: Copilot Anomaly Affected Downlink Devices Details
+      required:
+      - host_name
+      - product_type
+      - interface_name
+      - port_id
+      - last_detected_time
+      properties:
+        host_name:
+          type: string
+          description: host name of affected downlink device
+        product_type:
+          type: string
+          description: model of affected downlink device
+        interface_name:
+          type: string
+          description: interface name of affected downlink device
+        port_id:
+          type: string
+          description: port ID of affected downlink device
+        last_detected_time:
+          type: integer
+          description: last detected timestamp
+          format: int64
+    XiqUnaffectedDownlinkDevice:
+      type: object
+      description: Copilot Anomaly Unaffected Downlink Devices Details
+      required:
+      - host_name
+      - product_type
+      - interface_name
+      - port_id
+      properties:
+        host_name:
+          type: string
+          description: host name of unaffected downlink device
+        product_type:
+          type: string
+          description: model of unaffected downlink device
+        interface_name:
+          type: string
+          description: interface name of unaffected downlink device
+        port_id:
+          type: string
+          description: port ID of unaffected downlink device
+    XiqPowerSourceEquipment:
+      type: object
+      description: Copilot LLdp-Cdp Info For Anomalous Access Points
+      required:
+      - is_lldp_cdp_enabled
+      - affected_downlink_devices
+      - unaffected_downlink_devices
+      properties:
+        is_lldp_cdp_enabled:
+          type: boolean
+        uplink_switch_system_name:
+          type: string
+        uplink_switch_system_id:
+          type: string
+        uplink_switch_device_id:
+          type: integer
+          format: int64
+        location_name:
+          type: string
+        floor_name:
+          type: string
+        affected_downlink_devices:
+          type: array
+          description: The list of affected downlink devices
+          items:
+            $ref: '#/components/schemas/XiqAffectedDownlinkDevice'
+        unaffected_downlink_devices:
+          type: array
+          description: The list of unaffected downlink devices
+          items:
+            $ref: '#/components/schemas/XiqUnaffectedDownlinkDevice'
+    XiqCopilotLldpCdpInfo:
+      type: object
+      description: Copilot Anomalies LLdp-Cdp Info Response
+      properties:
+        lldp_cdp_info:
+          type: object
+          description: The data in the current page
+          $ref: '#/components/schemas/XiqPowerSourceEquipment'
     XiqPacketCaptureField:
       type: string
       enum:
@@ -23583,180 +24598,129 @@ components:
         name_ko:
           description: The country official name in Korean.
           type: string
-    ViewDeviceSimpleReferenceObject:
+    XiqCountryState:
       type: object
+      description: The states list of a country.
+      required:
+      - country_code
+      - code
+      - name
       properties:
-        id:
-          type: integer
-          format: int64
-          minimum: 1
-        name:
+        country_code:
+          description: The country ISO 2-letter code.
           type: string
-    ViewDeviceResponse:
-      type: object
-      allOf:
-      - type: object
+        code:
+          description: The state or province code.
+          type: string
+        name:
+          description: The state or province name.
+          type: string
+    ViewAlarmsResponse:
+      type: array
+      items:
         properties:
           id:
+            description: internal id of the alarm instance
+            type: string
+            minLength: 4
+            example: 5cedee19-2219-404e-bc4b-964a5e3b6bae
+          raised_date_time:
+            description: timestamp when the alarm was raised
             type: integer
             format: int64
-            minimum: 1
-          owner_id:
+            example: 1652607240
+          cleared_date_time:
+            description: timestamp when the alarm was cleared (applicable only to cleared alarms)
             type: integer
             format: int64
-          org_id:
+            example: 1652607380
+          local_appliance_id:
+            description: local appliance id
             type: integer
             format: int64
-          name:
+            example: 64102141172
+          local_appliance_name:
+            description: local appliance name
             type: string
-          type:
+            minLength: 4
+            example: ebx-02
+          local_appliance_serial_number:
+            description: local appliance serial number
             type: string
-            enum:
-            - appliance
-            description: Type of the device.
-          serial_number:
-            type: string
-            description: Serial number of the device.
-          mac_address:
-            type: string
-            description: MAC address of the device.
-          model:
-            type: string
-            description: Model of the device.
-          firmware_version:
-            type: string
-            description: Version of agent software running on the device.
-          configuration:
-            type: object
-            properties:
-              status:
-                type: string
-                description: |
-                  Status providing assessment of configuration status.
-                  - UNKNOWN: system error.
-                  - NOT_CONFIGURED: no template assigned.
-                  - TO_BE_CONFIGURED: never deployed.
-                  - UPDATING: a validated deployment has been triggered, orchestration is pending.
-                  - CONFIGURATION_FAILED: configuration was not successful (orchestration error or appliance error). "message" should contain indications.
-                  - CONFIGURATION_UPDATED: appliance has received and loaded deployed configuration.
-                enum:
-                - UNKNOWN
-                - NOT_CONFIGURED
-                - TO_BE_CONFIGURED
-                - UPDATING
-                - CONFIGURATION_FAILED
-                - CONFIGURATION_UPDATED
-              message:
-                type: string
-                description: |
-                  Message that may follow up a warning or error status.
-              last_deployed_at:
-                type: string
-                format: date-time
-                description: When the last valid deployment was requested by a User.
-              last_updated_at:
-                type: string
-                format: date-time
-                description: When the device received its last configuration (null if never deployed or not configured).
-              in_sync:
-                type: boolean
-                description: |
-                  **true** indicates that latest deployed configuration is the one running on the device.
-          connectivity:
-            type: object
-            properties:
-              connected:
-                type: boolean
-                description: |
-                  **true** indicates the device is actively connected to the communicator.
-              last_connected_at:
-                type: string
-                format: date-time
-                description: Time since the device is connected to communicator. null when not connected.
-              disconnected_at:
-                type: string
-                format: date-time
-                description: Time since the device is disconnected to communicator. null when connected or never connected.
-          site:
-            description: Site which the device is bound to.
-            allOf:
-            - $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
-          description:
-            type: string
-          device_template:
-            description: Device template applied to the device.
-            allOf:
-            - $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
-          management_network:
-            type: object
-            description: Management interface IP address.
-            properties:
-              ip_address:
-                type: string
-                format: ipv4
-              subnet_mask:
-                type: integer
-                minimum: 0
-                maximum: 32
-          wans:
-            type: array
-            description: WAN interfaces of the device.
-            items:
-              type: object
-              properties:
-                name:
-                  type: string
-                  enum:
-                  - WAN1
-                  - WAN2
-                  - WAN3
-                  description: WAN interface name.
-                enabled:
-                  type: boolean
-                  description: |
-                    If **false** other properties will be **null**.
-                transport_network:
-                  $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
-                overlays:
-                  type: array
-                  items:
-                    type: object
-                    allOf:
-                    - $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
-                    - type: object
-                      properties:
-                        type:
-                          type: string
-                          enum:
-                          - hub_and_spoke
-                          - third_party_vpn
-                          - cloud_mesh
-          cloud_mesh_enabled:
-            type: boolean
-            description: |
-              **true** if Cloud Mesh service is enabled on this device.
-          as_number:
-            description: AS Number.
+            minLength: 4
+            example: A0518X0005A0
+          remote_appliance_id:
+            description: remote appliance id
             type: integer
             format: int64
-            minimum: 0
-            maximum: 65535
-          last_updated_at:
+            example: 64108151319
+          remote_appliance_name:
+            description: remote appliance name
             type: string
-            format: date-time
-            description: When the device received its last configuration (null if never deployed or not configured).
-    ViewDevicesResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          description: The data in the current page
-          items:
-            $ref: '#/components/schemas/ViewDeviceResponse'
-    ViewDevicesResponsePaged:
+            minLength: 4
+            example: ebx-03
+          remote_appliance_serial_number:
+            description: remote appliance serial number
+            type: string
+            minLength: 4
+            example: N0815K0319A0
+          local_site_id:
+            description: local site id
+            type: integer
+            format: int64
+            example: 2
+          local_site_name:
+            description: local site name
+            type: string
+            minLength: 4
+            example: Site 02
+          remote_site_id:
+            description: local site id
+            type: integer
+            format: int64
+            example: 3
+          remote_site_name:
+            description: remote site name
+            type: string
+            minLength: 4
+            example: Site 03
+          alarm_name:
+            description: unique alarm name
+            type: string
+            minLength: 4
+            example: tunnel-failure
+          alarm_description:
+            description: human readable alarm name
+            type: string
+            minLength: 4
+            example: Tunnel Failure
+          details:
+            description: specific details about the alarm
+            type: string
+            minLength: 4
+            example: No other appliance in local site
+          severity:
+            description: severity of the alarm
+            type: string
+            minLength: 4
+            example: critical
+          layer:
+            description: category
+            type: string
+            minLength: 4
+            example: Underlay
+          state:
+            description: status of the alarm
+            type: string
+            minLength: 4
+            example: cleared
+    ViewAlarmsResponsePaged:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
-      - $ref: '#/components/schemas/ViewDevicesResponse'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ViewAlarmsResponse'
     Error:
       required:
       - status
@@ -23770,52 +24734,86 @@ components:
           type: string
         detail:
           type: string
-    ResponseTimestamp:
-      type: integer
-      description: Time of the response in epoch format (milliseconds)
-      format: int64
-      example: 1651743308000
-    ApplianceGetStatusSimple:
+    AlarmSeverityCountResponseObject:
+      type: object
+      properties:
+        total:
+          description: total count of active alarms
+          type: integer
+          format: int32
+          example: 10
+        detail:
+          description: count of active alarms for each severity(critical, major, minor)
+          type: array
+          items:
+            properties:
+              severity:
+                description: severity of the alarm
+                type: string
+                minLength: 4
+                example: major
+              count:
+                description: count of alarms for the given severity
+                type: integer
+                format: int32
+                example: 10
+    AlarmSeverityCountResponse:
       type: object
       properties:
         data:
+          description: Alarm active count per severity
+          $ref: '#/components/schemas/AlarmSeverityCountResponseObject'
+    SitesSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: Sites Summary Response
+          type: array
+          items:
+            properties:
+              sites_count:
+                description: total sites count
+                type: integer
+                format: int32
+                example: 14
+              average_throughput:
+                description: average throughput across all the sites as of now
+                type: number
+                format: double
+                example: 370
+    ViewAppliancesSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: Appliances Summary Response
           type: array
           items:
             type: object
             properties:
-              timestamp:
-                $ref: '#/components/schemas/ResponseTimestamp'
-              info:
-                type: object
-                properties:
-                  id:
-                    description: Appliance ID
-                    type: integer
-                    format: int64
-                    example: 1
-                  name:
-                    description: Appliance Name
-                    type: string
-                    example: Branch-01-IPE1
-              state:
-                type: object
-                properties:
-                  orchestrator_connected:
-                    description: True if appliance is connected to the orchestrator
-                    type: boolean
-                    example: true
-                  configuration_synchronized:
-                    description: True if appliance configuration in sync with orchestrator
-                    type: boolean
-                    example: true
-                  lldp_state_active:
-                    description: True if LLDP state is active
-                    type: boolean
-                    example: true
-                  firmware_version:
-                    description: Current applied appliance firmware
-                    type: string
-                    example: 22.03.0.2
+              appliances_connected:
+                description: connected appliances count
+                type: integer
+                format: int32
+                example: 18
+              appliances_disconnected:
+                description: disconnected appliances count
+                type: integer
+                format: int32
+                example: 2
+    ViewWansSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: Wan Services Summary Response
+          type: array
+          items:
+            type: object
+            properties:
+              wans_count:
+                description: total wan services count
+                type: integer
+                format: int32
+                example: 4
     ApplicationsSummaryResponse:
       type: object
       properties:
@@ -23839,12 +24837,143 @@ components:
                 type: number
                 example: 6.5
                 format: double
-    FlowDirection:
-      type: string
-      enum:
-      - lan_to_wan
-      - wan_to_lan
-      example: lan_to_wan
+    ViewConnectionsResponse:
+      type: array
+      items:
+        properties:
+          initiator_appliance_id:
+            description: The initiator appliance ID
+            type: integer
+            format: int64
+            example: 542024882680
+          responder_appliance_id:
+            description: The responder appliance ID
+            type: integer
+            format: int64
+            example: 542024882681
+          initiator_appliance_name:
+            description: The initiator appliance name
+            type: string
+            example: APPLIANCE-01
+          responder_appliance_name:
+            description: The responder appliance name
+            type: string
+            example: APPLIANCE-02
+          initiator_site_id:
+            description: This is the initiator site ID
+            type: integer
+            format: int64
+            example: 542024882780
+          responder_site_id:
+            description: This is the responder site ID
+            type: integer
+            format: int64
+            example: 5420248827781
+          initiator_site_name:
+            description: The initiator site name
+            type: string
+            example: SITE-01
+          responder_site_name:
+            description: The responder site name
+            type: string
+            example: SITE-02
+          initiator_interface:
+            description: The initiator interface name
+            type: string
+            minLength: 1
+            example: wan1
+          responder_interface:
+            description: The responder interface name
+            type: string
+            minLength: 1
+            example: wan2
+          overlay_id:
+            description: The overlay ID
+            type: integer
+            format: int64
+            example: 20
+          overlay_name:
+            description: The overlay name
+            type: string
+            minLength: 1
+            example: MPLS1
+          status_id:
+            description: The overlay status ID (up/down)
+            type: string
+            minLength: 1
+            example: up
+          status:
+            description: The overlay status
+            type: string
+            minLength: 1
+            example: Up
+          type_id:
+            description: The overlay type ID
+            type: string
+            enum:
+            - vti
+            - gre
+            - gre_user
+            - zsc
+            - csec
+            - sdi
+            - aws
+            - azure
+            minLength: 1
+            example: gre
+          type:
+            description: The overlay type
+            type: string
+            minLength: 1
+            example: Overlay
+    ViewConnectionsResponsePaged:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ViewConnectionsResponse'
+    TunnelSite:
+      type: array
+      items:
+        properties:
+          id:
+            description: Site ID
+            type: integer
+            example: 5420248827679
+            format: int64
+          site_name:
+            description: Site name
+            type: string
+            example: SITE-01
+          location:
+            description: Site location
+            type: string
+            example: 23 Av. Carnot | Massy | Île-de-France | 91300 |France
+          map_position:
+            description: Site coordinates
+            type: object
+            properties:
+              lat:
+                description: Latitude
+                type: number
+                format: double
+                example: 48.7270491
+              lng:
+                description: Longitude
+                type: number
+                format: double
+                example: 2.2644208
+          alarm:
+            description: The site alarmed condition, if set to true it means site is at active alarmed state.
+            type: boolean
+            example: true
+    TunnelSiteResponse:
+      type: object
+      properties:
+        data:
+          description: Connection site data
+          $ref: '#/components/schemas/TunnelSite'
     QuerryPage:
       type: integer
       format: int32
@@ -23853,6 +24982,187 @@ components:
       type: integer
       format: int32
       example: 10
+    TunnelInfo:
+      type: array
+      items:
+        properties:
+          initiator_appliance_id:
+            description: The initiator appliance ID
+            type: integer
+            format: int64
+            example: 542024882680
+          responder_appliance_id:
+            description: The responder appliance ID
+            type: integer
+            format: int64
+            example: 542024882681
+          initiator_appliance_name:
+            description: The initiator appliance name
+            type: string
+            example: APPLIANCE-01
+          responder_appliance_name:
+            description: The responder appliance name
+            type: string
+            example: APPLIANCE-02
+          initiator_site_id:
+            description: This is the initiator site ID
+            type: integer
+            format: int64
+            example: 542024882780
+          responder_site_id:
+            description: This is the responder site ID
+            type: integer
+            format: int64
+            example: 5420248827781
+          initiator_site_name:
+            description: The initiator site name
+            type: string
+            example: SITE-01
+          responder_site_name:
+            description: The responder site name
+            type: string
+            example: SITE-02
+          initiator_interface:
+            description: The initiator interface name
+            type: string
+            minLength: 1
+            example: wan1
+          responder_interface:
+            description: The responder interface name
+            type: string
+            minLength: 1
+            example: wan2
+          overlay_id:
+            description: The overlay ID
+            type: integer
+            format: int64
+            example: 20
+          overlay_name:
+            description: The overlay name
+            type: string
+            minLength: 1
+            example: MPLS1
+          status_id:
+            description: The overlay status ID
+            type: string
+            enum:
+            - up
+            - down
+            minLength: 1
+            example: up
+          status:
+            description: The overlay status
+            type: string
+            minLength: 1
+            example: Up
+          type_id:
+            description: The overlay type ID
+            type: string
+            enum:
+            - vti
+            - gre
+            - gre_user
+            - zsc
+            - csec
+            - sdi
+            - aws
+            - azure
+            minLength: 1
+            example: gre
+          type:
+            description: The overlay type
+            type: string
+            minLength: 1
+            example: Overlay
+          color_id:
+            description: color_id is the unique number specifying a color that will be picked from the pool of colors maintained by Frontend in order to display each overlay distinctly.
+            type: integer
+            format: int32
+            example: 1
+    TunnelInfoData:
+      type: object
+      properties:
+        data:
+          description: Connection info data
+          $ref: '#/components/schemas/TunnelInfo'
+    TunnelInfoResponse:
+      allOf:
+      - $ref: '#/components/schemas/TunnelInfoData'
+      - $ref: '#/components/schemas/XiqPage'
+    application-metrics-summary:
+      type: object
+      description: Array of Object containing application overview summary details group by Application, Application Group or criticality
+      properties:
+        application_id:
+          description: application Id
+          type: number
+          example: 5455656
+        application_name:
+          description: application name
+          type: string
+          example: webex
+        criticality:
+          description: criticality
+          type: string
+          example: Top
+        eqs:
+          description: eqs value
+          type: number
+          format: double
+          example: 9.55
+        throughput:
+          description: throughput value
+          type: number
+          format: double
+          example: 5553434.56
+        volume:
+          description: volume value
+          type: number
+          format: double
+          example: 44567.55
+    ApplicationMetricsSummaryInfoList_application-metrics-summary:
+      type: array
+      description: Array of Object containing application overview summary details group by Application, Application Group or criticality
+      items:
+        description: Object containing application summary Data
+        $ref: '#/components/schemas/application-metrics-summary'
+    TimeRange:
+      type: object
+      properties:
+        start_time:
+          description: start of the time-range. unit is seconds
+          type: integer
+          format: int64
+          example: 1654150860
+        end_time:
+          description: end of the time-range. unit is seconds
+          type: integer
+          format: int64
+          example: 1654236480
+        resolution:
+          description: time interval for aggregation. unit is seconds
+          type: integer
+          format: int64
+          example: 600
+    ApplicationsMetricsSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: Returns Filtered summary data
+          $ref: '#/components/schemas/ApplicationMetricsSummaryInfoList_application-metrics-summary'
+        time_range:
+          description: The timeRange response
+          $ref: '#/components/schemas/TimeRange'
+        pagination:
+          description: The pagination response
+          $ref: '#/components/schemas/XiqPage'
+    FlowDirection:
+      type: string
+      enum:
+      - lan_to_wan
+      - wan_to_lan
+      example: lan_to_wan
+      default: lan_to_wan
     ApplicationGroupsEqsPerCriticality:
       type: object
       properties:
@@ -23987,24 +25297,6 @@ components:
           application_groups_per_criticality:
             description: application_groups grouped by criticality
             $ref: '#/components/schemas/ApplicationGroupsEqsPerCriticality'
-    TimeRange:
-      type: object
-      properties:
-        start_time:
-          description: start of the time-range. unit is seconds
-          type: integer
-          format: int64
-          example: 1654150860
-        end_time:
-          description: end of the time-range. unit is seconds
-          type: integer
-          format: int64
-          example: 1654236480
-        resolution:
-          description: time interval for aggregation. unit is seconds
-          type: integer
-          format: int64
-          example: 600
     SitesOverviewResponsePaged:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -24016,383 +25308,6 @@ components:
           time_range:
             description: The time range response
             $ref: '#/components/schemas/TimeRange'
-    TunnelSite:
-      type: array
-      items:
-        properties:
-          id:
-            description: Site ID
-            type: integer
-            example: 5420248827679
-            format: int64
-          site_name:
-            description: Site name
-            type: string
-            example: SITE-01
-          location:
-            description: Site location
-            type: string
-            example: 23 Av. Carnot | Massy | Île-de-France | 91300 |France
-          map_position:
-            description: Site coordinates
-            type: object
-            properties:
-              lat:
-                description: Latitude
-                type: number
-                format: double
-                example: 48.7270491
-              lng:
-                description: Longitude
-                type: number
-                format: double
-                example: 2.2644208
-          alarm:
-            description: The site alarmed condition, if set to true it means site is at active alarmed state.
-            type: boolean
-            example: true
-    TunnelSiteResponse:
-      type: object
-      properties:
-        data:
-          description: Connection site data
-          $ref: '#/components/schemas/TunnelSite'
-    SitesSummaryResponse:
-      type: object
-      properties:
-        data:
-          description: Sites Summary Response
-          type: array
-          items:
-            properties:
-              sites_count:
-                description: total sites count
-                type: integer
-                format: int32
-                example: 14
-              average_throughput:
-                description: average throughput across all the sites as of now
-                type: number
-                format: double
-                example: 370
-    ViewAppliancesSummaryResponse:
-      type: object
-      properties:
-        data:
-          description: Appliances Summary Response
-          type: array
-          items:
-            type: object
-            properties:
-              appliances_connected:
-                description: connected appliances count
-                type: integer
-                format: int32
-                example: 18
-              appliances_disconnected:
-                description: disconnected appliances count
-                type: integer
-                format: int32
-                example: 2
-    ViewWansSummaryResponse:
-      type: object
-      properties:
-        data:
-          description: Wan Services Summary Response
-          type: array
-          items:
-            type: object
-            properties:
-              wans_count:
-                description: total wan services count
-                type: integer
-                format: int32
-                example: 4
-    ViewConnectionsResponse:
-      type: array
-      items:
-        properties:
-          initiator_appliance_id:
-            description: The initiator appliance ID
-            type: integer
-            format: int64
-            example: 542024882680
-          responder_appliance_id:
-            description: The responder appliance ID
-            type: integer
-            format: int64
-            example: 542024882681
-          initiator_appliance_name:
-            description: The initiator appliance name
-            type: string
-            example: APPLIANCE-01
-          responder_appliance_name:
-            description: The responder appliance name
-            type: string
-            example: APPLIANCE-02
-          initiator_site_id:
-            description: This is the initiator site ID
-            type: integer
-            format: int64
-            example: 542024882780
-          responder_site_id:
-            description: This is the responder site ID
-            type: integer
-            format: int64
-            example: 5420248827781
-          initiator_site_name:
-            description: The initiator site name
-            type: string
-            example: SITE-01
-          responder_site_name:
-            description: The responder site name
-            type: string
-            example: SITE-02
-          initiator_interface:
-            description: The initiator interface name
-            type: string
-            minLength: 1
-            example: wan1
-          responder_interface:
-            description: The responder interface name
-            type: string
-            minLength: 1
-            example: wan2
-          overlay_id:
-            description: The overlay ID
-            type: integer
-            format: int64
-            example: 20
-          overlay_name:
-            description: The overlay name
-            type: string
-            minLength: 1
-            example: MPLS1
-          status_id:
-            description: The overlay status ID
-            type: string
-            enum:
-            - up
-            - down
-            minLength: 1
-            example: up
-          status:
-            description: The overlay status
-            type: string
-            minLength: 1
-            example: Up
-          type_id:
-            description: The overlay type ID
-            type: string
-            enum:
-            - vti
-            - gre
-            - gre_user
-            - zsc
-            - csec
-            - sdi
-            - aws
-            - azure
-            minLength: 1
-            example: gre
-          type:
-            description: The overlay type
-            type: string
-            minLength: 1
-            example: Overlay
-    ViewConnectionsResponsePaged:
-      allOf:
-      - $ref: '#/components/schemas/XiqPage'
-      - type: object
-        properties:
-          data:
-            allOf:
-            - $ref: '#/components/schemas/ViewConnectionsResponse'
-    application-metrics-summary:
-      type: object
-      description: Array of Object containing application overview summary details group by Application, Application Group or criticality
-      properties:
-        application_id:
-          description: application Id
-          type: number
-          example: 5455656
-        application_name:
-          description: application name
-          type: string
-          example: webex
-        criticality:
-          description: criticality
-          type: string
-          example: Top
-        eqs:
-          description: eqs value
-          type: number
-          format: double
-          example: 9.55
-        throughput:
-          description: throughput value
-          type: number
-          format: double
-          example: 5553434.56
-        volume:
-          description: volume value
-          type: number
-          format: double
-          example: 44567.55
-    ApplicationMetricsSummaryInfoList_application-metrics-summary:
-      type: array
-      description: Array of Object containing application overview summary details group by Application, Application Group or criticality
-      items:
-        description: Object containing application summary Data
-        $ref: '#/components/schemas/application-metrics-summary'
-    ApplicationsMetricsSummaryResponse:
-      type: object
-      properties:
-        data:
-          description: Returns Filtered summary data
-          $ref: '#/components/schemas/ApplicationMetricsSummaryInfoList_application-metrics-summary'
-        time_range:
-          description: The timeRange response
-          $ref: '#/components/schemas/TimeRange'
-        pagination:
-          description: The pagination response
-          $ref: '#/components/schemas/XiqPage'
-    AlarmSeverityCountResponseObject:
-      type: object
-      properties:
-        total:
-          description: total count of active alarms
-          type: integer
-          format: int32
-          example: 10
-        detail:
-          description: count of active alarms for each severity(critical, major, minor)
-          type: array
-          items:
-            properties:
-              severity:
-                description: severity of the alarm
-                type: string
-                minLength: 4
-                example: major
-              count:
-                description: count of alarms for the given severity
-                type: integer
-                format: int32
-                example: 10
-    AlarmSeverityCountResponse:
-      type: object
-      properties:
-        data:
-          description: Alarm active count per severity
-          $ref: '#/components/schemas/AlarmSeverityCountResponseObject'
-    ViewAlarmsResponse:
-      type: array
-      items:
-        properties:
-          id:
-            description: internal id of the alarm instance
-            type: string
-            minLength: 4
-            example: 5cedee19-2219-404e-bc4b-964a5e3b6bae
-          raised_date_time:
-            description: timestamp when the alarm was raised
-            type: integer
-            format: int64
-            example: 1652607240
-          cleared_date_time:
-            description: timestamp when the alarm was cleared (applicable only to cleared alarms)
-            type: integer
-            format: int64
-            example: 1652607380
-          local_appliance_id:
-            description: local appliance id
-            type: integer
-            format: int64
-            example: 64102141172
-          local_appliance_name:
-            description: local appliance name
-            type: string
-            minLength: 4
-            example: ebx-02
-          local_appliance_serial_number:
-            description: local appliance serial number
-            type: string
-            minLength: 4
-            example: A0518X0005A0
-          remote_appliance_id:
-            description: remote appliance id
-            type: integer
-            format: int64
-            example: 64108151319
-          remote_appliance_name:
-            description: remote appliance name
-            type: string
-            minLength: 4
-            example: ebx-03
-          remote_appliance_serial_number:
-            description: remote appliance serial number
-            type: string
-            minLength: 4
-            example: N0815K0319A0
-          local_site_id:
-            description: local site id
-            type: integer
-            format: int64
-            example: 2
-          local_site_name:
-            description: local site name
-            type: string
-            minLength: 4
-            example: Site 02
-          remote_site_id:
-            description: local site id
-            type: integer
-            format: int64
-            example: 3
-          remote_site_name:
-            description: remote site name
-            type: string
-            minLength: 4
-            example: Site 03
-          alarm_name:
-            description: unique alarm name
-            type: string
-            minLength: 4
-            example: tunnel-failure
-          alarm_description:
-            description: human readable alarm name
-            type: string
-            minLength: 4
-            example: Tunnel Failure
-          details:
-            description: specific details about the alarm
-            type: string
-            minLength: 4
-            example: No other appliance in local site
-          severity:
-            description: severity of the alarm
-            type: string
-            minLength: 4
-            example: critical
-          layer:
-            description: category
-            type: string
-            minLength: 4
-            example: Underlay
-          state:
-            description: status of the alarm
-            type: string
-            minLength: 4
-            example: cleared
-    ViewAlarmsResponsePaged:
-      allOf:
-      - $ref: '#/components/schemas/XiqPage'
-      - type: object
-        properties:
-          data:
-            allOf:
-            - $ref: '#/components/schemas/ViewAlarmsResponse'
     SitesMetricsWanData:
       type: object
       properties:
@@ -25310,6 +26225,22 @@ components:
       allOf:
       - $ref: '#/components/schemas/ApplicationOverviewSummaryData'
       - $ref: '#/components/schemas/XiqPage'
+    SitesJitterOverviewDetails:
+      type: object
+      properties:
+        data:
+          description: Sites overview response
+          $ref: '#/components/schemas/SitesOverview'
+        time_range:
+          description: The time range response
+          $ref: '#/components/schemas/TimeRange'
+    SitesJitterOverviewResponse:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/SitesJitterOverviewDetails'
     DelayJitter:
       type: array
       description: Object containing an array of delay and jitter values for the site and the associated timestamp
@@ -25581,6 +26512,52 @@ components:
         data:
           description: The EQS evolution
           $ref: '#/components/schemas/EQS'
+    ResponseTimestamp:
+      type: integer
+      description: Time of the response in epoch format (milliseconds)
+      format: int64
+      example: 1651743308000
+    ApplianceGetStatusSimple:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                $ref: '#/components/schemas/ResponseTimestamp'
+              info:
+                type: object
+                properties:
+                  id:
+                    description: Appliance ID
+                    type: integer
+                    format: int64
+                    example: 1
+                  name:
+                    description: Appliance Name
+                    type: string
+                    example: Branch-01-IPE1
+              state:
+                type: object
+                properties:
+                  orchestrator_connected:
+                    description: True if appliance is connected to the orchestrator
+                    type: boolean
+                    example: true
+                  configuration_synchronized:
+                    description: True if appliance configuration in sync with orchestrator
+                    type: boolean
+                    example: true
+                  lldp_state_active:
+                    description: True if LLDP state is active
+                    type: boolean
+                    example: true
+                  firmware_version:
+                    description: Current applied appliance firmware
+                    type: string
+                    example: 22.03.0.2
     ApplianceGetStatus:
       type: object
       properties:
@@ -25760,113 +26737,180 @@ components:
                       type: integer
                       example: 50
                       format: int32
-    TunnelInfo:
-      type: array
-      items:
+    ViewDeviceSimpleReferenceObject:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        name:
+          type: string
+    ViewDeviceResponse:
+      type: object
+      allOf:
+      - type: object
         properties:
-          initiator_appliance_id:
-            description: The initiator appliance ID
+          id:
             type: integer
             format: int64
-            example: 542024882680
-          responder_appliance_id:
-            description: The responder appliance ID
+            minimum: 1
+          owner_id:
             type: integer
             format: int64
-            example: 542024882681
-          initiator_appliance_name:
-            description: The initiator appliance name
-            type: string
-            example: APPLIANCE-01
-          responder_appliance_name:
-            description: The responder appliance name
-            type: string
-            example: APPLIANCE-02
-          initiator_site_id:
-            description: This is the initiator site ID
+          org_id:
             type: integer
             format: int64
-            example: 542024882780
-          responder_site_id:
-            description: This is the responder site ID
-            type: integer
-            format: int64
-            example: 5420248827781
-          initiator_site_name:
-            description: The initiator site name
+          name:
             type: string
-            example: SITE-01
-          responder_site_name:
-            description: The responder site name
-            type: string
-            example: SITE-02
-          initiator_interface:
-            description: The initiator interface name
-            type: string
-            minLength: 1
-            example: wan1
-          responder_interface:
-            description: The responder interface name
-            type: string
-            minLength: 1
-            example: wan2
-          overlay_id:
-            description: The overlay ID
-            type: integer
-            format: int64
-            example: 20
-          overlay_name:
-            description: The overlay name
-            type: string
-            minLength: 1
-            example: MPLS1
-          status_id:
-            description: The overlay status ID
-            type: string
-            enum:
-            - up
-            - down
-            minLength: 1
-            example: up
-          status:
-            description: The overlay status
-            type: string
-            minLength: 1
-            example: Up
-          type_id:
-            description: The overlay type ID
-            type: string
-            enum:
-            - vti
-            - gre
-            - gre_user
-            - zsc
-            - csec
-            - sdi
-            - aws
-            - azure
-            minLength: 1
-            example: gre
           type:
-            description: The overlay type
             type: string
-            minLength: 1
-            example: Overlay
-          color_id:
-            description: color_id is the unique number specifying a color that will be picked from the pool of colors maintained by Frontend in order to display each overlay distinctly.
+            enum:
+            - appliance
+            description: Type of the device.
+          serial_number:
+            type: string
+            description: Serial number of the device.
+          mac_address:
+            type: string
+            description: MAC address of the device.
+          model:
+            type: string
+            description: Model of the device.
+          firmware_version:
+            type: string
+            description: Version of agent software running on the device.
+          configuration:
+            type: object
+            properties:
+              status:
+                type: string
+                description: |
+                  Status providing assessment of configuration status.
+                  - UNKNOWN: system error.
+                  - NOT_CONFIGURED: no template assigned.
+                  - TO_BE_CONFIGURED: never deployed.
+                  - UPDATING: a validated deployment has been triggered, orchestration is pending.
+                  - CONFIGURATION_FAILED: configuration was not successful (orchestration error or appliance error). "message" should contain indications.
+                  - CONFIGURATION_UPDATED: appliance has received and loaded deployed configuration.
+                enum:
+                - UNKNOWN
+                - NOT_CONFIGURED
+                - TO_BE_CONFIGURED
+                - UPDATING
+                - CONFIGURATION_FAILED
+                - CONFIGURATION_UPDATED
+              message:
+                type: string
+                description: |
+                  Message that may follow up a warning or error status.
+              last_deployed_at:
+                type: string
+                format: date-time
+                description: When the last valid deployment was requested by a User.
+              last_updated_at:
+                type: string
+                format: date-time
+                description: When the device received its last configuration (null if never deployed or not configured).
+              in_sync:
+                type: boolean
+                description: |
+                  **true** indicates that latest deployed configuration is the one running on the device.
+          connectivity:
+            type: object
+            properties:
+              connected:
+                type: boolean
+                description: |
+                  **true** indicates the device is actively connected to the communicator.
+              last_connected_at:
+                type: string
+                format: date-time
+                description: Time since the device is connected to communicator. null when not connected.
+              disconnected_at:
+                type: string
+                format: date-time
+                description: Time since the device is disconnected to communicator. null when connected or never connected.
+          site:
+            description: Site which the device is bound to.
+            allOf:
+            - $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
+          description:
+            type: string
+          device_template:
+            description: Device template applied to the device.
+            allOf:
+            - $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
+          management_network:
+            type: object
+            description: Management interface IP address.
+            properties:
+              ip_address:
+                type: string
+                format: ipv4
+              subnet_mask:
+                type: integer
+                minimum: 0
+                maximum: 32
+          wans:
+            type: array
+            description: WAN interfaces of the device.
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  enum:
+                  - WAN1
+                  - WAN2
+                  - WAN3
+                  description: WAN interface name.
+                enabled:
+                  type: boolean
+                  description: |
+                    If **false** other properties will be **null**.
+                transport_network:
+                  $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
+                overlays:
+                  type: array
+                  items:
+                    type: object
+                    allOf:
+                    - $ref: '#/components/schemas/ViewDeviceSimpleReferenceObject'
+                    - type: object
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                          - hub_and_spoke
+                          - third_party_vpn
+                          - cloud_mesh
+          cloud_mesh_enabled:
+            type: boolean
+            description: |
+              **true** if Cloud Mesh service is enabled on this device.
+          as_number:
+            description: AS Number.
             type: integer
-            format: int32
-            example: 1
-    TunnelInfoData:
+            format: int64
+            minimum: 0
+            maximum: 65535
+          last_updated_at:
+            type: string
+            format: date-time
+            description: When the device received its last configuration (null if never deployed or not configured).
+    ViewDevicesResponse:
       type: object
       properties:
         data:
-          description: Connection info data
-          $ref: '#/components/schemas/TunnelInfo'
-    TunnelInfoResponse:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/ViewDeviceResponse'
+    ViewDevicesResponsePaged:
       allOf:
-      - $ref: '#/components/schemas/TunnelInfoData'
       - $ref: '#/components/schemas/XiqPage'
+      - $ref: '#/components/schemas/ViewDevicesResponse'
     Id:
       type: object
       required:
@@ -26001,6 +27045,23 @@ components:
       allOf:
       - $ref: '#/components/schemas/VPNZoneCollectionResponse'
       - $ref: '#/components/schemas/XiqPage'
+    GetOverlayMain:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - HUB-AND-SPOKE
+          - THIRD-PARTY-VPN
+          - APPS-ANYWHERE
+      discriminator:
+        propertyName: type
+        mapping:
+          HUB-AND-SPOKE: '#/components/schemas/GetOverlayHubAndSpoke'
+          THIRD-PARTY-VPN: '#/components/schemas/GetOverlayExternalGateway'
+          APPS-ANYWHERE: '#/components/schemas/GetAppsAnywhere'
     OverlayBaseCreate:
       type: object
       required:
@@ -26019,7 +27080,8 @@ components:
       - type: object
         properties:
           id:
-            type: integer
+            type: number
+            format: long
             minimum: 1
             description: Identifier automatically generated when creating this object.
     OverlayBase:
@@ -26037,22 +27099,14 @@ components:
             format: int64
             readOnly: true
           created_at:
-            type: integer
-            format: int64
-            description: Creation timestamp (epoch time in milliseconds) of this object.
-            example: 1654702565448
+            type: string
+            example: '2022-06-14T17:24:13.429+00:00'
+            description: Creation date and time of this object.
             readOnly: true
           updated_at:
-            type: integer
-            format: int64
-            description: Last update timestamp (epoch time in milliseconds) of this object.
-            example: 1654703566816
-            readOnly: true
-          type:
-            type: integer
-            format: int64
-            description: Type of the Overlay (Hub & Spoke, Third Party VPN, Application Anywhere).
-            example: 1
+            type: string
+            example: '2022-06-14T17:24:13.429+00:00'
+            description: Last update date and time of this object.
             readOnly: true
     IKEEncryptionCipherMode:
       type: string
@@ -26174,7 +27228,7 @@ components:
       type: string
       description: Authentication mode (only psk supported)
       enum:
-      - psk
+      - PSK
     PskEncoding:
       type: string
       description: PSK Encoding
@@ -26202,22 +27256,37 @@ components:
             $ref: '#/components/schemas/CredentialsRead'
     GetOverlayHubAndSpoke:
       allOf:
+      - $ref: '#/components/schemas/GetOverlayMain'
       - $ref: '#/components/schemas/OverlayBase'
       - type: object
         properties:
           security:
             $ref: '#/components/schemas/SecurityRead'
+    ExternalGatewayRouting:
+      type: object
+      required:
+      - mode
+      properties:
+        mode:
+          type: string
+          enum:
+          - bgp
+          - static
+      discriminator:
+        propertyName: mode
+        mapping:
+          bgp: '#/components/schemas/BGPRouting'
+          static: '#/components/schemas/StaticRouting'
     ASN32:
       type: integer
       format: int64
       minimum: 0
       maximum: 65535
     BGPRouting:
+      allOf:
+      - $ref: '#/components/schemas/ExternalGatewayRouting'
       type: object
       properties:
-        mode:
-          type: string
-          description: Routing modes
         peer_ip_address:
           type: string
           format: ipv4
@@ -26245,32 +27314,20 @@ components:
           description: Length of the subnet's prefix.
           example: 28
     StaticRouting:
+      allOf:
+      - $ref: '#/components/schemas/ExternalGatewayRouting'
       type: object
       properties:
-        mode:
-          type: string
-          description: Routing modes
         remote_subnets:
           type: array
           items:
             $ref: '#/components/schemas/Subnet'
-    ExternalGatewayRouting:
-      type: object
-      required:
-      - mode
-      discriminator:
-        propertyName: mode
-        mapping:
-          bgp: '#/components/schemas/BGPRouting'
-          static: '#/components/schemas/StaticRouting'
-      anyOf:
-      - $ref: '#/components/schemas/BGPRouting'
-      - $ref: '#/components/schemas/StaticRouting'
     ResponderId:
       description: Responder ID
       type: string
     GetOverlayExternalGateway:
       allOf:
+      - $ref: '#/components/schemas/GetOverlayMain'
       - $ref: '#/components/schemas/OverlayBase'
       - type: object
         properties:
@@ -26359,10 +27416,10 @@ components:
           vpn_acceleration_mode:
             type: string
             enum:
-            - ENABLED
-            - DISABLED
-            - CUSTOMIZABLE
             - NA
+            - customizable
+            - enabled
+            - disabled
             description: The VPN acceleration type for this overlay.
           route_tables:
             type: array
@@ -26371,6 +27428,7 @@ components:
               description: The route tables for the associated cloud gateway.
     GetAppsAnywhere:
       allOf:
+      - $ref: '#/components/schemas/GetOverlayMain'
       - $ref: '#/components/schemas/OverlayBase'
       - type: object
         properties:
@@ -26378,20 +27436,6 @@ components:
             $ref: '#/components/schemas/OverlayAppsAnywhereRouting'
           details:
             $ref: '#/components/schemas/OverlayAppsAnywhereDetails'
-    GetOverlayMain:
-      type: object
-      required:
-      - type
-      discriminator:
-        propertyName: type
-        mapping:
-          HUB-AND-SPOKE: '#/components/schemas/GetOverlayHubAndSpoke'
-          THIRD-PARTY-VPN: '#/components/schemas/GetOverlayExternalGateway'
-          APPS-ANYWHERE: '#/components/schemas/GetAppsAnywhere'
-      anyOf:
-      - $ref: '#/components/schemas/GetOverlayHubAndSpoke'
-      - $ref: '#/components/schemas/GetOverlayExternalGateway'
-      - $ref: '#/components/schemas/GetAppsAnywhere'
     GetOverlay:
       type: object
       properties:
@@ -26550,6 +27594,17 @@ components:
             $ref: '#/components/schemas/ReferencedObject'
           template:
             $ref: '#/components/schemas/ReferencedObject'
+    GetOnboardApplianceMultipleData:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplianceProperties'
+    GetOnboardApplianceMultiple:
+      allOf:
+      - $ref: '#/components/schemas/GetOnboardApplianceMultipleData'
+      - $ref: '#/components/schemas/XiqPage'
     GetOnboardApplianceSingle:
       type: object
       properties:
@@ -26647,21 +27702,17 @@ components:
           wan_to_lan:
             $ref: '#/components/schemas/CapabilityState'
           lan1:
-            allOf:
-            - $ref: '#/components/schemas/CapabilityState'
             readOnly: true
+            $ref: '#/components/schemas/CapabilityState'
           wan1:
-            allOf:
-            - $ref: '#/components/schemas/CapabilityState'
             readOnly: true
+            $ref: '#/components/schemas/CapabilityState'
           wan2:
-            allOf:
-            - $ref: '#/components/schemas/CapabilityState'
             readOnly: true
+            $ref: '#/components/schemas/CapabilityState'
           wan3:
-            allOf:
-            - $ref: '#/components/schemas/CapabilityState'
             readOnly: true
+            $ref: '#/components/schemas/CapabilityState'
           time_synchronization_server:
             $ref: '#/components/schemas/CapabilityState'
           role:
@@ -26686,9 +27737,8 @@ components:
           bypass_lan2_wan2:
             $ref: '#/components/schemas/CapabilityState'
           multipath:
-            allOf:
-            - $ref: '#/components/schemas/CapabilityState'
             readOnly: true
+            $ref: '#/components/schemas/CapabilityState'
           is_overridden:
             type: boolean
             default: false
@@ -27247,6 +28297,109 @@ components:
           - $ref: '#/components/schemas/DeviceLanPropertiesResponse'
           - $ref: '#/components/schemas/IhapConfigurationResponseProperties'
           - $ref: '#/components/schemas/VrrpConfigurationResponseProperties'
+    FabricTunnelUpdate:
+      type: object
+      required:
+      - appliance
+      properties:
+        appliance:
+          type: object
+          required:
+          - id
+          properties:
+            id:
+              type: integer
+              description: ID of remote Appliance to which remote fabric switch is connected.
+        is_is_metric:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          nullable: true
+    DeviceLanPropertiesLocalParametersUpdate:
+      allOf:
+      - $ref: '#/components/schemas/DeviceLanPropertiesLocalParametersCommon'
+      - type: object
+        properties:
+          fabric_tunnels:
+            type: array
+            description: List of fabric tunnels to update. Only provided tunnels may have their IS-IS metric overridden.
+            items:
+              $ref: '#/components/schemas/FabricTunnelUpdate'
+    DeviceLanPropertiesUpdate:
+      allOf:
+      - $ref: '#/components/schemas/DeviceLanPropertiesCommon'
+      - type: object
+        properties:
+          local_parameters:
+            $ref: '#/components/schemas/DeviceLanPropertiesLocalParametersUpdate'
+    IhapConfigurationRequestProperties:
+      allOf:
+      - type: object
+        properties:
+          ihap:
+            type: object
+            properties:
+              role:
+                type: string
+                enum:
+                - NOMINAL
+                - BACKUP
+                default: NOMINAL
+              peer_appliance:
+                $ref: '#/components/schemas/Id'
+                description: Associated peer appliance from same site
+              profile:
+                $ref: '#/components/schemas/Id'
+                description: Associated IHAP profile
+    VrrpConfigurationRequestProperties:
+      allOf:
+      - type: object
+        properties:
+          vrrp:
+            type: object
+            properties:
+              role:
+                type: string
+                enum:
+                - MASTER
+                - BACKUP
+                default: MASTER
+              profile:
+                $ref: '#/components/schemas/Id'
+                description: Associated VRRP profile
+    DeviceLanInterfacesUpdateRequest:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/DeviceLanPropertiesUpdate'
+            - $ref: '#/components/schemas/IhapConfigurationRequestProperties'
+            - $ref: '#/components/schemas/VrrpConfigurationRequestProperties'
+    DeviceLanInterfacesUpdateResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/DeviceLanPropertiesResponse'
+            - $ref: '#/components/schemas/IhapConfigurationResponseProperties'
+            - $ref: '#/components/schemas/VrrpConfigurationResponseProperties'
+    DeviceWanResponse:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum:
+          - BRIDGE
+          - ROUTER
+      discriminator:
+        propertyName: mode
+        mapping:
+          BRIDGE: '#/components/schemas/DeviceWanBridgeResponse'
+          ROUTER: '#/components/schemas/DeviceWanRouterResponse'
     DeviceWanCommon:
       type: object
       required:
@@ -27266,12 +28419,6 @@ components:
         description:
           type: string
           description: Free text to add a custom description to this object.
-        mode:
-          type: string
-          enum:
-          - BRIDGE
-          - ROUTER
-          description: This field is **read-only**. It is only there to discriminate between ROUTER payload and BRIDGE payload
         min_bandwidth_up:
           type: integer
           minimum: 1
@@ -27314,6 +28461,7 @@ components:
                 format: ipv4
     DeviceWanBridgeResponse:
       allOf:
+      - $ref: '#/components/schemas/DeviceWanResponse'
       - $ref: '#/components/schemas/DeviceWanBridgeCommon'
     DeviceWanSiteToSiteUpdate:
       type: object
@@ -27439,6 +28587,7 @@ components:
           description: Free text to add a custom description to this object.
     DeviceWanRouterResponse:
       allOf:
+      - $ref: '#/components/schemas/DeviceWanResponse'
       - $ref: '#/components/schemas/DeviceWanRouterCommon'
       - type: object
         properties:
@@ -27448,15 +28597,6 @@ components:
               $ref: '#/components/schemas/SimpleWanOverlayResponse'
           secure_web_gateway:
             $ref: '#/components/schemas/SimpleWanSecureWebGatewayResponse'
-    DeviceWanResponse:
-      discriminator:
-        propertyName: mode
-        mapping:
-          BRIDGE: '#/components/schemas/DeviceWanBridgeResponse'
-          ROUTER: '#/components/schemas/DeviceWanRouterResponse'
-      oneOf:
-      - $ref: '#/components/schemas/DeviceWanBridgeResponse'
-      - $ref: '#/components/schemas/DeviceWanRouterResponse'
     WanInterfaceCollectionResponse:
       type: object
       properties:
@@ -27468,6 +28608,256 @@ components:
       allOf:
       - $ref: '#/components/schemas/WanInterfaceCollectionResponse'
       - $ref: '#/components/schemas/XiqPage'
+    DeviceWanUpdate:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum:
+          - BRIDGE
+          - ROUTER
+      discriminator:
+        propertyName: mode
+        mapping:
+          BRIDGE: '#/components/schemas/DeviceWanBridgeUpdate'
+          ROUTER: '#/components/schemas/DeviceWanRouterUpdate'
+    DeviceWanBridgeUpdate:
+      allOf:
+      - $ref: '#/components/schemas/DeviceWanUpdate'
+      - $ref: '#/components/schemas/DeviceWanBridgeCommon'
+    DeviceWanCommonOverlayUpdate:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          description: Id of the overlay.
+        type:
+          type: string
+          description: Overlay Types (for documentation purpose only, not required in the payload)
+    DeviceWanHubAndSpokeOverlayUpdate:
+      allOf:
+      - $ref: '#/components/schemas/DeviceWanCommonOverlayUpdate'
+      - type: object
+        properties:
+          connections:
+            type: array
+            items:
+              type: object
+              required:
+              - overlay
+              - remote
+              properties:
+                remote:
+                  type: object
+                  required:
+                  - id
+                  - wan_name
+                  description: Remote termination point of that connection
+                  properties:
+                    id:
+                      type: integer
+                      minimum: 1
+                      description: Identifier of the remote appliance.
+                    name:
+                      type: string
+                      description: Computed Name of the remote
+                    site_id:
+                      type: integer
+                      minimum: 1
+                      description: Identifier of the remote site.
+                    site_name:
+                      type: string
+                      description: Name of the remote site
+                    appliance_name:
+                      type: string
+                      description: Name of the remote appliance
+                    wan_name:
+                      type: string
+                      enum:
+                      - WAN1
+                      - WAN2
+                      - WAN3
+                      description: Identifier of the remote WAN interface.
+                network_pref:
+                  type: integer
+                  minimum: 0
+                  maximum: 4294967295
+                  default: 100
+                  description: BGP local preference.
+    ExternalGatewayConnectionCommons:
+      type: object
+      properties:
+        initiator_id:
+          type: string
+          description: mandatory if the wan interface do not provide a public IP address
+        local_ip_address:
+          type: string
+          description: subnet
+        remote_ip_address:
+          type: string
+          description: mandatory in case of overlay with static routing
+        network_pref:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: BGP local preference.
+    Psk:
+      type: string
+      description: Pre-shared key
+    PskEncodingCreateUpdate:
+      type: string
+      description: PSK Encoding, null or auto to let system detect it.
+      enum:
+      - none
+      - base64
+      - auto
+    CredentialsUpdate:
+      type: object
+      description: If not provided, the configured credentials will remains as previously set.
+      properties:
+        mode:
+          $ref: '#/components/schemas/AuthenticationMode'
+        psk:
+          $ref: '#/components/schemas/Psk'
+        psk_encoding:
+          $ref: '#/components/schemas/PskEncodingCreateUpdate'
+    ExternalVpnGatewayConnectionUpdate:
+      allOf:
+      - $ref: '#/components/schemas/ExternalGatewayConnectionCommons'
+      - type: object
+        properties:
+          credentials:
+            $ref: '#/components/schemas/CredentialsUpdate'
+    DeviceWanThirdPartyVpnOverlayUpdate:
+      allOf:
+      - $ref: '#/components/schemas/DeviceWanCommonOverlayUpdate'
+      - type: object
+        required:
+        - connection
+        properties:
+          connection:
+            $ref: '#/components/schemas/ExternalVpnGatewayConnectionUpdate'
+    RouteTable:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The cloud generated id of the route table
+    ApsAnywhereConnectionAttributes:
+      type: object
+      properties:
+        bgp_local_preference:
+          type: integer
+          example: 100
+          description: BGP local preference
+        association_route_table:
+          $ref: '#/components/schemas/RouteTable'
+          description: Associated route table
+        propagation_route_tables:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteTable'
+          description: List of propagated route tables
+        vpn_acceleration:
+          type: boolean
+          default: false
+          description: VPN acceleration enable/disable for a connection
+        propagation_labels:
+          type: array
+          items:
+            type: string
+          description: Propagation labels for connection. Applicable for Azure. (vHub)
+    AppsAnywhereConnectionUpdate:
+      allOf:
+      - $ref: '#/components/schemas/ApsAnywhereConnectionAttributes'
+    DeviceWanAppsAnywhereOverlayUpdate:
+      allOf:
+      - $ref: '#/components/schemas/DeviceWanCommonOverlayUpdate'
+      - type: object
+        required:
+        - apps_anywhere_connection
+        properties:
+          apps_anywhere_connection:
+            $ref: '#/components/schemas/AppsAnywhereConnectionUpdate'
+    DeviceWanOverlayUpdate:
+      type: object
+      required:
+      - type
+      discriminator:
+        propertyName: type
+        mapping:
+          HUB-AND-SPOKE: '#/components/schemas/DeviceWanHubAndSpokeOverlayUpdate'
+          THIRD-PARTY-VPN: '#/components/schemas/DeviceWanThirdPartyVpnOverlayUpdate'
+          APPS-ANYWHERE: '#/components/schemas/DeviceWanAppsAnywhereOverlayUpdate'
+      anyOf:
+      - $ref: '#/components/schemas/DeviceWanHubAndSpokeOverlayUpdate'
+      - $ref: '#/components/schemas/DeviceWanThirdPartyVpnOverlayUpdate'
+      - $ref: '#/components/schemas/DeviceWanAppsAnywhereOverlayUpdate'
+    SecureWebGatewayDestination:
+      type: object
+      properties:
+        destination:
+          description: Designate which public IP address is targeted by that connection
+          enum:
+          - PRIMARY
+          - SECONDARY
+    SecureWebGatewayConnectionCommons:
+      allOf:
+      - $ref: '#/components/schemas/SecureWebGatewayDestination'
+      - $ref: '#/components/schemas/ExternalGatewayConnectionCommons'
+    SecureWebGatewayConnectionUpdate:
+      allOf:
+      - $ref: '#/components/schemas/SecureWebGatewayConnectionCommons'
+      - type: object
+        properties:
+          credentials:
+            $ref: '#/components/schemas/CredentialsUpdate'
+    DeviceWanRouterUpdate:
+      allOf:
+      - $ref: '#/components/schemas/DeviceWanUpdate'
+      - $ref: '#/components/schemas/DeviceWanRouterCommon'
+      - type: object
+        properties:
+          overlays:
+            type: array
+            items:
+              $ref: '#/components/schemas/DeviceWanOverlayUpdate'
+          secure_web_gateway:
+            type: object
+            required:
+            - id
+            - connections
+            properties:
+              id:
+                minimum: 1
+                description: Identifier of the Secure Web Gateway
+              connections:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SecureWebGatewayConnectionUpdate'
+    WanInterfaceUpdateRequest:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceWanUpdate'
+    PolicyCollection:
+      type: object
+      properties:
+        fabric:
+          type: string
+          enum:
+          - ENABLED
+          - DISABLED
+      discriminator:
+        propertyName: fabric
+        mapping:
+          ENABLED: '#/components/schemas/SdWanFabricPolicyResponse'
+          DISABLED: '#/components/schemas/SdWanDefaultPolicyResponse'
     SdWanPolicySyslogProperties:
       required:
       - name
@@ -27531,9 +28921,6 @@ components:
             description: Array of Syslogs attached to the policy
             items:
               $ref: '#/components/schemas/SdWanPolicySyslogProperties'
-          fabric:
-            $ref: '#/components/schemas/CapabilityState'
-            example: ENABLED
     SdWanDefaultPolicyProperties:
       required:
       - name
@@ -27556,10 +28943,12 @@ components:
                 example: 192.168.0.2/20
     SdWanFabricPolicyResponse:
       allOf:
+      - $ref: '#/components/schemas/PolicyCollection'
       - $ref: '#/components/schemas/ResponseObjectIdentifier'
       - $ref: '#/components/schemas/SdWanFabricPolicyProperties'
     SdWanDefaultPolicyResponse:
       allOf:
+      - $ref: '#/components/schemas/PolicyCollection'
       - $ref: '#/components/schemas/ResponseObjectIdentifier'
       - $ref: '#/components/schemas/SdWanDefaultPolicyProperties'
     PolicyCollectionResponse:
@@ -27568,14 +28957,7 @@ components:
         data:
           type: array
           items:
-            discriminator:
-              propertyName: fabric
-              mapping:
-                ENABLED: '#/components/schemas/SdWanFabricPolicyResponse'
-                DISABLED: '#/components/schemas/SdWanDefaultPolicyResponse'
-            oneOf:
-            - $ref: '#/components/schemas/SdWanFabricPolicyResponse'
-            - $ref: '#/components/schemas/SdWanDefaultPolicyResponse'
+            $ref: '#/components/schemas/PolicyCollection'
     PolicyPaginatedResponse:
       allOf:
       - $ref: '#/components/schemas/PolicyCollectionResponse'
@@ -28542,7 +29924,7 @@ components:
       in: query
       description: The wired experience view type
       name: viewType
-      required: true
+      required: false
       schema:
         type: string
         enum:
@@ -28579,6 +29961,21 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/XiqClientType'
+    qualityIndex:
+      name: qualityIndex
+      in: query
+      description: The quality index score
+      required: false
+      schema:
+        $ref: '#/components/schemas/XiqQualityIndex'
+    viewId:
+      in: query
+      description: The location id
+      name: locationId
+      required: true
+      schema:
+        type: integer
+        format: int64
     ssid:
       in: query
       description: The ssid value
@@ -28639,6 +30036,14 @@ components:
       required: true
       schema:
         type: string
+    offsetTime:
+      in: query
+      description: The offset value
+      name: offsetTime
+      required: true
+      schema:
+        type: integer
+        format: int32
     deviceId:
       in: query
       description: The device id
@@ -28709,14 +30114,14 @@ components:
       required: false
       schema:
         type: string
-    offsetTime:
+    lastDetectedTime:
       in: query
-      description: The offset value
-      name: offsetTime
-      required: true
+      description: The last detected time
+      name: lastDetectedTime
+      required: false
       schema:
         type: integer
-        format: int32
+        format: int64
     floorId:
       in: query
       description: The location ID of the floor
