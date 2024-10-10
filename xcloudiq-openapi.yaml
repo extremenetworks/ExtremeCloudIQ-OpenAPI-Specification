@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 24.5.0.51
+  version: 24.6.0.74
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -11366,7 +11366,7 @@ paths:
         url: https://extremecloudiq.com/api-docs/api-reference.html#update_copilot_anomalies_devices_action
       operationId: updateCopilotAnomaliesDevicesAction
       parameters:
-      - $ref: '#/components/parameters/async1'
+      - $ref: '#/components/parameters/async'
       requestBody:
         description: The body of update devices
         content:
@@ -11444,8 +11444,8 @@ paths:
     get:
       tags:
       - Copilot - Anomalies
-      summary: Get POE anomalous device lldp cdp Info details
-      description: Get LLDP-CDP information and location details for poe flapping anomalous devices.
+      summary: Get anomalous device lldp cdp Info details
+      description: Get LLDP-CDP information and location details for anomalous devices.
       externalDocs:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_poe-flapping_lldp-cdp-info
@@ -11454,6 +11454,7 @@ paths:
       - $ref: '#/components/parameters/anomalyId'
       - $ref: '#/components/parameters/deviceId'
       - $ref: '#/components/parameters/lastDetectedTime'
+      - $ref: '#/components/parameters/anomalyType'
       responses:
         '200':
           description: OK
@@ -11461,6 +11462,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqCopilotLldpCdpInfo'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/hardware-health/stats:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get HardwareHealth Anomaly Stats
+      description: Get all the stats for anomaly device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_hardware-health_stats
+      operationId: getCopilotAnomalyHardwareHealthStats
+      parameters:
+      - $ref: '#/components/parameters/anomalyId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotHardwareHealthStats'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/hardware-health/client-list:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get HardwareHealth contributing client list
+      description: Get all the client list for HardwareHealth device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_hardware-health_client-list
+      operationId: getCopilotHardwareHealthClientList
+      parameters:
+      - $ref: '#/components/parameters/deviceId'
+      - $ref: '#/components/parameters/timestamp1'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotHardwareHealthClientlist'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -14882,6 +14930,10 @@ components:
               type: integer
               description: The default user-profile ID.
               format: int64
+            enable_dns_search_domain:
+              type: boolean
+              default: false
+              description: Enable adding DNS search domain to unqualified host lookups forwarded by upstream DNS (in the thread border router).
     XiqIotpMaBleBeaconAppType:
       type: string
       description: The BLE Beacon application type.
@@ -15165,6 +15217,96 @@ components:
       enum:
       - NONE
       - DROP_PACKET
+    XiqClassificationType:
+      type: string
+      description: Classification type
+      enum:
+      - LOCATION
+      - CLOUD_CONFIG_GROUP
+      - IP_ADDRESS
+      - IP_SUBNET
+      - IP_RANGE
+    XiqClassification:
+      allOf:
+      - $ref: '#/components/schemas/XiqBaseEntity'
+      - type: object
+        description: The payload of common object - classification
+        required:
+        - classification_type
+        - match
+        - classification_id
+        - value
+        properties:
+          classification_type:
+            $ref: '#/components/schemas/XiqClassificationType'
+          match:
+            type: boolean
+            description: Contains or not contains
+          classification_id:
+            type: integer
+            description: The ID of location, cloud config group, IP address, IP subnet or IP range.
+            format: int64
+          value:
+            type: string
+            description: The value of classification
+    XiqClassificationRule:
+      allOf:
+      - $ref: '#/components/schemas/XiqBaseEntity'
+      - type: object
+        description: The payload of common object - classification assignment
+        required:
+        - name
+        properties:
+          name:
+            type: string
+            description: The classification assignment name
+          description:
+            type: string
+            description: The classification assignment description
+          classifications:
+            type: array
+            description: The details of rule assignments
+            items:
+              $ref: '#/components/schemas/XiqClassification'
+    XiqVlanObjectClassifiedEntry:
+      allOf:
+      - $ref: '#/components/schemas/XiqBaseEntity'
+      - type: object
+        description: The payload of VLAN object classified entry
+        required:
+        - vlan_id
+        properties:
+          vlan_id:
+            type: integer
+            description: The VLAN ID
+            format: int32
+          classification_rule:
+            $ref: '#/components/schemas/XiqClassificationRule'
+    XiqVlanProfile:
+      allOf:
+      - $ref: '#/components/schemas/XiqBaseEntity'
+      - type: object
+        description: The payload of common object - VLAN profile
+        required:
+        - name
+        - default_vlan_id
+        - enable_classification
+        properties:
+          name:
+            type: string
+            description: The VLAN profile name
+          default_vlan_id:
+            type: integer
+            description: The default VLAN ID
+            format: int32
+          enable_classification:
+            type: boolean
+            description: If apply VLANs to devices using classification
+          classified_entries:
+            type: array
+            description: The VLAN object classified entries
+            items:
+              $ref: '#/components/schemas/XiqVlanObjectClassifiedEntry'
     XiqDeviceBaseVlanAttributes:
       type: object
       description: The payload of a VLAN attribute object
@@ -15188,6 +15330,10 @@ components:
         always_create:
           type: boolean
           description: Whether the VLAN should be created even if not assigned to any port
+        vlanObj:
+          type: object
+          $ref: '#/components/schemas/XiqVlanProfile'
+          description: VLAN common object
     XiqDeviceVlanAttributes:
       allOf:
       - type: object
@@ -18245,96 +18391,6 @@ components:
         md5:
           type: string
           description: The firmware md5 hash
-    XiqClassificationType:
-      type: string
-      description: Classification type
-      enum:
-      - LOCATION
-      - CLOUD_CONFIG_GROUP
-      - IP_ADDRESS
-      - IP_SUBNET
-      - IP_RANGE
-    XiqClassification:
-      allOf:
-      - $ref: '#/components/schemas/XiqBaseEntity'
-      - type: object
-        description: The payload of common object - classification
-        required:
-        - classification_type
-        - match
-        - classification_id
-        - value
-        properties:
-          classification_type:
-            $ref: '#/components/schemas/XiqClassificationType'
-          match:
-            type: boolean
-            description: Contains or not contains
-          classification_id:
-            type: integer
-            description: The ID of location, cloud config group, IP address, IP subnet or IP range.
-            format: int64
-          value:
-            type: string
-            description: The value of classification
-    XiqClassificationRule:
-      allOf:
-      - $ref: '#/components/schemas/XiqBaseEntity'
-      - type: object
-        description: The payload of common object - classification assignment
-        required:
-        - name
-        properties:
-          name:
-            type: string
-            description: The classification assignment name
-          description:
-            type: string
-            description: The classification assignment description
-          classifications:
-            type: array
-            description: The details of rule assignments
-            items:
-              $ref: '#/components/schemas/XiqClassification'
-    XiqVlanObjectClassifiedEntry:
-      allOf:
-      - $ref: '#/components/schemas/XiqBaseEntity'
-      - type: object
-        description: The payload of VLAN object classified entry
-        required:
-        - vlan_id
-        properties:
-          vlan_id:
-            type: integer
-            description: The VLAN ID
-            format: int32
-          classification_rule:
-            $ref: '#/components/schemas/XiqClassificationRule'
-    XiqVlanProfile:
-      allOf:
-      - $ref: '#/components/schemas/XiqBaseEntity'
-      - type: object
-        description: The payload of common object - VLAN profile
-        required:
-        - name
-        - default_vlan_id
-        - enable_classification
-        properties:
-          name:
-            type: string
-            description: The VLAN profile name
-          default_vlan_id:
-            type: integer
-            description: The default VLAN ID
-            format: int32
-          enable_classification:
-            type: boolean
-            description: If apply VLANs to devices using classification
-          classified_entries:
-            type: array
-            description: The VLAN object classified entries
-            items:
-              $ref: '#/components/schemas/XiqVlanObjectClassifiedEntry'
     PagedXiqVlanProfile:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -23802,6 +23858,7 @@ components:
       - PORT_EFFICIENCY
       - WIFI_CAPACITY
       - WIFI_EFFICIENCY
+      - HARDWARE_HEALTH
     XiqLocationType:
       type: string
       enum:
@@ -24300,6 +24357,7 @@ components:
       - pe_count
       - dfs_count
       - mb_cast_count
+      - hardware_health_count
       properties:
         timestamp:
           type: integer
@@ -24323,6 +24381,9 @@ components:
           type: integer
           format: int64
         mb_cast_count:
+          type: integer
+          format: int64
+        hardware_health_count:
           type: integer
           format: int64
     XiqCopilotAssuranceScansOverview:
@@ -24505,6 +24566,7 @@ components:
       - frequency
       - recommended_action
       - issue
+      - anomaly_subtypes
       properties:
         building_id:
           type: integer
@@ -24547,6 +24609,8 @@ components:
         recommended_action:
           type: string
         issue:
+          type: string
+        anomaly_subtypes:
           type: string
     XiqCopilotAnomaliesDevicesWithLocation:
       allOf:
@@ -24756,6 +24820,142 @@ components:
           type: object
           description: The data in the current page
           $ref: '#/components/schemas/XiqPowerSourceEquipment'
+    XiqHardwareHealthDeviceStatsEntity:
+      type: object
+      description: data sequence
+      required:
+      - timestamp
+      - avg_cpu_utilization
+      - avg_memory_utilization
+      - avg_client_count
+      - unit_temperature
+      - poe_power_mode
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        avg_cpu_utilization:
+          type: number
+          format: double
+        avg_memory_utilization:
+          type: number
+          format: double
+        avg_client_count:
+          type: integer
+        unit_temperature:
+          type: number
+          format: double
+        poe_power_mode:
+          type: string
+    XiqHardwareHealthPacketCountsEntity:
+      type: object
+      description: data sequence
+      required:
+      - timestamp
+      - unicast_tx
+      - unicast_rx
+      - multicast_tx
+      - multicast_rx
+      - broadcast_tx
+      - broadcast_rx
+      - throughput
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        unicast_tx:
+          type: integer
+          format: int64
+        unicast_rx:
+          type: integer
+          format: int64
+        multicast_tx:
+          type: integer
+          format: int64
+        multicast_rx:
+          type: integer
+          format: int64
+        broadcast_tx:
+          type: integer
+          format: int64
+        broadcast_rx:
+          type: integer
+          format: int64
+        throughput:
+          type: integer
+          format: int64
+    XiqHardwareHealthRebootStatsEntity:
+      type: object
+      description: data sequence
+      required:
+      - timestamp
+      - reboot_code
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        reboot_code:
+          type: integer
+          format: int64
+    XiqCopilotHardwareHealthStats:
+      allOf:
+      - type: object
+        description: data sequence
+        required:
+        - hardware-health_device_stats_entities
+        - hardware-health_packet_counts_entities
+        - hardware-health_reboot_stats_entities
+        properties:
+          hardware-health_device_stats_entities:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqHardwareHealthDeviceStatsEntity'
+          hardware-health_packet_counts_entities:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqHardwareHealthPacketCountsEntity'
+          hardware-health_reboot_stats_entities:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqHardwareHealthRebootStatsEntity'
+    XiqHardwareHealthClientStatsEntity:
+      type: object
+      description: data sequence
+      required:
+      - client_mac
+      - client_name
+      - client_host_os
+      - avg_snr
+      - health_score
+      - client_id
+      properties:
+        client_mac:
+          type: string
+        client_name:
+          type: string
+        client_host_os:
+          type: string
+        avg_snr:
+          type: integer
+        health_score:
+          type: array
+          description: The health score type
+          items:
+            $ref: '#/components/schemas/HealthScoreType'
+        client_id:
+          type: integer
+          format: int64
+    XiqCopilotHardwareHealthClientlist:
+      type: object
+      properties:
+        client_stats_entities:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqHardwareHealthClientStatsEntity'
     XiqPacketCaptureField:
       type: string
       enum:
@@ -30401,8 +30601,8 @@ components:
       schema:
         $ref: '#/components/schemas/XiqSortOrder'
     async:
-      name: async
       in: query
+      name: async
       description: Whether to enable async mode
       required: false
       schema:
@@ -30856,14 +31056,6 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/XiqAnomalySeverity'
-    async1:
-      in: query
-      name: async
-      description: The Async value
-      required: false
-      schema:
-        type: boolean
-        default: false
     fileType:
       name: fileType
       in: query
