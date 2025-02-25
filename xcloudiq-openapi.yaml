@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 24.6.0.74
+  version: 25.1.0.147
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -89,6 +89,8 @@ tags:
   description: Thread Networks in ExtremeCloud IQ
 - name: AFC
   description: ExtremeCloud IQ AFC Feature.
+- name: Universal Compute Platform
+  description: The Universal Compute Platform (UCP) API
 paths:
   /login:
     post:
@@ -3047,387 +3049,6 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
-  /devices/{id}/config/vlan-ipv4-intf:
-    get:
-      tags:
-      - Device
-      summary: Get IPv4 Interfaces for a device
-      description: Get the IPv4 Interfaces for a specific device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_configure_ipv4_interfaces
-      operationId: getDeviceIpv4Interfaces
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - $ref: '#/components/parameters/page'
-      - $ref: '#/components/parameters/limit'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PagedXiqDeviceConfigureIpv4Interfaces'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-    post:
-      tags:
-      - Device
-      summary: Create an IPv4 Interface for a device
-      description: Create the IPv4 Interface for a specific device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_configure_ipv4_interface
-      operationId: createDeviceIpv4Interface
-      parameters:
-      - $ref: '#/components/parameters/id'
-      requestBody:
-        description: The payload to create a new IPv4 Interface attributes entry
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/XiqDeviceCreateConfigureIpv4Interface'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqDeviceConfigureIpv4InterfacesResponse'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-    delete:
-      tags:
-      - Device
-      summary: Delete one or more IPv4 Interfaces
-      description: Delete one or more IPv4 Interfaces and the static routes related to these interfaces via nex hop ip.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_configure_ipv4_interfaces
-      operationId: deleteDeviceIpv4Interfaces
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - name: interfaceIds
-        in: query
-        description: IPv4 Interfaces IDs of the entries to be deleted
-        required: true
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /devices/{id}/config/vlan-ipv4-intf/{ipv4InterfaceId}:
-    patch:
-      tags:
-      - Device
-      summary: Update an IPv4 Interface for a device
-      description: Update attributes of a IPv4 Interface for the specific device. Returns the updated entry.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_device_ipv4_interface
-      operationId: updateDeviceIpv4Interface
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - name: ipv4InterfaceId
-        in: path
-        description: IPv4 Interface ID of the entry to be updated
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        description: The payload to update a IPv4 Interface attributes entry
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/XiqDeviceUpdateConfigureIpv4Interface'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqDeviceConfigureIpv4InterfacesResponse'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /devices/{id}/config/vlan-ipv4-static:
-    get:
-      tags:
-      - Device
-      summary: Get IPv4 Static Routes for a device
-      description: Get the IPv4 Static Routes for a specific device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_configure_ipv4_static_routes
-      operationId: getDeviceIpv4StaticRoutes
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - $ref: '#/components/parameters/page'
-      - $ref: '#/components/parameters/limit'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PagedXiqDeviceConfigureIpv4StaticRoutes'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-    post:
-      tags:
-      - Device
-      summary: Create an IPv4 Static Route for a device
-      description: Create the IPv4 Static Route for a specific device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_configure_ipv4_static_route
-      operationId: createDeviceIpv4StaticRoute
-      parameters:
-      - $ref: '#/components/parameters/id'
-      requestBody:
-        description: The payload to create a new IPv4 Static Route attributes entry
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/XiqDeviceCreateConfigureIpv4StaticRoute'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqDeviceUpdateConfigureIpv4StaticRoute'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-    delete:
-      tags:
-      - Device
-      summary: Delete one or more IPv4 Static Routes for a device
-      description: Delete one or more IPv4 Static Routes for a specific device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_configure_ipv4_static_routes
-      operationId: deleteDeviceIpv4StaticRoutes
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - name: staticRouteIds
-        in: query
-        description: IPv4 Static IDs of the entries to be deleted
-        required: true
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /devices/{id}/config/vlan-ipv4-static/{ipv4StaticRouteId}:
-    patch:
-      tags:
-      - Device
-      summary: Update an IPv4 Static Route for a device
-      description: Update attributes of a IPv4 Static Route for the specific device. Returns the updated entry.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_device_ipv4_static_route
-      operationId: updateDeviceIpv4StaticRoute
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - name: ipv4StaticRouteId
-        in: path
-        description: IPv4 Static Route ID of the entry to be updated
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        description: The payload to update a IPv4 Static Route attributes entry
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/XiqDeviceCreateConfigureIpv4StaticRoute'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqDeviceUpdateConfigureIpv4StaticRoute'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /devices/{id}/monitor/vlan-attr:
-    get:
-      tags:
-      - Device
-      summary: Get VLAN attributes for all VLANs on a device
-      description: Get the VLAN Attributes for each VLAN on a specific device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_vlan_monitor_attributes
-      operationId: getDeviceVlanAttributes
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - $ref: '#/components/parameters/page'
-      - $ref: '#/components/parameters/XiqDeviceVlanPageLimit'
-      - name: sortField
-        in: query
-        description: The sort field
-        required: false
-        schema:
-          $ref: '#/components/schemas/XiqDeviceVlanSortField'
-      - $ref: '#/components/parameters/order'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PagedXiqDeviceMonitorVlanAttributes'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /devices/{id}/monitor/vlan-ipv4-intf:
-    get:
-      tags:
-      - Device
-      summary: Get IPv4 Interfaces for all VLANs on a device
-      description: Get the IPv4 Interfaces for each VLAN on a specific device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_vlan_monitor_ipv4_interfaces
-      operationId: getDeviceVlanIpv4Interfaces
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - $ref: '#/components/parameters/page'
-      - $ref: '#/components/parameters/XiqDeviceVlanIpv4InterfacesPageLimit'
-      - name: sortField
-        in: query
-        description: The sort field
-        required: false
-        schema:
-          $ref: '#/components/schemas/XiqDeviceVlanIpv4InterfacesSortField'
-      - $ref: '#/components/parameters/order'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PagedXiqDeviceMonitorVlanIpv4Interfaces'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /devices/{id}/monitor/ipv4-routing:
-    get:
-      tags:
-      - Device
-      summary: Get IPv4 Routing information on a device
-      description: Get the IPv4 Routing information on a specific device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_monitor_ipv4_routing
-      operationId: getDeviceIpv4Routing
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - $ref: '#/components/parameters/page'
-      - $ref: '#/components/parameters/XiqDeviceIpv4RoutePageLimit'
-      - name: sortField
-        in: query
-        description: The sort field
-        required: false
-        schema:
-          $ref: '#/components/schemas/XiqDeviceIpv4RoutingSortField'
-      - $ref: '#/components/parameters/order'
-      - name: vlanId
-        in: query
-        description: The VLAN id
-        schema:
-          type: integer
-          format: int32
-      - name: routeOrigin
-        in: query
-        description: The Route Origin - 1 - DIRECT, 2 - STATIC, 3 - OSPF
-        required: false
-        schema:
-          $ref: '#/components/schemas/XiqDeviceIpv4RoutingRouteOriginField'
-      - name: status
-        in: query
-        description: The Status of the route - 1 - UP, 2 - DOWN
-        required: false
-        schema:
-          $ref: '#/components/schemas/XiqDeviceIpv4RoutingStatusField'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PagedXiqDeviceMonitorIpv4Routing'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /devices/{id}/monitor/ipv4-routing-timeline:
-    get:
-      tags:
-      - Device
-      summary: Get IPv4 Routing timeline info per RI on device
-      description: Get IPv4 Routing Summary timeline info per Routing Instance on specific device.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_monitor_ipv4_routing_timeline
-      operationId: getDeviceIpv4RoutingTimeline
-      parameters:
-      - $ref: '#/components/parameters/id'
-      - $ref: '#/components/parameters/startTime'
-      - $ref: '#/components/parameters/endTime'
-      - name: precision
-        in: query
-        description: The Precision of the routing timeline
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqDeviceMonitorIpv4RoutingTimeline'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
   /devices/{id}/monitor/:refresh:
     post:
       tags:
@@ -5893,7 +5514,7 @@ paths:
     post:
       tags:
       - Configuration - Deployment
-      summary: ' [LRO] Push configuration and upgrade firmware'
+      summary: '[LRO] Push configuration and upgrade firmware'
       description: Push configuration and upgrade firmware to the target devices.
       externalDocs:
         description: API Reference
@@ -5907,7 +5528,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/XiqDeploymentRequest'
-        required: true
       responses:
         '200':
           description: OK
@@ -5915,6 +5535,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqDeploymentResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    get:
+      tags:
+      - Configuration - Deployment
+      summary: Get list of deployments
+      description: Get firmware upgrade details across multiple sites and devices.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_firmware_upgrade_details
+      operationId: getFirmwareUpgradeDetails
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/XiqPage'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      description: The data in the current page
+                      items:
+                        $ref: '#/components/schemas/XiqDeploymentDetailsResponse'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -5985,8 +5636,7 @@ paths:
         url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_firmware_metadatas
       operationId: getDeviceFirmwareMetadatas
       requestBody:
-        description: The request to get device firmware metadatas
-        required: true
+        description: The device details
         content:
           application/json:
             schema:
@@ -5999,6 +5649,11 @@ paths:
                   items:
                     type: integer
                     format: int64
+                product_types:
+                  type: array
+                  description: The product types
+                  items:
+                    type: string
       responses:
         '200':
           description: OK
@@ -6012,6 +5667,119 @@ paths:
                     description: The compatible firmware metadatas per device
                     additionalProperties:
                       $ref: '#/components/schemas/XiqDeviceFirmwareMetadata'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /deployments/{deploymentId}:
+    put:
+      tags:
+      - Configuration - Deployment
+      summary: Update schedule with deployment ID
+      description: Update firmware upgrade across multiple sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_firmware_upgrade
+      operationId: updateFirmwareUpgrade
+      parameters:
+      - in: path
+        description: The deployment ID
+        name: deploymentId
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      requestBody:
+        description: The device deploy configuration update request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqDeploymentRequest'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    get:
+      tags:
+      - Configuration - Deployment
+      summary: Get details of the deployment by deployment ID
+      description: Get firmware upgrade schedule details across sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_firmware_upgrade_schedule_details
+      operationId: getFirmwareUpgradeScheduleDetails
+      parameters:
+      - in: path
+        description: The deployment ID
+        name: deploymentId
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDeploymentDetailsResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Configuration - Deployment
+      summary: Delete the deployment schedule by ID
+      description: Delete firmware upgrade schedule.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#delete_firmware_upgrade_schedule
+      operationId: deleteFirmwareUpgradeSchedule
+      parameters:
+      - in: path
+        description: The deployment ID
+        name: deploymentId
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /deployments/{deploymentId}/status:
+    get:
+      tags:
+      - Configuration - Deployment
+      summary: '[LRO] Get firmware deployment status by ID'
+      description: Get firmware upgrade schedule status for a site based on deployment ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_firmware_upgrade_schedule_status
+      operationId: getFirmwareUpgradeScheduleStatus
+      parameters:
+      - in: path
+        description: The deployment ID
+        name: deploymentId
+        required: true
+        schema:
+          type: integer
+          format: uint64
+      - $ref: '#/components/parameters/async'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDeploymentScheduleStatusResponse'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -8452,6 +8220,248 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /hotspot-profiles:
+    get:
+      tags:
+      - Configuration - Policy
+      summary: List Hotspot profiles
+      description: List a page of Hotspot profiles.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_the_hotspot_profiles
+      operationId: listHotspotProfiles
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqHotspotProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Configuration - Policy
+      summary: Create a Hotspot profile
+      description: Create a new Hotspot profile.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_hotspot_profile
+      operationId: createHotspotProfile
+      requestBody:
+        description: The request body to create new Hotspot profile.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqHotspotProfileRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqHotspotProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /hotspot-profiles/{id}:
+    get:
+      tags:
+      - Configuration - Policy
+      summary: Get Hotspot profile by ID
+      description: Get Hotspot profile for the specified ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_hotspot_profile_by_id
+      operationId: getHotspotProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqHotspotProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Configuration - Policy
+      summary: Update Hotspot profile by ID
+      description: Update the existing Hotspot profile by the profile ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_hotspot_profile
+      operationId: updateHotspotProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The payload of the update Hotspot profile request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqHotspotProfileRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqHotspotProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Configuration - Policy
+      summary: Delete Hotspot profile by ID
+      description: Delete the existing Hotspot profile by the profile ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_hotspot_profile
+      operationId: deleteHotspotProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /hotspot-service-profiler-profiles:
+    get:
+      tags:
+      - Configuration - Policy
+      summary: List Hotspot Service Provider profiles
+      description: List a page of Hotspot Service Provider profiles.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_the_hotspot_service_provider_profiles
+      operationId: listHotspotServiceProviderProfiles
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqHotspotServiceProviderProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Configuration - Policy
+      summary: Create a Hotspot Service Provider profile
+      description: Create a Hotspot Service Provider profile.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_hotspot_service_provider_profile
+      operationId: createHotspotServiceProviderProfile
+      requestBody:
+        description: The request body to create new Hotspot Service Provider profile.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqHotspotServiceProviderProfileRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqHotspotServiceProviderProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /hotspot-service-provider-profiles/{id}:
+    get:
+      tags:
+      - Configuration - Policy
+      summary: Get Hotspot Service Provider profile by ID
+      description: Get Hotspot Service Provider profile for the specified ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_hotspot_service_provider_profile_by_id
+      operationId: getHotspotServiceProviderProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqHotspotServiceProviderProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Configuration - Policy
+      summary: Update Hotspot Service Provider profile by ID
+      description: Update the existing Hotspot Service Provider profile by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_hotspot_service_provider_profile
+      operationId: updateHotspotServiceProviderProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The payload of the update Hotspot Service Provider profile request.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqHotspotServiceProviderProfileRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqHotspotServiceProviderProfile'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Configuration - Policy
+      summary: Delete Hotspot Service Provider profile by ID
+      description: Delete the existing Hotspot Service Provider profile by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_hotspot_service_provider_profile
+      operationId: deleteHotspotServiceProviderProfile
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /ssids:
     get:
       tags:
@@ -8913,11 +8923,57 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /ssids/{id}/hotspot-profiles/:enable:
+    post:
+      tags:
+      - Configuration - Policy
+      summary: Enable and attach the Hotspot profile on the SSID
+      description: Enable and attach the Hotspot profile on the SSID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_enable_and_attach_the_hotspot_on_the_ssid
+      operationId: enableSsidHotspot
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The Hotspot profile ID to be attached to the SSID.
+        content:
+          application/json:
+            schema:
+              type: integer
+              format: int64
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ssids/{id}/hotspots-profiles/:disable:
+    post:
+      tags:
+      - Configuration - Policy
+      summary: Disable the Hotspot profile on the SSID
+      description: Disable the Hotspot profile on the SSID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_disable_and_detach_the_hotspot_on_the_ssid
+      operationId: disableSsidHotspot
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /ccgs:
     get:
       tags:
       - Configuration - Policy
-      summary: List clould config groups
+      summary: '[LRO] List clould config groups'
       description: List a papge of cloud config groups.
       externalDocs:
         description: API Reference
@@ -8926,6 +8982,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/async'
       responses:
         '200':
           description: OK
@@ -11466,6 +11523,144 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /copilot/anomalies/excluded-vlans-list:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get Excluded Vlan List
+      description: Get Excluded vlans details with Site details.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_exceptional_vlan_list
+      operationId: getCopilotExceptionalVlanList
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotExceptionalVlanList'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/exclude-vlans:
+    post:
+      tags:
+      - Copilot - Anomalies
+      summary: Excluding Vlan from Sites
+      description: Add, Update, Delete excluded vlan from sites.
+      operationId: excludeSitesVlan
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_exclude_sites_vlan
+      requestBody:
+        description: Excluding vlan from sites request body
+        content:
+          multipart/json:
+            schema:
+              type: object
+              required:
+              - excludeSitesVlanRequest
+              - old_vlan_id
+              - action_type
+              - dismiss
+              properties:
+                excludeSitesVlanRequest:
+                  type: object
+                  description: excluded sites vlan details.
+                  required:
+                  - excluded_vlan_details
+                  properties:
+                    excluded_vlan_details:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/XiqCopilotVlanDetailsEntity'
+                old_vlan_id:
+                  type: integer
+                  format: int32
+                action_type:
+                  $ref: '#/components/schemas/XiqCopilotActionType'
+                dismiss:
+                  type: boolean
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/exclude-vlans-csv:
+    post:
+      tags:
+      - Copilot - Anomalies
+      summary: Excluding Vlan from Sites - CSV
+      description: Add excluded vlan from sites using CSV.
+      operationId: excludeSitesVlanCsv
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_exclude_sites_vlan_csv
+      parameters:
+      - name: action_type
+        in: query
+        description: The type of action to perform (add)
+        required: true
+        schema:
+          $ref: '#/components/schemas/XiqCopilotActionType'
+      - name: dismiss
+        in: query
+        description: Whether to dismiss the action after execution
+        required: true
+        schema:
+          type: boolean
+      requestBody:
+        description: Excluding vlan from sites request body using CSV
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - csv_file
+              properties:
+                csv_file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/missing-vlan/count:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get MissingVlan Anomalies Count
+      description: MissingVlan anomaly count for specified vlanIds and siteIds.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_missing-vlan_count
+      operationId: getCopilotAnomalyMissingVlanCount
+      parameters:
+      - $ref: '#/components/parameters/startTimeCount'
+      - $ref: '#/components/parameters/endTimeCount'
+      - $ref: '#/components/parameters/vlanIds'
+      - $ref: '#/components/parameters/siteIds'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotMissingVlanCount'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /copilot/anomalies/hardware-health/stats:
     get:
       tags:
@@ -11509,6 +11704,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqCopilotHardwareHealthClientlist'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /copilot/anomalies/hardware-health/cpu-mem-stats:
+    get:
+      tags:
+      - Copilot - Anomalies
+      summary: Get HardwareHealth CPU & Memory Stats
+      description: Get CPU or memory details for HardwareHealth device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_hardware-health_cpu_mem_stats
+      operationId: getCopilotHardwareHealthCpuMemStats
+      parameters:
+      - $ref: '#/components/parameters/deviceId'
+      - $ref: '#/components/parameters/hhStatsFieldType'
+      - $ref: '#/components/parameters/timestamp1'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCopilotHardwareHealthCpuMemStats'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -12276,6 +12496,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqAfcSiteSchedule'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ucp/{id}/engines/installed:
+    get:
+      tags:
+      - Universal Compute Platform
+      summary: Get list of all installed engines for a UCP device
+      description: Retrieve the list of installed engines from a connected UCP device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_ucp_engines_installed
+      operationId: getDeviceUcpEnginesInstalled
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqUcpEnginesInstalled'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -14644,13 +14887,20 @@ components:
           format: int32
         enable_monitoring:
           type: boolean
-          description: Whether to enable iBeacon monitoring.  Default to True on new device iBeacon setting.
+          deprecated: true
+          description: Whether to enable iBeacon monitoring.  Default to True on new device iBeacon setting. This has been marked deprecated as it has been renamed, please use 'enable_ble_scan_ibeacon'.
+        enable_ble_scan_ibeacon:
+          type: boolean
+          description: Whether to enable BLE Scan iBeacon monitoring.
+        enable_ble_scan_generic:
+          type: boolean
+          description: Whether to enable BLE Scan Generic monitoring.
         enable_cloud_reporting:
           type: boolean
-          description: Whether to enable iBeacon Cloud Reporting.
+          description: Whether to enable BLE Scan Cloud Reporting.
         enable_batch_reporting:
           type: boolean
-          description: Whether to enable iBeacon Batch Reporting.
+          description: Whether to enable BLE Scan Batch Reporting.
         network_policy_ibeacon_id:
           type: integer
           description: The beacon network policy ID
@@ -14812,7 +15062,14 @@ components:
           format: int32
         enable_monitoring:
           type: boolean
-          description: Whether the device iBeacon monitoring is enabled.
+          deprecated: true
+          description: Whether to enable iBeacon monitoring.  Default to True on new device iBeacon setting. This has been marked deprecated as it has been renamed, please use 'enable_ble_scan_ibeacon'.
+        enable_ble_scan_ibeacon:
+          type: boolean
+          description: Whether to enable BLE Scan iBeacon monitoring.
+        enable_ble_scan_generic:
+          type: boolean
+          description: Whether to enable BLE Scan Generic monitoring.
         enable_cloud_reporting:
           type: boolean
           description: Whether the device iBeacon Cloud Reporting is enabled.
@@ -16276,6 +16533,15 @@ components:
         ssid_security_type:
           $ref: '#/components/schemas/XiqSsidSecurityType'
           description: The SSID access security type
+    XiqWirelessWlan:
+      allOf:
+      - $ref: '#/components/schemas/XiqWirelessClient'
+      - type: object
+        description: The Wireless wlan detail.
+        properties:
+          bssid:
+            type: string
+            description: The BSSID of wlan.
     XiqRadio:
       type: object
       description: ExtremeCloud IQ Radio Information associated to a device
@@ -16307,9 +16573,14 @@ components:
           type: integer
           description: The radio power
           format: int32
+        wlans:
+          type: array
+          description: The wireless wlan details
+          $ref: '#/components/schemas/XiqWirelessWlan'
         clients:
           type: array
           description: the wireless client details
+          deprecated: true
           items:
             $ref: '#/components/schemas/XiqWirelessClient'
     XiqRadioEntity:
@@ -16716,7 +16987,7 @@ components:
       - PRODUCT_TYPE
     XiqClientView:
       type: string
-      description: The logic collections of client fields<br/><br/><b>BASIC:</b> ID, ORG_ID, HOSTNAME, MAC_ADDRESS, IP_ADDRESS, IPV6_ADDRESS, OS_TYPE, DEVICE_ID,CONNECTED, ONLINE_TIME, OFFLINE_TIME, CONNECTION_TYPE, SSID, PORT<br/><b>FULL:</b> All fields<br/><b>STATUS:</b> ID, CONNECTED, ONLINE_TIME, OFFLINE_TIME<br/><b>DETAIL:</b> ID, CREATE_TIME, UPDATE_TIME, ORG_ID, ORG_NAME, LOCATION_ID, HOSTNAME, MAC_ADDRESS, IP_ADDRESS, IPV6_ADDRESS, OS_TYPE, DEVICE_ID, DEVICE_FUNCTION, DEVICE_NAME, DEVICE_MAC_ADDRESS, USERNAME, USER_PROFILE_NAME, CONNECTED, ONLINE_TIME, OFFLINE_TIME, VLAN, CONNECTION_TYPE, SSID, PORT, BSSID, PORT_TYPE_NAME, INTERFACE_NAME, AUTH, ENCRYPTION_METHOD, CHANNEL, RSSI, SNR, WING_AP, VENDOR, RADIO_TYPE, ALIAS<br/><b>LOCATION:</b> ID, LOCATION_ID, LOCATIONS<br/><b>METRICS:</b> ID, CLIENT_HEALTH, APPLICATION_HEALTH, NETWORK_HEALTH, RADIO_HEALTH<br/><b>IOT:</b> ID, MOBILITY, CATEGORY, DESCRIPTION
+      description: The logic collections of client fields<br/><br/><b>BASIC:</b> ID, ORG_ID, HOSTNAME, MAC_ADDRESS, IP_ADDRESS, IPV6_ADDRESS, OS_TYPE, DEVICE_ID,CONNECTED, ONLINE_TIME, OFFLINE_TIME, CONNECTION_TYPE, SSID, PORT<br/><b>FULL:</b> All fields<br/><b>STATUS:</b> ID, CONNECTED, ONLINE_TIME, OFFLINE_TIME<br/><b>DETAIL:</b> ID, CREATE_TIME, UPDATE_TIME, ORG_ID, ORG_NAME, LOCATION_ID, HOSTNAME, MAC_ADDRESS, IP_ADDRESS, IPV6_ADDRESS, OS_TYPE, DEVICE_ID, DEVICE_FUNCTION, DEVICE_NAME, DEVICE_MAC_ADDRESS, USERNAME, USER_PROFILE_NAME, CONNECTED, ONLINE_TIME, OFFLINE_TIME, VLAN, CONNECTION_TYPE, SSID, PORT, BSSID, PORT_TYPE_NAME, INTERFACE_NAME, AUTH, ENCRYPTION_METHOD, CHANNEL, RSSI, SNR, WING_AP, VENDOR, RADIO_TYPE, ALIAS, MAC_PROTOCOL<br/><b>LOCATION:</b> ID, LOCATION_ID, LOCATIONS<br/><b>METRICS:</b> ID, CLIENT_HEALTH, APPLICATION_HEALTH, NETWORK_HEALTH, RADIO_HEALTH<br/><b>IOT:</b> ID, MOBILITY, CATEGORY, DESCRIPTION
       enum:
       - BASIC
       - FULL
@@ -16826,12 +17097,64 @@ components:
             format: int32
           radio_type:
             type: integer
-            description: The radio type
+            description: |-
+              The radio type. Represented by an integer code for each standard:
+              - 1 - 2.4G
+              - 2 - 5G
+              - 3 - WIRED
+              - 4 - 6G
+              - 5 - THREAD
             format: int32
           encryption_method:
             type: integer
-            description: The encryption method
+            description: |-
+              The encryption method, represented by an integer code for each encryption type:
+              - -1 - N/A (Not applicable)
+              - 0  - AES (Advanced Encryption Standard)
+              - 1  - TKIP (Temporal Key Integrity Protocol)
+              - 2  - WEP (Wired Equivalent Privacy)
+              - 3  - NON (No encryption)
+              - 4  - CCMP (Counter Mode with Cipher Block Chaining Message Authentication Code Protocol)
+              - 5  - KEYGUARD (Keyguard encryption)
+              - 6  - WEP128 (128-bit WEP encryption)
+              - 7  - WEP64 (64-bit WEP encryption)
+              - 8  - WAPI (WLAN Authentication and Privacy Infrastructure)
+              - 9  - GCMP256 (256-bit Galois/Counter Mode Protocol)
+              - 10 - NONE (No encryption)
+              - 11 - PAP (Password Authentication Protocol)
+              - 12 - MsCHAP (Microsoft Challenge Handshake Authentication Protocol)
+              - 13 - EAP-MD5 (Extensible Authentication Protocol - MD5)
+              - 14 - EAP-TLS (Extensible Authentication Protocol - Transport Layer Security)
+              - 15 - PEAP (Protected Extensible Authentication Protocol)
+              - 16 - TTLS (Tunneled Transport Layer Security)
+              - 17 - TTLS-INNER-TUNNEL (Inner tunnel for TTLS)
+              - 18 - PEAP-INNER-TUNNEL (Inner tunnel for PEAP)
+              - 19 - EAP-FAST (Extensible Authentication Protocol - Flexible Authentication via Secure Tunneling)
+              - 20 - EAP-LEAP (Lightweight Extensible Authentication Protocol)
+              - 21 - EAP-RSA (Extensible Authentication Protocol - RSA)
+              - 22 - EAP-SIM (Extensible Authentication Protocol - SIM)
+              - 23 - EAP-AKA (Extensible Authentication Protocol - AKA)
+              - 24 - EAP-TEAP (Extensible Authentication Protocol - Tunneled EAP)
             format: int32
+          mac_protocol:
+            type: string
+            description: |-
+              The MAC protocol.
+               - 'N/A'
+               - '802.11a'
+               - '802.11b'
+               - '802.11g'
+               - '802.11na'
+               - '802.11ng'
+               - '802.11ac'
+               - '802.11ax-2.4g'
+               - '802.11ax-5g'
+               - '802.3'
+               - '802.11ax-6g'
+               - '802.15.4'
+               - '802.11be-2g'
+               - '802.11be-5g'
+               - '802.11be-6g'
           interface_name:
             type: string
             description: The interface name
@@ -18230,6 +18553,34 @@ components:
           description: The basic auth secret for the webhook endpoint.
         message_type:
           $ref: '#/components/schemas/XiqSubscriptionMessageType'
+    XiqScheduleDetails:
+      type: object
+      description: The deployment schedule details
+      required:
+      - start_time
+      properties:
+        start_time:
+          type: integer
+          description: The start time of the firmware upgrade
+          format: int64
+    XiqDeployDeviceFilter:
+      type: object
+      description: The filter to get matched devices
+      properties:
+        ids:
+          type: array
+          description: The device ID list
+          items:
+            type: integer
+            description: The device ID list
+            format: int64
+        site_ids:
+          type: array
+          description: The site ID list
+          items:
+            type: integer
+            description: The site ID list
+            format: int64
     XiqFirmwareUpgradePolicy:
       type: object
       description: The firmware upgrade policy
@@ -18249,6 +18600,7 @@ components:
       required:
       - firmware_id
       - device_id
+      - product_type
       properties:
         firmware_id:
           type: integer
@@ -18258,6 +18610,9 @@ components:
           type: integer
           description: The device ID
           format: int64
+        product_type:
+          type: string
+          description: The product type
     XiqFirmwareActivateOption:
       type: object
       description: The firmware activate option (Only one of them can be enabled)
@@ -18276,8 +18631,6 @@ components:
     XiqDeploymentPolicy:
       type: object
       description: Push configuration and upgrade firmware policy
-      required:
-      - enable_complete_configuration_update
       properties:
         enable_complete_configuration_update:
           type: boolean
@@ -18291,15 +18644,49 @@ components:
             $ref: '#/components/schemas/XiqFirmwareUpgradeVersion'
         firmware_activate_option:
           $ref: '#/components/schemas/XiqFirmwareActivateOption'
+    XiqDeploymentOverviewDetails:
+      type: object
+      description: The configuration deployment overview
+      required:
+      - total_devices
+      - in_progress_devices
+      - total_progress
+      properties:
+        total_devices:
+          type: integer
+          description: The total device count
+          format: int32
+        in_progress_devices:
+          type: integer
+          description: The device count with in progress deployment
+          format: int32
+        total_progress:
+          type: integer
+          description: The total progress, range from 0 to 100
+          format: int32
+    XiqDeploymentDetailsResponse:
+      type: object
+      description: The deployment details
+      properties:
+        deployment_id:
+          type: integer
+          format: uint64
+        schedule:
+          $ref: '#/components/schemas/XiqScheduleDetails'
+        devices:
+          $ref: '#/components/schemas/XiqDeployDeviceFilter'
+        policy:
+          $ref: '#/components/schemas/XiqDeploymentPolicy'
+        overview:
+          $ref: '#/components/schemas/XiqDeploymentOverviewDetails'
     XiqDeploymentRequest:
       type: object
       description: The configuration deployment request to devices
-      required:
-      - devices
-      - policy
       properties:
+        schedule:
+          $ref: '#/components/schemas/XiqScheduleDetails'
         devices:
-          $ref: '#/components/schemas/XiqDeviceFilter'
+          $ref: '#/components/schemas/XiqDeployDeviceFilter'
         policy:
           $ref: '#/components/schemas/XiqDeploymentPolicy'
     XiqDeploymentStatus:
@@ -18325,10 +18712,17 @@ components:
           format: int64
         finished:
           type: boolean
+        status_message:
+          type: string
+          description: The status message
     XiqDeploymentResponse:
       type: object
       description: The configuration deployment response
       properties:
+        deployment_id:
+          type: integer
+          description: The deployment ID
+          format: uint64
         deployment_status:
           type: object
           additionalProperties:
@@ -18391,6 +18785,52 @@ components:
         md5:
           type: string
           description: The firmware md5 hash
+    XiqScheduleStatus:
+      type: string
+      enum:
+      - SCHEDULED
+      - IN_PROGRESS
+      - ABORTED
+      - COMPLETED
+      - FAILED
+      - TIME_OUT
+    XiqDeploymentScheduleStatusResponse:
+      type: object
+      description: The status of the firmware upgrade sites/devices
+      properties:
+        schedule_status:
+          $ref: '#/components/schemas/XiqScheduleStatus'
+        schedule_time:
+          type: integer
+          format: uint64
+        created_time:
+          type: integer
+          format: uint64
+        updated_time:
+          type: integer
+          format: uint64
+        site_info:
+          type: object
+          description: The site information
+          properties:
+            site_id:
+              type: integer
+              format: uint64
+            device_ids:
+              type: array
+              description: The device ID list
+              items:
+                type: integer
+                description: The device ID
+                format: uint64
+            overview:
+              $ref: '#/components/schemas/XiqDeploymentOverview'
+        deployment_status:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/XiqDeploymentStatus'
+        overview:
+          $ref: '#/components/schemas/XiqDeploymentOverview'
     PagedXiqVlanProfile:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -21264,6 +21704,569 @@ components:
         traffic:
           $ref: '#/components/schemas/XiqTraffic'
           description: The MAC Firewall traffic direction.
+    XiqHsLanguageCode:
+      type: string
+      description: 'Language code (3B abbreviation) found at: http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt.'
+      default: eng
+      pattern: ^[a-z]{3}$
+    XiqHsLocalizedName:
+      type: object
+      description: A language specific name.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: Up to 252 byte UTF-8 string.
+          minLength: 1
+          maxLength: 252
+        language:
+          $ref: '#/components/schemas/XiqHsLanguageCode'
+    XiqHsVenueGroup:
+      type: string
+      description: The venue group ID categorizes the general type of location.
+      enum:
+      - UNSPECIFIED
+      - ASSEMBLY
+      - BUSINESS
+      - EDUCATIONAL
+      - FACTORY_AND_INDUSTRIAL
+      - INSTITUTIONAL
+      - MERCANTILE
+      - RESIDENTIAL
+      - STORAGE
+      - UTILITY_AND_MISCELLANEOUS
+      - VEHICULAR
+      - OUTDOOR
+      default: UNSPECIFIED
+    XiqHsVenueType:
+      type: string
+      description: The venue type ID further specifies the particular kind of location within the general venue group.  Each venue type ID must match the venue group ID to accurately describe the venue information.
+      enum:
+      - UNSPECIFIED
+      - ARENA
+      - STADIUM
+      - PASSENGER_TERMINAL
+      - AMPHITHEATRE
+      - AMUSEMENT_PARK
+      - PLACE_OF_WORSHIP
+      - CONVENTION_CENTRE
+      - LIBRARY
+      - MUSEUM
+      - RESTAURANT
+      - THEATRE
+      - BAR
+      - COFFEE_SHOP
+      - ZOO_OR_AQUARIUM
+      - EMERGENCY_COORDINATION_CENTRE
+      - DOCTOR_OR_DENTIST_OFFICE
+      - BANK
+      - FIRE_STATION
+      - POLICE_STATION
+      - POST_OFFICE
+      - PROFESSIONAL_OFFICE
+      - RESEARCH_AND_DEVELOPMENT_FACILITY
+      - ATTORNEY_OFFICE
+      - SCHOOL_PRIMARY
+      - SCHOOL_SECONDARY
+      - UNIVERSITY_OR_COLLEGE
+      - FACTORY
+      - HOSPITAL
+      - LONG_TERM_CARE_FACILITY
+      - ALCOHOL_AND_DRUG_REHABILITATION_CENTRE
+      - GROUP_HOME
+      - PRISON_OR_JAIL
+      - RETAIL_STORE
+      - GROCERY_MARKET
+      - AUTOMOTIVE_SERVICE_STATION
+      - SHOPPING_MALL
+      - GAS_STATION
+      - PRIVATE_RESIDENCE
+      - HOTEL_OR_MOTEL
+      - DORMITORY
+      - BOARDING_HOUSE
+      - AUTOMOBILE_OR_TRUCK
+      - AIRPLANE
+      - BUS
+      - FERRY
+      - SHIP_OR_BOAT
+      - TRAIN
+      - MOTOR_BIKE
+      - MUNI-MESH_NETWORK
+      - CITY_PARK
+      - REST_AREA
+      - TRAFFIC_CONTROL
+      - BUS_STOP
+      - KIOSK
+      default: UNSPECIFIED
+    XiqHsVenue:
+      type: object
+      description: Venue information helps client devices understand the type and nature of the location where the Wi-Fi network is deployed.
+      properties:
+        venue_group:
+          $ref: '#/components/schemas/XiqHsVenueGroup'
+        venue_type:
+          $ref: '#/components/schemas/XiqHsVenueType'
+        names:
+          type: array
+          description: Localized names for the venue.
+          items:
+            $ref: '#/components/schemas/XiqHsLocalizedName'
+    XiqHsAccessNetworkType:
+      type: string
+      description: "The Hotspot profile Access Network:\n  * `PRIVATE` - An enterprise network with user accounts.\n  * `PRIVATE_WITH_GUEST` - An enterprise network providing guest access.\n  * `CHARGEABLE_PUBLIC` - Open to anyone but access requires payment.\n  * `FREE_PUBLIC` - Open network, free of charge but may still require acceptance of terms of use (and may involve OSU servers with captive portal).\n  * `PERSONAL_DEVICE` - Personal device network.\n  * `EMERGENCY` - Emergency services only network. \n  * `TEST` - Test or experimental network.\n  * `WILDCARD` - Wildcard network."
+      default: CHARGEABLE_PUBLIC
+      enum:
+      - PRIVATE
+      - PRIVATE_WITH_GUEST
+      - CHARGEABLE_PUBLIC
+      - FREE_PUBLIC
+      - PERSONAL_DEVICE
+      - EMERGENCY
+      - TEST
+      - WILDCARD
+    XiqHsIpv4Type:
+      type: string
+      description: |-
+        The IPv4 address availability enum:
+          * `NOT_AVAILABLE` - No IPv4 address is available.
+          * `PUBLIC` - A publicly routable IPv4 address is available.
+          * `PORT_RESTRICTED` - An IPv4 address is available but with port restrictions.
+          * `SINGLE_NAT` - A private IPv4 address behind a single NAT (Network Address Translation).
+          * `DOUBLE_NAT` - A private IPv4 address behind a double NAT.
+          * `PORT_RESTRICTED_SINGLE_NAT` - A private IPv4 address behind a single NAT with port restrictions.
+          * `PORT_RESTRICTED_DOUBLE_NAT` - A private IPv4 address behind a double NAT with port restrictions.
+          * `UNKNOWN` - The type of IPv4 address availability is unknown.
+      default: UNKNOWN
+      enum:
+      - NOT_AVAILABLE
+      - PUBLIC
+      - PORT_RESTRICTED
+      - SINGLE_NAT
+      - DOUBLE_NAT
+      - PORT_RESTRICTED_SINGLE_NAT
+      - PORT_RESTRICTED_DOUBLE_NAT
+      - UNKNOWN
+    XiqHsIpv6Type:
+      type: string
+      description: The IPv6 address availability enum.
+      default: UNKNOWN
+      enum:
+      - NOT_AVAILABLE
+      - AVAILABLE
+      - UNKNOWN
+    XiqHsWanLinkStatus:
+      type: string
+      description: The WAN metric status.
+      enum:
+      - DOWN
+      - UP
+      - TEST
+    XiqHsWanMetrics:
+      type: object
+      description: Hotspot WAN (Wide Area Network) metrics.
+      required:
+      - status
+      - downlink_speed
+      - uplink_speed
+      properties:
+        status:
+          $ref: '#/components/schemas/XiqHsWanLinkStatus'
+        downlink_speed:
+          type: integer
+          minimum: 0
+          maximum: 4194304
+          description: The downlink speed for the WAN network, in kbps (where 0 is unknown).
+        uplink_speed:
+          type: integer
+          minimum: 0
+          maximum: 4194304
+          description: The uplink speed for the WAN network, in kbps (where 0 is unknown).
+    XiqHsConnectionCapabilityProtocol:
+      type: string
+      description: Hotspot Connection Capability protocol.
+      enum:
+      - ESP
+      - ICMP
+      - TCP
+      - UDP
+    XiqHsConnectionCapabilityStatus:
+      type: string
+      description: Connection capability status.
+      enum:
+      - CLOSED
+      - OPEN
+      - UNKNOWN
+      default: UNKNOWN
+    XiqHsConnectionCapability:
+      type: object
+      description: |-
+        The connection capability informs client devices about available network services.
+        Used to identify the IP protocols that are permitted or denied on the network or whose permission status is unknown.
+      required:
+      - protocol
+      - port_number
+      - status
+      properties:
+        protocol:
+          $ref: '#/components/schemas/XiqHsConnectionCapabilityProtocol'
+        port_number:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 65535
+          description: The port number.
+        status:
+          $ref: '#/components/schemas/XiqHsConnectionCapabilityStatus'
+    XiqHsQosAhClassToDscpRange:
+      type: object
+      description: 'ah_class to DSCP range. The DSCP range for each user priority is non-overlapping. The end value for the DSCP range must be greater than or equal to the start value. '
+      required:
+      - ah_class
+      - dscp_range_start
+      - dscp_range_end
+      properties:
+        ah_class:
+          type: integer
+          minimum: 0
+          maximum: 7
+          description: Extreme QoS class value.
+        dscp_range_start:
+          type: integer
+          minimum: 0
+          maximum: 63
+          description: Start value for DSCP range.
+        dscp_range_end:
+          type: integer
+          minimum: 0
+          maximum: 63
+          description: End value for DSCP range.
+    XiqHsQosDscpException:
+      type: object
+      description: A DSCP priority to map to an Extreme QoS class that is different than the class mapped to the DSCP range in which the DSCP priority already exists.
+      required:
+      - dscp_value
+      - ah_class
+      properties:
+        ah_class:
+          type: integer
+          minimum: 0
+          maximum: 7
+          description: Extreme QoS class value.
+        dscp_value:
+          type: integer
+          minimum: 0
+          maximum: 63
+          description: Start value for DSCP range.
+    XiqHsQosMap:
+      type: object
+      properties:
+        dscp_ranges:
+          type: array
+          description: A map of ah-class to DSCP range.
+          items:
+            $ref: '#/components/schemas/XiqHsQosAhClassToDscpRange'
+        dscp_exceptions:
+          type: array
+          description: The list of exceptions to the mapping of ah-class to DSCP values.
+          maxItems: 21
+          items:
+            $ref: '#/components/schemas/XiqHsQosDscpException'
+    XiqHsOsuNetworkAuthType:
+      type: string
+      description: |-
+        The Network Authentication type for Hotspot profiles:
+          * `ACCEPTANCE_TERMS` - Indicate that the network requires the user to accept terms and conditions.
+          * `ONLINE_SIGN_UP` - Indicate that the network supports online enrollment and that the user can obtain authentication credentials online.
+          * `CWP` - Capital web authentication, the network infrastructure performs an HTTP/HTTPS redirect for authentication.
+      enum:
+      - ACCEPTANCE_TERMS
+      - ONLINE_SIGN_UP
+      - CWP
+    XiqHsOnlineSignup:
+      type: object
+      description: The Hotspot profile Online Signup settings.
+      required:
+      - network_auth_type
+      properties:
+        network_auth_type:
+          $ref: '#/components/schemas/XiqHsOsuNetworkAuthType'
+        redirection_url:
+          type: string
+          description: The redirection URL, when the Network Authentication type is CWP.
+        ssid_id:
+          type: integer
+          description: OSU SSID ID, when the Network Authentication type is ONLINE_SIGN_UP. The authentication mode must be open or OSEN.
+          format: int64
+    XiqHsEapMethod:
+      type: string
+      description: The Extensible Authentication Protocol (EAP) method.
+      enum:
+      - EAP_TTLS_PAP
+      - EAP_TTLS_CHAP
+      - EAP_TTLS_MSCHAP
+      - EAP_TTLS_MSCHAPV2
+      - EAP_TLS
+      - EAP_SIM
+    XiqHsNaiEncodingType:
+      type: string
+      description: The NAI realm encoding type.
+      default: RFC-4282
+      enum:
+      - RFC-4282
+      - UTF-8
+    XiqHsNaiRealm:
+      type: object
+      description: The Network Access Identification (NAI) realm.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: NAI realm.
+        description:
+          type: string
+          description: Description of NAI realm.
+        eap_methods:
+          type: array
+          description: The list of Extensible Authentication Protocol (EAP) methods.
+          items:
+            $ref: '#/components/schemas/XiqHsEapMethod'
+        encoding_type:
+          $ref: '#/components/schemas/XiqHsNaiEncodingType'
+    XiqHsRoamingConsortium:
+      type: object
+      description: The Roaming Consortium network provider.
+      required:
+      - consortium_id
+      properties:
+        consortium_id:
+          type: string
+          pattern: ^[0-9A-Fa-f]{6,30}$
+          description: IEEE-assigned Organizational Identifier (OI).
+        description:
+          type: string
+          description: Description of Roaming Consortium OI.
+    XiqHsCellularNetwork:
+      type: object
+      description: The 3GPP cellular network.
+      required:
+      - mcc
+      - mnc
+      properties:
+        mcc:
+          type: string
+          pattern: ^\d{3}$
+          description: "Mobile Country Code (MCC). \nThe three-digit mobile country code as defined by the ITU (International Telecommunication Union), which indicates the country in which the user is operating.\nhttps://www.mcc-mnc.com/"
+        mnc:
+          type: string
+          pattern: ^\d{2,3}$
+          description: "Mobile Network Code (MNC). \nhttps://www.mcc-mnc.com/"
+        description:
+          type: string
+          description: Description of 3GPP cellular network. The MCC is paired with the MNC to uniquely identify a mobile subscriber's network.
+    XiqHsspIconFile:
+      type: object
+      description: The OSU registration server icon according to language mode.
+      required:
+      - file_name
+      - file
+      properties:
+        file_directory_name:
+          type: string
+          minLength: 1
+          maxLength: 32
+          description: The icon file name for the OSU provider.
+        file:
+          type: string
+          minLength: 1
+          maxLength: 32
+          description: |-
+            Contains the icon file (jpg, png, bmp, gif format) base64 encoded.
+            A single icon size must be less than 64 KB.
+        language:
+          $ref: '#/components/schemas/XiqHsLanguageCode'
+    XiqHsspOsuMethod:
+      type: string
+      description: |-
+        OSU protocols supported by the Service Provider:
+          * `OMA_DM` - Set OSU provider support of the OMA DM (Open Mobile Alliance Device Management) protocol.
+          * `SOAP_XML_SPP` - Set OSU provider support of SOAP XML SPP (Simple Object Access Protocol Extensible Markup Language Subscription Provisioning Protocol).
+      enum:
+      - OMA_DM
+      - SOAP_XML_SPP
+    XiqHotspotServiceProviderProfileRequest:
+      type: object
+      description: The Hotspot Service Provider profile.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: The Hotspot Service Provider name.
+        friendly_names:
+          type: array
+          minItems: 0
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/XiqHsLocalizedName'
+        descriptions:
+          type: array
+          minItems: 0
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/XiqHsLocalizedName'
+        icon_files:
+          type: array
+          description: The list of localized icon files for the service provider.
+          minItems: 0
+          maxItems: 5
+          items:
+            $ref: '#/components/schemas/XiqHsspIconFile'
+        nai_realms:
+          type: array
+          description: List of Network Access Identification (NAI) realms. A NAI realm is a FQDN of a service provider.
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/XiqHsNaiRealm'
+        roaming_consortiums:
+          type: array
+          description: List of Roaming Consortium identifiers.
+          maxItems: 15
+          items:
+            $ref: '#/components/schemas/XiqHsRoamingConsortium'
+        cellular_networks:
+          type: array
+          description: List of 3rd Generation Partnership Project (3GPP) cellular networks.
+          maxItems: 15
+          items:
+            $ref: '#/components/schemas/XiqHsCellularNetwork'
+        osu_uri:
+          type: string
+          description: |-
+            The online signup server URI.
+            'Syntax available at: http://tools.ietf.org/html/rfc3986#section-1.1.2'
+        osu_methods:
+          type: array
+          description: Encoded OSU methods and their priorities. Priority is given by the index/position in the array.
+          items:
+            $ref: '#/components/schemas/XiqHsspOsuMethod'
+        osu_nai:
+          type: string
+          description: Network Access Identifier (NAI) used as client identity during EAP authentication.
+    XiqHotspotProfileRequest:
+      type: object
+      description: The Hotspot profile.
+      required:
+      - name
+      - domain_name
+      properties:
+        name:
+          type: string
+          description: The Hotspot profile name.
+        hessid:
+          type: string
+          pattern: ^([0-9a-fA-F]{2}[:]){5}([0-9a-fA-F]{2})$
+          example: 00:50:56:01:AE:79
+          description: Homogenous Extended Service Set Identifier (HESSID) for a Hotspot 2.0 network.  MAC address representation for the user interfaces. The HESSID should be different from any MU MAC. It is recommended to use one of the BSSIDs of a registered AP.
+        domain_name:
+          type: string
+          description: The domain name of the entity or organization operating the IEEE 802.11 access network.
+          minLength: 0
+          maxLength: 255
+        operator_names:
+          type: array
+          description: Localized names for the Hotspot operator.
+          items:
+            $ref: '#/components/schemas/XiqHsLocalizedName'
+        venue:
+          $ref: '#/components/schemas/XiqHsVenue'
+        access_network_type:
+          $ref: '#/components/schemas/XiqHsAccessNetworkType'
+        dgaf:
+          type: boolean
+          description: Downstream Group Address Forwarding (DGAF). Forward all downlink wireless broadcast ARP and multicast packets.
+          default: false
+        ipv4_availability:
+          $ref: '#/components/schemas/XiqHsIpv4Type'
+        ipv6_availability:
+          $ref: '#/components/schemas/XiqHsIpv6Type'
+        wan_metrics:
+          $ref: '#/components/schemas/XiqHsWanMetrics'
+        connection_capabilities:
+          type: array
+          description: The list of connection capabilities.
+          items:
+            $ref: '#/components/schemas/XiqHsConnectionCapability'
+        qos_map:
+          $ref: '#/components/schemas/XiqHsQosMap'
+        gas_comeback_delay:
+          type: integer
+          minimum: 0
+          maximum: 65535
+          default: 0
+          description: Generic Advertisement Service (GAS) comeback message delay time. The unit is Time Unit (TU) 1 TU = 1024 microseconds. When GAS delay is 0, there is no delay.
+        anqp_domain_id:
+          type: integer
+          minimum: 0
+          maximum: 65535
+          default: 0
+          description: The Access Network Query protocol (ANQP) domain ID.  All APs in the same ESS that share a common nonzero ANQP domain ID will have identical ANQP information.  When the value is 0, the ANQP information is unique to the AP.
+        online_signup:
+          $ref: '#/components/schemas/XiqHsOnlineSignup'
+        nai_realms:
+          type: array
+          description: List of Network Access Identification (NAI) realms. A NAI realm is a FQDN of a service provider.
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/XiqHsNaiRealm'
+        roaming_consortiums:
+          type: array
+          description: List of Roaming Consortium identifiers.
+          maxItems: 15
+          items:
+            $ref: '#/components/schemas/XiqHsRoamingConsortium'
+        cellular_networks:
+          type: array
+          description: List of 3rd Generation Partnership Project (3GPP) cellular networks.
+          maxItems: 15
+          items:
+            $ref: '#/components/schemas/XiqHsCellularNetwork'
+        service_providers:
+          type: array
+          description: The list of supported hotspot service providers.
+          items:
+            $ref: '#/components/schemas/XiqHotspotServiceProviderProfileRequest'
+    XiqHotspotProfile:
+      allOf:
+      - $ref: '#/components/schemas/XiqViqEntity'
+      - $ref: '#/components/schemas/XiqHotspotProfileRequest'
+    PagedXiqHotspotProfile:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqHotspotProfile'
+    XiqHotspotServiceProviderProfile:
+      allOf:
+      - $ref: '#/components/schemas/XiqViqEntity'
+      - $ref: '#/components/schemas/XiqHotspotServiceProviderProfileRequest'
+    PagedXiqHotspotServiceProviderProfile:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqHotspotServiceProviderProfile'
     XiqSsidKeyType:
       type: string
       description: The key type, ASCII or HEX
@@ -23859,6 +24862,7 @@ components:
       - WIFI_CAPACITY
       - WIFI_EFFICIENCY
       - HARDWARE_HEALTH
+      - MISSING_VLAN
     XiqLocationType:
       type: string
       enum:
@@ -24358,6 +25362,7 @@ components:
       - dfs_count
       - mb_cast_count
       - hardware_health_count
+      - missing_vlan_count
       properties:
         timestamp:
           type: integer
@@ -24384,6 +25389,9 @@ components:
           type: integer
           format: int64
         hardware_health_count:
+          type: integer
+          format: int64
+        missing_vlan_count:
           type: integer
           format: int64
     XiqCopilotAssuranceScansOverview:
@@ -24543,6 +25551,43 @@ components:
       enum:
       - WIRED
       - WIRELESS
+    XiqCopilotMissingVlanAffectedDevicesEntity:
+      type: object
+      required:
+      - ap_device_id
+      - ap_name
+      - upstream_switch_interface
+      - missing_vlans
+      properties:
+        ap_device_id:
+          type: integer
+          format: int64
+        ap_name:
+          type: string
+        upstream_switch_interface:
+          type: string
+        missing_vlans:
+          type: array
+          items:
+            type: integer
+    XiqCopilotMissingVlanInfo:
+      type: object
+      required:
+      - lldp_enabled
+      - upstream_switch_name
+      - floor_name
+      - affected_devices_entity
+      properties:
+        lldp_enabled:
+          type: boolean
+        upstream_switch_name:
+          type: string
+        floor_name:
+          type: string
+        affected_devices_entity:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqCopilotMissingVlanAffectedDevicesEntity'
     XiqAnomalyDeviceWithLocation:
       type: object
       description: Anomaly Location Entity
@@ -24567,6 +25612,7 @@ components:
       - recommended_action
       - issue
       - anomaly_subtypes
+      - missing_vlan_info
       properties:
         building_id:
           type: integer
@@ -24612,6 +25658,8 @@ components:
           type: string
         anomaly_subtypes:
           type: string
+        missing_vlan_info:
+          $ref: '#/components/schemas/XiqCopilotMissingVlanInfo'
     XiqCopilotAnomaliesDevicesWithLocation:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -24820,6 +25868,100 @@ components:
           type: object
           description: The data in the current page
           $ref: '#/components/schemas/XiqPowerSourceEquipment'
+    XiqCopilotVlanSiteDetails:
+      description: Details of a site
+      type: object
+      required:
+      - site_name
+      - site_id
+      properties:
+        site_id:
+          type: integer
+          format: int64
+        site_name:
+          type: string
+    XiqCopilotExcludedVlanDetailsEntity:
+      type: object
+      description: Excluded Vlan details Entity
+      required:
+      - vlan_id
+      - site_details
+      properties:
+        vlan_id:
+          type: integer
+          format: int64
+        site_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqCopilotVlanSiteDetails'
+    XiqCopilotExceptionalVlanList:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        description: data sequence
+        required:
+        - excluded_vlan_details
+        properties:
+          excluded_vlan_details_entity:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqCopilotExcludedVlanDetailsEntity'
+    XiqCopilotVlanDetailsEntity:
+      type: object
+      description: details of vlans to be excluded from sites
+      required:
+      - vlan_ids
+      - site_ids
+      properties:
+        vlan_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+        site_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+    XiqCopilotActionType:
+      description: type of action to be performed
+      type: string
+      enum:
+      - ADD
+      - UPDATE
+      - DELETE
+    XiqCopilotAnomaliesSiteEntity:
+      type: object
+      description: data sequence
+      required:
+      - site_id
+      - site_name
+      - anomalies_count
+      properties:
+        site_id:
+          type: integer
+          format: int64
+        site_name:
+          type: string
+        anomalies_count:
+          type: integer
+          format: int64
+    XiqCopilotMissingVlanCount:
+      type: object
+      description: data sequence
+      required:
+      - total_anomalies_count
+      - anomalies_count_by_site
+      properties:
+        total_anomalies_count:
+          type: integer
+          format: int64
+        anomalies_count_by_site:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqCopilotAnomaliesSiteEntity'
     XiqHardwareHealthDeviceStatsEntity:
       type: object
       description: data sequence
@@ -24956,6 +26098,37 @@ components:
           description: The data in the current page
           items:
             $ref: '#/components/schemas/XiqHardwareHealthClientStatsEntity'
+    XiqAnomalyHhStatsType:
+      type: string
+      enum:
+      - CPU_STATS
+      - MEMORY_STATS
+    XiqHardwareHealthCpuMemStatsEntity:
+      type: object
+      description: data sequence
+      required:
+      - timestamp
+      - stats_ten_secs
+      - stats_twenty_secs
+      - stats_thirty_secs
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        stats_ten_secs:
+          type: string
+        stats_twenty_secs:
+          type: string
+        stats_thirty_secs:
+          type: string
+    XiqCopilotHardwareHealthCpuMemStats:
+      type: object
+      properties:
+        cpu_memory_stats_entity:
+          type: array
+          description: The data in the current page
+          items:
+            $ref: '#/components/schemas/XiqHardwareHealthCpuMemStatsEntity'
     XiqPacketCaptureField:
       type: string
       enum:
@@ -30463,6 +31636,70 @@ components:
             type: string
           siteSchedule:
             type: integer
+    XiqUcpEngineInstanceElement:
+      allOf:
+      - type: object
+        description: The payload of the UCP Engine Instance Installation Information
+        properties:
+          name:
+            type: string
+            description: The engine instance name
+          displayName:
+            type: string
+            description: The display name of the instance
+    XiqUcpEngineElement:
+      allOf:
+      - type: object
+        description: The payload of the UCP Engine Installation Information
+        properties:
+          name:
+            type: string
+            description: The engine ID
+          description:
+            type: string
+            description: The engine display name
+          instances:
+            type: array
+            items:
+              $ref: '#/components/schemas/XiqUcpEngineInstanceElement'
+          instanceCount:
+            type: integer
+          maxInstances:
+            type: integer
+          type:
+            type: string
+          upgradable:
+            type: boolean
+          imageName:
+            type: string
+    XiqUcpEnginesInstalled:
+      allOf:
+      - type: object
+        properties:
+          engines:
+            type: array
+            description: The installed engines
+            items:
+              $ref: '#/components/schemas/XiqUcpEngineElement'
+        example:
+          engines:
+          - name: xiq
+            description: ExtremeCloud IQ
+            instances: []
+            instanceCount: 0
+            maxInstances: 1
+            type: none
+            upgradable: false
+          - name: xiqtc
+            description: Extreme Tunnel Concentrator
+            instances:
+            - name: xiqtc-1
+              displayName: 'xiqtc #1'
+            instanceCount: 1
+            maxInstances: 3
+            type: vmi
+            upgradable: true
+            imageName: vmidisks/xiqtc
   responses:
     ErrorResponse:
       description: The generic ExtremeCloud IQ API error response
@@ -31071,6 +32308,51 @@ components:
       schema:
         type: integer
         format: int64
+    startTimeCount:
+      in: query
+      name: startTime
+      description: The Start time
+      required: true
+      schema:
+        type: integer
+        format: int64
+    endTimeCount:
+      in: query
+      name: endTime
+      description: The End time
+      required: true
+      schema:
+        type: integer
+        format: int64
+    vlanIds:
+      in: query
+      description: The vlan ids
+      name: vlanIds
+      required: true
+      schema:
+        type: array
+        description: The vlan Ids
+        items:
+          type: integer
+          format: int64
+    siteIds:
+      in: query
+      description: The site ids
+      name: siteIds
+      required: true
+      schema:
+        type: array
+        description: The site Ids
+        items:
+          type: integer
+          format: int64
+    hhStatsFieldType:
+      name: hhStatsFieldType
+      in: query
+      description: The Hardware Health anomaly CPU or Memory Stats type
+      required: true
+      schema:
+        $ref: '#/components/schemas/XiqAnomalyHhStatsType'
     floorId:
       in: query
       description: The location ID of the floor
