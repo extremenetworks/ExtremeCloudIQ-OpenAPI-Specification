@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 25.2.0.123
+  version: 25.3.0.140
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -103,8 +103,16 @@ tags:
   description: Usage and capacity dashboard
 - name: Dashboard - Wireless Device Health
   description: Device dashboard
+- name: Dashboard - Wired Client Health
+  description: Client dashboard
+- name: Dashboard - Wired Device Health
+  description: Device dashboard
+- name: Dashboard - Wired Usage and Capacity
+  description: Wired Usage and Capacity
 - name: Geo-View
   description: Geo View
+- name: UZ
+  description: UZ Requests
 paths:
   /login:
     post:
@@ -2084,6 +2092,126 @@ paths:
       responses:
         '200':
           description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /locations/wall/type:
+    get:
+      tags:
+      - Location
+      summary: Get a wall types
+      description: Retrieve the list of wall types, including both predefined and custom ones.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_walls_type
+      operationId: getWallType
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClsWallType'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Location
+      summary: Create a wall type
+      description: Create a custom wall type.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_wall_type
+      operationId: createWallType
+      responses:
+        '200':
+          description: Create wall type request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClsCreateWallTypeRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /locations/wall/type/{id}:
+    put:
+      tags:
+      - Location
+      summary: Update a wall type
+      description: Update the custom wall type with the specified ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_wall_type
+      operationId: updateWallType
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: Update wall type request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClsUpdateWallTypeRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClsWallType'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Location
+      summary: Delete a wall type
+      description: Delete the custom wall type for the specified ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_wall_type
+      operationId: deleteWallType
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /locations/wall/type/references/{id}:
+    get:
+      tags:
+      - Location
+      summary: Find references of a wall type
+      description: Find all floors a/o sites referencing a wall type by its ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_find_wall_type_reference
+      operationId: findWallTypeReference
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClsWallTypeReference'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -5427,7 +5555,7 @@ paths:
       description: List all ServiceNow subscriptions.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_alert_ServiceNow_subscription
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_alert_servicenow_subscription
       operationId: listServiceNowSubscriptions
       responses:
         '200':
@@ -5449,7 +5577,7 @@ paths:
       description: Create ServiceNow subscription.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_an_alert_ServiceNow_subscription
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_an_alert_servicenow_subscription
       operationId: createServiceNowSubscription
       requestBody:
         description: The payload of create ServiceNow subscription.
@@ -5477,7 +5605,7 @@ paths:
       description: Delete alert ServiceNow subscription by a list of provided IDs.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_bulk_delete_an_alert_ServiceNow_subscription
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_bulk_delete_an_alert_servicenow_subscription
       operationId: deleteBulkAlertSubscriptionServiceNow
       requestBody:
         content:
@@ -5503,7 +5631,7 @@ paths:
       description: Get ServiceNow subscription info for a specific ServiceNow account.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_an_alert_ServiceNow_subscription
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_an_alert_servicenow_subscription
       operationId: getServiceNowSubscription
       parameters:
       - $ref: '#/components/parameters/id'
@@ -5525,7 +5653,7 @@ paths:
       description: Update ServiceNow subscription.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_an_alert_ServiceNow_subscription
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_an_alert_servicenow_subscription
       operationId: updateServiceNowSubscription
       parameters:
       - $ref: '#/components/parameters/id'
@@ -5553,7 +5681,7 @@ paths:
       description: Partial or full update ServiceNow subscription.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_patch_alert_ServiceNow_subscription
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_patch_alert_serviceNow_subscription
       operationId: patchServiceNowSubscription
       parameters:
       - $ref: '#/components/parameters/id'
@@ -16061,6 +16189,820 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /dashboard/wired/client-health/grid:
+    post:
+      tags:
+      - Dashboard - Wired Client Health
+      summary: Wired client health grid
+      description: Returns the client health grid of wired devices based on the provided filters. You can filter the results by sites.
+      operationId: wiredClientHealthGrid
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: keyword
+        in: query
+        description: The keyword to search
+        required: false
+        schema:
+          type: string
+      - name: sortField
+        in: query
+        description: The sort field
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqWiredClientHealthSortField'
+      - name: sortOrder
+        in: query
+        description: The sort order
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqSortOrder'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the client health grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                device_ids:
+                  description: List of device IDs to filter the device health grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                number_filter:
+                  type: object
+                  description: The number based column filters available.
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/number_filter'
+      responses:
+        '200':
+          description: Returns the response of the client health grid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqWiredClientHealthGridResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/client-health/ip-connectivity-issues:
+    post:
+      tags:
+      - Dashboard - Wired Client Health
+      summary: Wired clients count with IP connectivity issues
+      description: Returns the wired clients with IP connectivity issues based on the provided filters. You can filter the results by sites.
+      operationId: wiredClientHealthIpConnectivityIssues
+      parameters:
+      - name: deviceId
+        in: query
+        description: The device ID
+        required: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the clients with IP connectivity issues
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of clients with IP connectivity issues based on the filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredClientHealthIpConnectivityIssues'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/client-health/port-congestion:
+    post:
+      tags:
+      - Dashboard - Wired Client Health
+      summary: Wired clients count with port congestion issues
+      description: Returns the wired clients with port congestion issues based on the provided filters. You can filter the results by sites.
+      operationId: wiredClientHealthPortCongestionIssues
+      parameters:
+      - name: deviceId
+        in: query
+        description: The device ID
+        required: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the clients with port congestion issues
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of clients with port congestion issues based on the filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredClientHealthPortCongestionIssues'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/client-health/traffic-anomalies:
+    post:
+      tags:
+      - Dashboard - Wired Client Health
+      summary: Wired clients count with traffic anomalies
+      description: Returns the wired clients with traffic anomalies based on the provided filters. You can filter the results by sites.
+      operationId: wiredClientHealthTrafficAnomalies
+      parameters:
+      - name: deviceId
+        in: query
+        description: The device ID
+        required: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the clients with traffic anomalies
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of clients with traffic anomalies based on the filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredClientHealthTrafficAnomalies'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/client-health/port-errors:
+    post:
+      tags:
+      - Dashboard - Wired Client Health
+      summary: Wired clients count with port errors
+      description: Returns the wired clients with port errors based on the provided filters. You can filter the results by sites.
+      operationId: wiredClientHealthPortErrors
+      parameters:
+      - name: deviceId
+        in: query
+        description: The device ID
+        required: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the clients with port errors
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of clients with port errors based on the filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredClientHealthPortErrors'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/summary:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: Device health summary for wired devices
+      description: Returns the count of total wired devices and total devices with health issues based on the provided filters. You can filter the results by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_post_device_health_wired_summary
+      operationId: wiredDeviceHealthSummary
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the wired devices summary
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of wired devices and devices with health issues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthSummary'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/cpu-usage-issues:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: CPU usage issues for wired devices
+      description: Returns the count of wired devices having CPU usage issues (CPU usage >= 95%) based on the provided filters. You can filter the results by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wired_device_health_issues_cpu_usage
+      operationId: wiredDeviceHealthCpuUsageIssues
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the wired devices CPU usage issues.
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of wired devices having CPU usage issues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthCpuUsageIssues'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/memory-usage-issues:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: Memory usage issues for wired devices
+      description: Returns the count of wired devices having memory usage issues (memory usage >= 95%) based on the provided filters. You can filter the results by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wired_device_health_issues_memory_usage
+      operationId: wiredDeviceHealthMemoryUsageIssues
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the wired devices Memory usage issues
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of wired devices having memory usage issues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthMemoryUsageIssues'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/temperature-issues:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: Temperature issues for wired devices
+      description: Returns the count of wired devices having temperature issues based on the provided filters. You can filter the results by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wired_device_health_issues_temperature
+      operationId: wiredDeviceHealthTemperatureIssues
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the wired devices temperature issues
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of wired devices having temperature issues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthTemperatureIssues'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/poe-usage-issues:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: PoE usage issues for wired devices
+      description: Returns the count of wired devices having PoE usage issues based on the provided filters. You can filter the results by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wired_device_health_issues_poe_usage
+      operationId: wiredDeviceHealthPoEUsageIssues
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the wired devices PoE usage issues
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of wired devices having PoE usage issues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthPoeUsageIssues'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/fan-issues:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: Fan status issues for wired devices
+      description: Returns the count of wired devices having fan status issues based on the provided filters. You can filter the results by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wired_device_health_issues_fan_status
+      operationId: wiredDeviceHealthFanStatusIssues
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the wired devices fan status issues
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of wired devices having fan status issues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthFanStatusIssues'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/psu-issues:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: PSU status issues for wired devices
+      description: Returns the count of wired devices having PSU status issues based on the provided filters. You can filter the results by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wired_device_health_issues_psu_status
+      operationId: wiredDeviceHealthPSUStatusIssues
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the wired devices PSU status issues
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the counts of wired devices having PSU status issues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthPsuStatusIssues'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/grid:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: Wired Device Health Grid
+      description: Returns the device health grid of wired devices based on the provided filters. The results can be filtered by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_health_grid
+      operationId: wiredDeviceHealthGrid
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: keyword
+        in: query
+        description: The keyword to search
+        required: false
+        schema:
+          type: string
+      - name: sortField
+        in: query
+        description: The sort field
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqWiredDeviceHealthGridSortField'
+      - name: sortOrder
+        in: query
+        description: The sort order
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqSortOrder'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the device health grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                device_ids:
+                  description: List of device IDs to filter the device health grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                filter_field:
+                  description: The filters available for the device health grid
+                  type: array
+                  items:
+                    type: string
+                    format: enum
+                    $ref: '#/components/schemas/XiqWiredDeviceHealthGridFilterField'
+      responses:
+        '200':
+          description: Returns the response of the device health grid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqWiredDeviceHealthGridResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/poe-usage-status:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: PoE usage status for wired devices
+      description: Returns the PoE usage for wired devices based on the provided device ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_health_poe
+      operationId: wiredDeviceHealthPoe
+      parameters:
+      - name: deviceId
+        in: query
+        description: The device ID to provide the PoE usage (all the slots will be provided for a stack)
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Returns the PoE usage for the specified device ID (all the slots will be provided for a stack)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthPoeUsageStatusResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/temperature-status:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: Temperature status for wired devices
+      description: Returns the temperature for wired devices based on the provided device ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_health_temperature
+      operationId: wiredDeviceHealthTemperature
+      parameters:
+      - name: deviceId
+        in: query
+        description: The device ID to provide the temperature (all the slots will be provided for a stack)
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Returns the temperature for the specified device ID (all the slots will be provided for a stack)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthTemperatureStatusResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/fan-status:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: Fan status for wired devices
+      description: Returns the fan health status for wired devices based on the provided device ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_health_fan_status
+      operationId: wiredDeviceHealthFanStatus
+      parameters:
+      - name: deviceId
+        in: query
+        description: The device ID to provide the fan health status (all the slots will be provided for a stack)
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Returns the fan health status for the specified device ID (all the slots will be provided for a stack)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthFanStatusResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/device-health/psu-status:
+    post:
+      tags:
+      - Dashboard - Wired Device Health
+      summary: PSU status for wired devices
+      description: Returns the PSU health status for wired devices based on the provided device ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_health_psu
+      operationId: wiredDeviceHealthPsu
+      parameters:
+      - name: deviceId
+        in: query
+        description: The device ID to provide the fan health status (all the slots will be provided for a stack)
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Returns the PSU health status for the specified device ID (all the slots will be provided for a stack)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredDeviceHealthPsuStatusResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/usage-capacity/grid:
+    post:
+      tags:
+      - Dashboard - Wired Usage and Capacity
+      summary: Wired Usage and Capacity grid
+      description: Returns information related to usage and capacity for wired devices based on the provided filters. The result can be filtered by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wired_usage_capacity_grid
+      operationId: wiredUsageCapacityGrid
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: keyword
+        in: query
+        description: The keyword to search (hostname, IP or site)
+        required: false
+        schema:
+          type: string
+      - name: sortField
+        in: query
+        description: The field used for sorting.
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqWiredUsageCapacitySortField'
+      - name: sortOrder
+        in: query
+        description: The sort order
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqSortOrder'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter usage and capacity grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                device_ids:
+                  description: List of device IDs to filter usage and capacity grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                filter_field:
+                  description: The filters available for usage and capacity grid
+                  type: array
+                  items:
+                    type: string
+                    format: enum
+                    $ref: '#/components/schemas/XiqWiredUsageCapacityFilter'
+      responses:
+        '200':
+          description: Returns the response for usage and capacity grid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqWiredUsageCapacityGridResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/usage-capacity/usage-utilization:
+    post:
+      tags:
+      - Dashboard - Wired Usage and Capacity
+      summary: Wired devices total utilized bandwidth
+      description: Returns total bandwidth utilized by wired devices based on the provided filters. The result can be filtered by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wired_usage_capacity_usage_utilization
+      operationId: wiredUsageCapacityUsageUtilization
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter total bandwidth utilized by wired devices
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns total bandwidth utilized by wired devices based on the provided filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredUsageCapacityUsageUtilization'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/usage-capacity/wired-throughput:
+    post:
+      tags:
+      - Dashboard - Wired Usage and Capacity
+      summary: Wired devices throughput
+      description: Returns the throughput for wired devices based on the provided filters. The result can be filtered by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wired_usage_capacity_throughput
+      operationId: wiredUsageCapacityThroughput
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter throughput for wired devices
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the throughput for wired devices based on the provided filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredUsageCapacityThroughput'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wired/usage-capacity/wired-congestion:
+    post:
+      tags:
+      - Dashboard - Wired Usage and Capacity
+      summary: Wired devices congestion
+      description: Returns the congestion for wired devices based on the provided filters. The result can be filtered by sites.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wired_usage_capacity_congestion
+      operationId: wiredUsageCapacityCongestion
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the congestion for wired devices
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Returns the congestion for wired devices based on the provided filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqWiredUsageCapacityCongestion'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /geo-view:
     get:
       tags:
@@ -17538,6 +18480,85 @@ components:
           type: number
           description: The longitude coordinate for the site
           format: double
+    ClsWallType:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The Wall type id
+          format: int64
+        name:
+          type: string
+          description: The Wall type name
+        attenuation:
+          type: number
+          description: The Wall type attenuation
+          format: double
+        color:
+          type: string
+          description: The Wall type color
+        owner_id:
+          type: integer
+          description: The Owner ID
+          format: int64
+        org_id:
+          type: integer
+          description: The Org ID
+          format: int64
+        predefined:
+          type: boolean
+          description: Is the Wall type is predefined
+    ClsCreateWallTypeRequest:
+      required:
+      - attenuation
+      - color
+      - name
+      properties:
+        name:
+          maxLength: 254
+          type: string
+          description: The Wall type name
+        attenuation:
+          maximum: 999
+          minimum: -999
+          type: number
+          description: The Wall type attenuation
+          format: double
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$
+          type: string
+          description: The Wall type color
+    ClsUpdateWallTypeRequest:
+      type: object
+      required:
+      - attenuation
+      - color
+      - name
+      properties:
+        name:
+          maxLength: 254
+          type: string
+          description: The Wall type name
+        attenuation:
+          maximum: 999
+          minimum: -999
+          type: number
+          description: The Wall type attenuation
+          format: double
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$
+          type: string
+          description: The Wall type color
+    ClsWallTypeReference:
+      type: object
+      properties:
+        folder_id:
+          type: integer
+          description: The folder ID
+          format: int64
+        path:
+          type: string
+          description: The path
     XiqDeviceAdminState:
       type: string
       enum:
@@ -20706,6 +21727,10 @@ components:
           radio_wifi2:
             type: string
             description: The radio type for wifi 2 interface
+          stack_size:
+            type: integer
+            format: int8
+            description: The number of devices in the stack (0 for standalone devices)
     PagedRmXiqDevice:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -38041,6 +39066,543 @@ components:
                 description:
                   description: The reason for the device reboot.
                   type: string
+    XiqWiredClientHealthSortField:
+      type: string
+      title: WiredClientHealthSortField
+      description: Pre-defined filters for client health sorting - CONNECTION_STATUS - CLIENT_HOSTNAME - SITE - BUILDING - FLOOR - IPV4 - IPV6 - PORT_NUMBER - PORT_NUMBER_SWITCH_NAME - VLAN - OPERATING_SYSTEM - MAC - USERNAME - INSTANT_PORT_PROFILE - TOTAL_CONGESTION - TOTAL_UNICAST - TOTAL_MULTICAST - TOTAL_BROADCAST - TOTAL_PORT_ERRORS
+      example: CONNECTION_STATUS
+    XiqWiredClientHealthConnectionStatus:
+      type: string
+      enum:
+      - CONNECTED
+      - DISCONNECTED
+    XiqWiredClientHealthGridResponse:
+      type: object
+      properties:
+        connectionStatus:
+          $ref: '#/components/schemas/XiqWiredClientHealthConnectionStatus'
+          description: The current connection status of the client
+        client_hostname:
+          type: string
+          description: The hostname of the client
+        client_ip:
+          type: string
+          description: The IP address of the client
+        site:
+          type: string
+          description: The site where the client is located
+        building:
+          type: string
+          description: The building where the client is located
+        floor:
+          type: string
+          description: The floor where the client is located
+        ipv4:
+          type: string
+          description: The IPv4 address assigned to the client
+        has_ip_address_issues:
+          type: boolean
+          description: Indicates if there are IP address issues (related to UI tooltip)
+        ipv6:
+          type: string
+          description: The IPv6 address assigned to the client
+        port_number:
+          type: string
+          description: The port number on which the device is connected
+        switch_name:
+          type: string
+          description: The switch name of the connected device
+        vlan:
+          type: integer
+          format: int32
+          description: The VLAN ID
+        operating_system:
+          type: string
+          description: The operating system of the client device
+        mac:
+          type: string
+          description: The MAC address of the client device
+        username:
+          type: string
+          description: The username of the client
+        instant_port_profile:
+          type: string
+          description: The Instant Port Profile type assignment to client
+        total_congestion_packets:
+          type: integer
+          format: int64
+          description: The total congestion packets
+        total_unicast_packets_percentage:
+          type: number
+          format: double
+          description: The total unicast packets percentage
+        total_multicast_packets_percentage:
+          type: number
+          format: double
+          description: The total multicast packets percentage
+        total_broadcast_packets_percentage:
+          type: number
+          format: double
+          description: The total broadcast packets percentage
+        total_port_errors:
+          type: integer
+          format: int64
+          description: The total port errors
+        device_id:
+          type: integer
+          format: int64
+          description: The device to which client is connected
+        client_id:
+          type: integer
+          format: int64
+          description: The client ID
+    PagedXiqWiredClientHealthGridResponse:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqWiredClientHealthGridResponse'
+    XiqWiredClientHealthIpConnectivityIssues:
+      type: object
+      properties:
+        total_clients:
+          type: integer
+          format: int64
+          description: The total number of clients
+        unassigned_ip:
+          type: integer
+          format: int64
+          description: The number of clients with unassigned IPs
+        self_assigned_ip:
+          type: integer
+          format: int64
+          description: The number of clients with self assigned IPs
+        valid_ip:
+          type: integer
+          format: int64
+          description: The number of clients with self assigned IPs
+    XiqWiredClientHealthPortCongestionIssues:
+      type: object
+      properties:
+        total_clients:
+          type: integer
+          format: int64
+          description: The total number of clients
+        congestion:
+          type: integer
+          format: int64
+          description: The number of clients with port congestion issues
+        healthy:
+          type: integer
+          format: int64
+          description: The number of healthy client that do not have port congestion issues
+    XiqWiredClientHealthTrafficAnomalies:
+      type: object
+      properties:
+        total_clients:
+          type: integer
+          format: int64
+          description: The total number of clients
+        anomalies:
+          type: integer
+          format: int64
+          description: The number of clients with traffic anomalies
+        healthy:
+          type: integer
+          format: int64
+          description: The number of healthy client that do not have traffic anomalies
+    XiqWiredClientHealthPortErrors:
+      type: object
+      properties:
+        total_clients:
+          type: integer
+          format: int64
+          description: The total number of clients
+        port_errors:
+          type: integer
+          format: int64
+          description: The number of clients with port errors
+        healthy:
+          type: integer
+          format: int64
+          description: The number of healthy client that do not have port errors
+    XiqWiredDeviceHealthSummary:
+      type: object
+      properties:
+        wired_devices:
+          type: integer
+          format: int64
+          description: Total count of devices
+        wired_unhealthy_devices:
+          type: integer
+          format: int64
+          description: Total count of unhealthy devices
+    XiqWiredDeviceHealthCpuUsageIssues:
+      type: object
+      properties:
+        cpu_usage_issue_device_count:
+          type: integer
+          format: int64
+          description: Count of devices with CPU usage issues
+    XiqWiredDeviceHealthMemoryUsageIssues:
+      type: object
+      properties:
+        memory_usage_issue_device_count:
+          type: integer
+          format: int64
+          description: Count of devices with memory usage issues
+    XiqWiredDeviceHealthTemperatureIssues:
+      type: object
+      properties:
+        temperature_issue_device_count:
+          type: integer
+          format: int64
+          description: Count of devices with temperature issues
+    XiqWiredDeviceHealthPoeUsageIssues:
+      type: object
+      properties:
+        poe_usage_issue_device_count:
+          type: integer
+          format: int64
+          description: Count of devices with PoE usage issues
+    XiqWiredDeviceHealthFanStatusIssues:
+      type: object
+      properties:
+        fan_status_issue_device_count:
+          type: integer
+          format: int64
+          description: Count of devices with fan status issues
+    XiqWiredDeviceHealthPsuStatusIssues:
+      type: object
+      properties:
+        psu_status_issue_device_count:
+          type: integer
+          format: int64
+          description: Count of devices with PSU status issues
+    XiqWiredDeviceHealthGridSortField:
+      type: string
+      title: WiredDeviceHealthSortField
+      description: Pre-defined fields for device health sorting - CPU - MEM - TEMP - POE - FAN - PSU
+      example: CPU
+    XiqWiredDeviceHealthGridFilterField:
+      description: The filters available for the wired device health grid
+      enum:
+      - CPU
+      - MEM
+      - TEMP
+      - POE
+      - FAN
+      - PSU
+      - HEALTH
+    XiqWiredDeviceHealthGridResponse:
+      type: object
+      properties:
+        device_id:
+          type: integer
+          format: int64
+          description: The id of the device
+        stack_size:
+          type: integer
+          format: int8
+          description: The number of devices in the stack (0 for standalone devices)
+        device_hostname:
+          type: string
+          description: The hostname of the device
+        device_ip:
+          type: string
+          description: The IP address of the device
+        site:
+          type: string
+          description: The site where the device is located
+        building:
+          type: string
+          description: The building where the device is located
+        floor:
+          type: string
+          description: The floor where the device is located
+        cpu_usage:
+          type: integer
+          format: int8
+          description: The CPU usage percentage of the device
+        memory_usage:
+          type: integer
+          format: int8
+          description: The memory usage percentage of the device
+        temperature:
+          type: integer
+          format: int16
+          description: The temperature of the device
+        temperature_error_slots:
+          type: integer
+          format: int8
+          description: Indicates the number of the stack slots that have temperature errors/if a standalone device has temperature errors
+        poe_usage:
+          type: integer
+          format: int8
+          description: The PoE usage percentage of the device
+        poe_error_slots:
+          type: integer
+          format: int8
+          description: Indicates the number of the stack slots that have PoE errors/if a standalone device has PoE errors
+        fan_error_slots:
+          type: integer
+          format: int8
+          description: Indicates the number of the stack slots that have fan errors/if a standalone device has fan errors
+        psu_error_slots:
+          type: integer
+          format: int8
+          description: Indicates the number of the stack slots that have PSU errors/if a standalone device has PSU errors
+    PagedXiqWiredDeviceHealthGridResponse:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqWiredDeviceHealthGridResponse'
+    XiqWiredDeviceHealthPoeUsageStatusResponseEntry:
+      type: object
+      properties:
+        slot_number:
+          type: integer
+          format: int8
+          description: The slot number of the device
+        poe_usage:
+          type: integer
+          format: int8
+          description: The PoE usage percentage of the device
+    XiqWiredDeviceHealthPoeUsageStatusResponse:
+      type: object
+      properties:
+        devices:
+          type: array
+          description: The list contains a single element for standalone devices and multiple elements for each member of a stack
+          items:
+            $ref: '#/components/schemas/XiqWiredDeviceHealthPoeUsageStatusResponseEntry'
+    XiqWiredDeviceHealthTemperatureStatusResponseEntry:
+      type: object
+      properties:
+        slot_number:
+          type: integer
+          format: int8
+          description: The slot number of the device
+        temperature:
+          type: integer
+          format: int16
+          description: The temperature of the device
+    XiqWiredDeviceHealthTemperatureStatusResponse:
+      type: object
+      properties:
+        devices:
+          type: array
+          description: The list contains a single element for standalone devices and multiple elements for each member of a stack
+          items:
+            $ref: '#/components/schemas/XiqWiredDeviceHealthTemperatureStatusResponseEntry'
+    XiqWiredDeviceHealthFanStatus:
+      type: object
+      properties:
+        fan_description:
+          type: string
+          description: The fan description
+        fan_status:
+          type: string
+          description: The fan status
+    XiqWiredDeviceHealthFanStatusResponseEntry:
+      type: object
+      properties:
+        slot_number:
+          type: integer
+          format: int8
+          description: The slot number of the device (0 for standalone)
+        fan_status_error:
+          type: integer
+          format: int8
+          description: The number of fans that are not operating correctly
+        fan_total:
+          type: integer
+          format: int8
+          description: The total number of fans
+        fan_units:
+          type: array
+          description: The list of fans with their corresponding status
+          items:
+            $ref: '#/components/schemas/XiqWiredDeviceHealthFanStatus'
+    XiqWiredDeviceHealthFanStatusResponse:
+      type: object
+      properties:
+        devices:
+          type: array
+          description: The list contains a single element for standalone devices and multiple elements for each member of a stack
+          items:
+            $ref: '#/components/schemas/XiqWiredDeviceHealthFanStatusResponseEntry'
+    XiqWiredDeviceHealthPsuStatus:
+      type: object
+      properties:
+        psu_description:
+          type: string
+          description: The PSU description
+        psu_status:
+          type: string
+          description: The PSU status
+    XiqWiredDeviceHealthPsuStatusResponseEntry:
+      type: object
+      properties:
+        slot_number:
+          type: integer
+          format: int8
+          description: The slot number of the device (0 for standalone)
+        psu_status_error:
+          type: integer
+          format: int8
+          description: The number of PSUs that are not operating correctly
+        psu_total:
+          type: integer
+          format: int8
+          description: The total number of PSUs
+        psu_units:
+          type: array
+          description: The list of PSUs with their corresponding status
+          items:
+            $ref: '#/components/schemas/XiqWiredDeviceHealthPsuStatus'
+    XiqWiredDeviceHealthPsuStatusResponse:
+      type: object
+      properties:
+        devices:
+          type: array
+          description: The list contains a single element for standalone devices and multiple elements for each member of a stack
+          items:
+            $ref: '#/components/schemas/XiqWiredDeviceHealthPsuStatusResponseEntry'
+    XiqWiredUsageCapacitySortField:
+      type: string
+      title: WiredUsageAndCapacitySortField
+      description: Pre-defined fields for usage and capacity sorting - DEVICE_HOSTNAME - DEVICE_IP - SITE - TOTAL_CLIENTS_COUNT - TOTAL_ISSUE_CLIENTS_COUNT - TOTAL_BANDWIDTH_UTILIZED - TOTAL_THROUGHPUT_RX - TOTAL_THROUGHPUT_TX - TOTAL_UNICAST_PACKETS - TOTAL_MULTICAST_PACKETS - TOTAL_BROADCAST_PACKETS - TOTAL_QUEUE_TX_PKTS - TOTAL_QUEUE_CONGESTION_PKTS
+      example: TOTAL_BANDWIDTH_UTILIZED
+    XiqWiredUsageCapacityFilter:
+      description: The filters available for usage and capacity grid
+      enum:
+      - TOTAL_QUEUE_CONGESTION_PKTS
+    XiqWiredUsageCapacityGridResponse:
+      type: object
+      properties:
+        device_id:
+          type: integer
+          format: int64
+          description: The unique device identifier
+        device_hostname:
+          type: string
+          description: The hostname of the device
+        device_ip:
+          type: string
+          description: The IP address of the device
+        is_stack:
+          type: boolean
+          description: True if the device is a stack otherwise false
+        site:
+          type: string
+          description: Site location of the device
+        building:
+          type: string
+          description: The building where the device is located
+        floor:
+          type: string
+          description: The floor where the device is located
+        total_clients_count:
+          type: integer
+          format: int64
+          description: Total number of clients of the device
+        total_issue_clients_count:
+          type: integer
+          format: int64
+          description: Total number of clients with issues of the device
+        total_bandwidth_utilized:
+          type: integer
+          format: int64
+          description: Total utilized bandwidth in Bytes
+        total_throughput_rx:
+          type: integer
+          format: int64
+          description: Total Rx throughput in packets per second
+        total_throughput_tx:
+          type: integer
+          format: int64
+          description: Total Tx throughput in packets per second
+        total_unicast_pkts:
+          type: integer
+          format: int32
+          description: The percentage of unicast packets from total number of packets
+        total_multicast_pkts:
+          type: integer
+          format: int32
+          description: The percentage of multicast packets from total number of packets
+        total_broadcast_pkts:
+          type: integer
+          format: int32
+          description: The percentage of broadcast packets from total number of packets
+        total_queue_tx_pkts:
+          type: integer
+          format: int64
+          description: Total number of transmitted packets on all QOS queues
+        total_queue_congestion_pkts:
+          type: integer
+          format: int64
+          description: Total number of packets dropped due to congestion on all QOS queues
+    PagedXiqWiredUsageCapacityGridResponse:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqWiredUsageCapacityGridResponse'
+    XiqWiredUsageCapacityUsageUtilization:
+      type: object
+      properties:
+        total_bandwidth_utilized:
+          type: integer
+          format: int64
+          description: Total utilized bandwidth in Bytes
+    XiqWiredUsageCapacityThroughput:
+      type: object
+      properties:
+        total_packets_count:
+          type: integer
+          format: int64
+          description: Total number of packets
+        unicast_utilization_percentage:
+          type: integer
+          format: int32
+          description: Percentage of unicast packets from total number of packets
+        multicast_utilization_percentage:
+          type: integer
+          format: int32
+          description: Percentage of multicast packets from total number of packets
+        broadcast_utilization_percentage:
+          type: integer
+          format: int32
+          description: Percentage of broadcast packets from total number of packets
+    XiqWiredUsageCapacityCongestion:
+      type: object
+      properties:
+        total_queue_tx_packets:
+          type: integer
+          format: int64
+          description: Total number of transmitted packets on all QOS queues
+        total_queue_congestion_packets:
+          type: integer
+          format: int64
+          description: Total number of packets dropped due to congestion on all QOS queues
+        total_congestion_percentage:
+          type: integer
+          format: int64
+          description: Percentage of packets dropped due to congestion vs total number of transmitted packets on all QOS queues
     GeoViewNode:
       type: object
       description: The Geo View data
@@ -38067,6 +39629,484 @@ components:
           description: Array of Child nodes
           items:
             $ref: '#/components/schemas/GeoViewNode'
+    DefaultError:
+      type: object
+      properties:
+        error_code:
+          type: string
+          description: The error code
+        error_id:
+          type: string
+          description: The error ID for internal troubleshooting
+        error_msg:
+          type: string
+          description: The error detailed message
+      required:
+      - error_code
+      - error_id
+      - error_msg
+    LicensingIdentitiesCountResponse:
+      description: Licensing Identities Count
+      type: object
+      properties:
+        owner_id:
+          description: Owner ID
+          type: integer
+          format: int64
+          example: 1106
+        users_count:
+          description: Users Count
+          type: integer
+          format: int64
+          example: 10
+        devices_count:
+          description: Devices Count
+          type: integer
+          format: int64
+          example: 187
+    ServicesAvailabilityStatusResponse:
+      description: Services Availability Status
+      type: object
+      properties:
+        up:
+          description: Services Availability Up
+          type: integer
+          format: int64
+          example: 0
+        down:
+          description: Services Availability Down
+          type: integer
+          format: int64
+          example: 1
+        partially_down:
+          description: Services Availability Partially Down
+          type: integer
+          format: int64
+          example: 1
+        total:
+          description: Services Availability Total
+          type: integer
+          format: int64
+          example: 2
+    HostsAvailabilityStatusResponse:
+      description: Service Connectors Availability Status
+      type: object
+      properties:
+        up:
+          description: Service Connectors Availability Up
+          type: integer
+          format: int64
+          example: 1
+        down:
+          description: Service Connectors Availability Down
+          type: integer
+          format: int64
+          example: 4
+        total:
+          description: Service Connectors Availability Total
+          type: integer
+          format: int64
+          example: 5
+    RadsecProxiesStatusResponse:
+      description: Radsec Proxies Status
+      type: object
+      properties:
+        total:
+          description: Radsec Proxies Total
+          type: integer
+          format: int64
+          example: 7
+        partially_down:
+          description: Radsec Proxies Partially Down
+          type: integer
+          format: int64
+          example: 0
+        up:
+          description: Radsec Proxies Up
+          type: integer
+          format: int64
+          example: 1
+        down:
+          description: Radsec Proxies Down
+          type: integer
+          format: int64
+          example: 6
+    ServicesProtocolDistributionResponse:
+      description: Services Protocol Distribution
+      type: object
+      properties:
+        total:
+          description: Total count
+          type: integer
+          format: int64
+          example: 16
+      additionalProperties:
+        type: integer
+        format: int64
+        description: Protocol count
+      example:
+        http: 2
+        vnc: 2
+        https: 4
+        rdp: 4
+        ssh: 4
+        total: 16
+    ServicesUsageResponse:
+      description: Services Usage
+      type: object
+      properties:
+        id:
+          description: Service ID
+          type: string
+          format: string
+          example: 200b5557-3883-4f82-9a3e-6b563ba60d66
+        total_bytes:
+          description: Total Bytes
+          type: integer
+          format: int64
+          example: 5303685209
+        name:
+          description: Service Name
+          type: string
+          format: string
+          example: VLC
+    TimeRange1:
+      type: object
+      properties:
+        start_time:
+          description: start of the time-range. formatted UTC date time(yyyy-MM-dd'T'HH:mm:ss)
+          type: string
+          example: '2023-10-08T08:00:14'
+        end_time:
+          description: end of the time-range. formatted UTC date time(yyyy-MM-dd'T'HH:mm:ss)
+          type: string
+          example: '2023-10-10T08:03:52'
+        interval:
+          description: time interval for aggregation.
+          type: integer
+          format: int64
+          example: 3600
+    EndSystemsDashboardAuthenticationTypesResponse:
+      type: object
+      properties:
+        data:
+          description: End System Dashboard Authentication Types
+          type: object
+          properties:
+            802.1x(TTLS):
+              description: 802.1x(TTLS) authentication type count
+              type: integer
+              format: int64
+              example: 100
+            Guest:
+              description: Guest authentication type count
+              type: integer
+              format: int64
+              example: 100
+            MAC-AUTH:
+              description: MAC authentication type count
+              type: integer
+              format: int64
+              example: 100
+            EAP-TTLS:
+              description: EAP-TTLS authentication type count
+              type: integer
+              format: int64
+              example: 100
+            EAP-TLS:
+              description: EAP-TLS authentication type count
+              type: integer
+              format: int64
+              example: 100
+        time_range:
+          description: The time range response
+          $ref: '#/components/schemas/TimeRange1'
+    EndSystemsDashboardAuthenticationTrendsResponse:
+      type: object
+      properties:
+        data:
+          description: End System Dashboard Authentication Trends
+          type: array
+          items:
+            properties:
+              timestamp:
+                description: timestamp formatted UTC date time yyyy-MM-dd'T'HH:mm:ss
+                type: string
+                example: '2023-10-10T08:03:52.000Z'
+              auth_types:
+                description: authentication types
+                type: object
+                properties:
+                  802.1x(TTLS):
+                    description: 802.1x(TTLS) authentication type count
+                    type: integer
+                    format: int64
+                    example: 100
+                  Guest:
+                    description: Guest authentication type count
+                    type: integer
+                    format: int64
+                    example: 100
+                  MAC-AUTH:
+                    description: MAC authentication type count
+                    type: integer
+                    format: int64
+                    example: 100
+                  EAP-TTLS:
+                    description: EAP-TTLS authentication type count
+                    type: integer
+                    format: int64
+                    example: 100
+                  EAP-TLS:
+                    description: EAP-TLS authentication type count
+                    type: integer
+                    format: int64
+                    example: 100
+        time_range:
+          description: The time range response
+          $ref: '#/components/schemas/TimeRange1'
+    EndSystemsDashboardNetworkAccessSummaryResponse:
+      type: object
+      properties:
+        data:
+          description: End System Dashboard Network Access Summary
+          type: object
+          properties:
+            Rejected:
+              description: rejected state count
+              type: integer
+              format: int64
+              example: 100
+            Accepted:
+              description: accepted state count
+              type: integer
+              format: int64
+              example: 90
+            Disconnected:
+              description: disconnected state count
+              type: integer
+              format: int64
+              example: 70
+        time_range:
+          description: The time range response
+          $ref: '#/components/schemas/TimeRange1'
+    EndSystemsDashboardTopDeviceFamiliesResponse:
+      type: object
+      properties:
+        data:
+          description: End System Dashboard Top device families
+          type: array
+          items:
+            properties:
+              device_family:
+                description: device family
+                type: string
+                example: Windows Mobile
+              count:
+                description: number of times above device family was seen in the given time range
+                type: integer
+                format: int64
+                example: 100
+        time_range:
+          description: The time range response
+          $ref: '#/components/schemas/TimeRange1'
+    EndSystemsDashboardAuthStateTrendsResponse:
+      type: object
+      properties:
+        data:
+          description: End System Dashboard Auth State Trends
+          type: array
+          items:
+            properties:
+              timestamp:
+                description: timestamp formatted UTC date time yyyy-MM-dd'T'HH:mm:ss
+                type: string
+                example: '2023-10-10T08:03:52.000Z'
+              auth_states:
+                description: auth states
+                type: object
+                properties:
+                  Rejected:
+                    description: rejected state count
+                    type: integer
+                    format: int64
+                    example: 100
+                  Accepted:
+                    description: accepted state count
+                    type: integer
+                    format: int64
+                    example: 90
+                  Disconnected:
+                    description: disconnected state count
+                    type: integer
+                    format: int64
+                    example: 70
+        time_range:
+          description: The time range response
+          $ref: '#/components/schemas/TimeRange1'
+    EndSystemsDashboardTopPoliciesUsageResponse:
+      type: object
+      properties:
+        data:
+          description: End System Dashboard Top Policies Usage
+          type: array
+          items:
+            properties:
+              policy:
+                description: policy
+                type: string
+                example: Rejected
+              count:
+                description: number of times above policy was seen in the given time range
+                type: integer
+                format: int64
+                example: 100
+        time_range:
+          description: The time range response
+          $ref: '#/components/schemas/TimeRange1'
+    PoliciesCountResponse:
+      description: Policies Count
+      type: object
+      properties:
+        total_active_count:
+          description: Total active policies count
+          type: integer
+          format: int64
+          example: 42
+        total_inactive_count:
+          description: Total inactive policies count
+          type: integer
+          format: int64
+          example: 0
+        total_delete_in_progress_count:
+          description: Total policies with delete in progress count
+          type: integer
+          format: int64
+          example: 0
+        total_deleted_count:
+          description: Total deleted policies count
+          type: integer
+          format: int64
+          example: 0
+        total_expired_count:
+          description: Total expired policies count
+          type: integer
+          format: int64
+          example: 2
+        total_impending_count:
+          description: Total impending policies count
+          type: integer
+          format: int64
+          example: 2
+        total_deleted_from_xiq_count:
+          description: Total policies deleted from XIQ count
+          type: integer
+          format: int64
+          example: 0
+        application:
+          type: object
+          properties:
+            active_count:
+              description: Active application policies count
+              type: integer
+              format: int64
+              example: 10
+            inactive_count:
+              description: Inactive application policies count
+              type: integer
+              format: int64
+              example: 0
+            delete_in_progress:
+              description: Application policies with delete in progress count
+              type: integer
+              format: int64
+              example: 0
+            deleted:
+              description: Deleted application policies count
+              type: integer
+              format: int64
+              example: 0
+            expired:
+              description: Expired application policies count
+              type: integer
+              format: int64
+              example: 2
+            impending:
+              description: Impending application policies count
+              type: integer
+              format: int64
+              example: 2
+        network:
+          type: object
+          properties:
+            active_count:
+              description: Active network policies count
+              type: integer
+              format: int64
+              example: 26
+            inactive_count:
+              description: Inactive network policies count
+              type: integer
+              format: int64
+              example: 0
+            delete_in_progress:
+              description: Network policies with delete in progress count
+              type: integer
+              format: int64
+              example: 0
+            deleted:
+              description: Deleted network policies count
+              type: integer
+              format: int64
+              example: 0
+            expired:
+              description: Expired network policies count
+              type: integer
+              format: int64
+              example: 0
+            impending:
+              description: Impending network policies count
+              type: integer
+              format: int64
+              example: 0
+            deleted_from_xiq:
+              description: Network policies deleted from XIQ count
+              type: integer
+              format: int64
+              example: 0
+        hybrid:
+          type: object
+          properties:
+            active_count:
+              description: Active hybrid policies count
+              type: integer
+              format: int64
+              example: 6
+            inactive_count:
+              description: Inactive hybrid policies count
+              type: integer
+              format: int64
+              example: 0
+            delete_in_progress:
+              description: Hybrid policies with delete in progress count
+              type: integer
+              format: int64
+              example: 0
+            deleted:
+              description: Deleted hybrid policies count
+              type: integer
+              format: int64
+              example: 0
+            expired:
+              description: Expired hybrid policies count
+              type: integer
+              format: int64
+              example: 0
+            impending:
+              description: Impending hybrid policies count
+              type: integer
+              format: int64
+              example: 0
   responses:
     ErrorResponse:
       description: The generic ExtremeCloud IQ API error response
@@ -38151,6 +40191,12 @@ components:
             status: 500
             title: Internal Server Error
             detail: Things are a little unstable
+    Error:
+      description: The generic ExtremeCloud IQ API error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultError'
   securitySchemes:
     BearerAuth:
       type: http
