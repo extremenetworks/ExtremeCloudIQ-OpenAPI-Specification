@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 25.3.0.140
+  version: 25.4.0-166
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -70,7 +70,7 @@ tags:
 - name: Configuration - Network
   description: Tunnel Concentrator Service, Network service
 - name: Configuration - Authentication
-  description: AD/LDAP/RADIUS/CWP/...
+  description: AD/LDAP/RADIUS/RADSEC/CWP/...
 - name: Configuration - Certificate
   description: Certificate
 - name: Copilot - Connectivity Experience
@@ -109,6 +109,8 @@ tags:
   description: Device dashboard
 - name: Dashboard - Wired Usage and Capacity
   description: Wired Usage and Capacity
+- name: Switch Inspector Panel
+  description: Switch Inspector Panel
 - name: Geo-View
   description: Geo View
 - name: UZ
@@ -2488,6 +2490,38 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /devices/:reset:
+    post:
+      tags:
+      - Device
+      summary: '[LRO] Reset devices to factory default'
+      description: Reset multiple devices to factory default settings.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_reset_devices_for_once_device
+      operationId: resetDevices
+      parameters:
+      - $ref: '#/components/parameters/async'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: List of device IDs to reset to factory default.
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /devices/location/:query:
     post:
       tags:
@@ -3879,7 +3913,7 @@ paths:
     post:
       tags:
       - Device
-      summary: List RM Devices Page
+      summary: '[LRO] List RM Devices Page'
       description: List RM Devices Page with filters and pagination.
       externalDocs:
         description: API Reference
@@ -4097,7 +4131,7 @@ paths:
     post:
       tags:
       - Device
-      summary: Export RM devices page
+      summary: '[LRO] Export RM devices page'
       description: Export RM devices page as a csv file.
       externalDocs:
         description: API Reference
@@ -4208,13 +4242,143 @@ paths:
                   items:
                     type: string
       responses:
+        '202':
+          description: Accepted - The request has been accepted for processing, but the processing has not been completed.
+          headers:
+            cache-control:
+              description: Cache control directives
+              schema:
+                type: string
+            content-length:
+              description: The length of the response body in octets (8-bit bytes)
+              schema:
+                type: integer
+            date:
+              description: The date and time at which the message was originated
+              schema:
+                type: string
+                format: date-time
+            expires:
+              description: The date/time after which the response is considered stale
+              schema:
+                type: string
+            location:
+              description: The URL to which the client should navigate to check the status of the request
+              schema:
+                type: string
+                format: uri
+            pragma:
+              description: Implementation-specific directives that might apply to any recipient along the request-response chain
+              schema:
+                type: string
+            ratelimit-limit:
+              description: The maximum number of requests that the client is allowed to make in a given time period
+              schema:
+                type: string
+            ratelimit-remaining:
+              description: The number of requests remaining in the current rate limit window
+              schema:
+                type: integer
+            retry-after:
+              description: The amount of time to wait before making a follow-up request
+              schema:
+                type: integer
+            server:
+              description: A name for the server
+              schema:
+                type: string
+                example: nginx
+            x-content-type-options:
+              description: Prevents the browser from interpreting files as a different MIME type
+              schema:
+                type: string
+            x-xss-protection:
+              description: Enables cross-site scripting (XSS) filter
+              schema:
+                type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/reports/{id}:
+    get:
+      tags:
+      - Device
+      summary: Download the Export CSV file for Device Status
+      description: Returns the CSV File of the device status based on the provided filters.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_status_grid
+      operationId: deviceStatusGridExport
+      parameters:
+      - name: id
+        in: path
+        description: The report ID
+        required: true
+        schema:
+          type: string
+      responses:
         '200':
-          description: OK
+          description: Returns the CSV File of the device status grid
           content:
             application/octet-stream:
               schema:
                 type: string
                 format: byte
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/actions-support-metadata:
+    post:
+      tags:
+      - Device
+      summary: Get metadata for supported device actions
+      description: Retrieve metadata information about supported device actions for a given product type.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_action_metadata
+      operationId: getDeviceActionMetadata
+      parameters:
+      - name: deviceActions
+        in: query
+        description: List of device actions to retrieve metadata info
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/RmDeviceActionEnum'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_types:
+                  type: array
+                  description: Product types filter to retrieve metadata for
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Device Action Metadata response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_supported_metadata:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        device_action:
+                          $ref: '#/components/schemas/RmDeviceActionEnum'
+                        supported_product_types:
+                          type: array
+                          items:
+                            type: string
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -4464,6 +4628,31 @@ paths:
       - $ref: '#/components/parameters/id'
       - $ref: '#/components/parameters/startTime'
       - $ref: '#/components/parameters/endTime'
+      - name: vlans
+        in: query
+        description: The associate vlan IDs
+        required: false
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int32
+      - name: userProfileNames
+        in: query
+        description: The user profile names
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: ssids
+        in: query
+        description: The SSIDs
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
       responses:
         '200':
           description: OK
@@ -11300,6 +11489,32 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/XiqCreateExternalRadiusServerRequest'
+            examples:
+              Create_a_new_External_RADIUS_server:
+                summary: Create a new External RADIUS Server
+                description: The payload to create a new External RADIUS Server.
+                value:
+                  name: external-server
+                  shared_secret: '123456'
+                  authentication_port: 1812
+                  accounting_port: 1813
+                  ip_addr: 10.10.10.10
+                  server_type: ACCOUNTING
+                  access_type: STANDARD
+                  enable_a3: true
+              Create_a_new_RADSEC_server:
+                summary: Create a new RADSEC Server
+                description: The payload to create a new RADSEC Server.
+                value:
+                  name: radsec-server
+                  shared_secret: '123456'
+                  authentication_port: 2083
+                  accounting_port: 2083
+                  server_type: ACCOUNTING
+                  enable_a3: true
+                  enable_peer_discovery: true
+                  access_type: SECURE
+                  trust_point_id: 1234567890
         required: true
       responses:
         '201':
@@ -11308,6 +11523,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqExternalRadiusServer'
+              examples:
+                create_radius_successful:
+                  summary: Created External RADIUS Server
+                  description: Created External RADIUS Server.
+                  value:
+                    id: 1234567890
+                    create_time: '2019-08-24T14:15:22Z'
+                    update_time: '2019-08-24T14:15:22Z'
+                    org_id: 100
+                    name: external-server
+                    shared_secret: '123456'
+                    authentication_port: 1812
+                    accounting_port: 1813
+                    ip_addr: 10.10.10.10
+                    server_type: ACCOUNTING
+                    enable_a3: true
+                create_radsec_successful:
+                  summary: Created RADSEC Server
+                  description: Created RADSEC Server.
+                  value:
+                    id: 9876543210
+                    create_time: '2019-08-24T14:15:22Z'
+                    update_time: '2019-08-24T14:15:22Z'
+                    org_id: 100
+                    name: radsec-server
+                    shared_secret: '123456'
+                    authentication_port: 1812
+                    accounting_port: 1813
+                    server_type: ACCOUNTING
+                    enable_a3: true
+                    enable_peer_discovery: true
+                    access_type: SECURE
+                    trust_point:
+                      id: 3456789012
+                      create_time: '2019-08-23T11:35:24Z'
+                      update_time: '2019-08-23T11:35:24Z'
+                      org_id: 100
+                      name: cert-bundle-trust-point
+                      bundle_type: TRUST_POINT
+                      certificate_ids:
+                      - 10000
+                      - 20000
+                      - 30000
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -11378,6 +11636,143 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /radsec-proxies:
+    get:
+      tags:
+      - Configuration - Authentication
+      summary: List RADSEC proxies
+      description: List a page of RADSEC proxy configurations.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_the_radsec_proxy_configuration
+      operationId: listRadsecProxies
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqRadsecProxy'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Configuration - Authentication
+      summary: Create RADSEC proxy configuration
+      description: Create a new RADSEC proxy configuration.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_radsec_proxy_configuration
+      operationId: createRadsecProxy
+      requestBody:
+        description: The body of create RADSEC proxy API
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqCreateRadsecProxyRequest'
+            examples:
+              Create_a_new_RADSEC_proxy:
+                summary: Create a new RADSEC proxy
+                description: The payload to create a new RADSEC proxy
+                value:
+                  name: radsec-proxy-1
+                  description: Radsec Proxy 1
+                  name_format: NAI
+                  operator_name_type: WBAID
+                  operator_name: SP.Extreme:CA
+                  realms:
+                  - name: DEFAULT
+                    enable_strip_realm_name: false
+                    external_radius_server_object_ids:
+                    - 1000
+                    - 1001
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqRadsecProxy'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /radsec-proxies/{id}:
+    get:
+      tags:
+      - Configuration - Authentication
+      summary: Get the RADSEC proxy configuration
+      description: Get an existing RADSEC proxy configuration by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_the_radius_proxy_configuration_by_id
+      operationId: getRadsecProxy
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqRadsecProxy'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Configuration - Authentication
+      summary: Update RADSEC proxy configuration
+      description: Update RADSEC proxy configuration by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_radius_proxy_configuration
+      operationId: updateRadsecProxy
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The body of update RADSEC proxy API
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqUpdateRadsecProxyRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqRadsecProxy'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Configuration - Authentication
+      summary: Delete the RADSEC proxy configuration
+      description: Delete an existing RADSEC proxy configuration by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_radius_proxy_configuration
+      operationId: deleteRadsecProxy
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /certificates:
     get:
       tags:
@@ -11408,6 +11803,174 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /certificates/import:
+    post:
+      tags:
+      - Configuration - Certificate
+      summary: Import Certificate
+      description: Import a Certificate.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_import_certificate
+      operationId: importCertificate
+      requestBody:
+        description: The body to import Certificate.
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/XiqImportCertRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCertificate'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /certificates/{id}:
+    delete:
+      tags:
+      - Configuration - Certificate
+      summary: Delete Certificate
+      description: Delete an existing Certificate by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_certificate
+      operationId: deleteCertificate
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /certificate-bundles:
+    get:
+      tags:
+      - Configuration - Certificate
+      summary: List Certificate Bundles
+      description: List a page of Certificate Bundle configurations.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_the_certificate_bundle_configuration
+      operationId: listCertificateBundles
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedXiqCertificateBundle'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Configuration - Certificate
+      summary: Create Certificate Bundle
+      description: Create a new Certificate Bundle configuration.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_create_certificate_bundle
+      operationId: createCertificateBundle
+      requestBody:
+        description: The request body to create a Certificate Bundle.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqCreateCertBundleRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCertificateBundle'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /certificate-bundles/{id}:
+    get:
+      tags:
+      - Configuration - Certificate
+      summary: Get the Certificate Bundle
+      description: Get an existing Certificate Bundle configuration by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_the_certificate_bundle_by_id
+      operationId: getCertificateBundle
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCertificateBundle'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Configuration - Certificate
+      summary: Update Certificate Bundle
+      description: Update Certificate Bundle configuration by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_certificate_configuration
+      operationId: updateCertificateBundle
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        description: The request body to updated Certificate Bundle,
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqUpdateCertBundleRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCertificateBundle'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Configuration - Certificate
+      summary: Delete the Certificate Bundle
+      description: Delete an existing Certificate Bundle configuration by ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_certificate_bundle
+      operationId: deleteCertificateBundle
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /copilot/connectivity/wireless/experience:
     get:
       tags:
@@ -11433,181 +11996,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqCopilotConnectivityExperience'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/connectivity/wireless/quality-index:
-    get:
-      tags:
-      - Copilot - Connectivity Experience
-      summary: Get Wireless Connectivity QualityIndex
-      description: Get Quality-Index for a specific view type.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wireless_quality_index
-      operationId: getWirelessQualityIndex
-      parameters:
-      - $ref: '#/components/parameters/wirelessViewType'
-      - $ref: '#/components/parameters/wirelessViewIdentifier'
-      - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/startTime'
-      - $ref: '#/components/parameters/endTime'
-      - $ref: '#/components/parameters/locationType'
-      - $ref: '#/components/parameters/locationId'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotWirelessQualityIndex'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/connectivity/wireless/time-to-connect:
-    get:
-      tags:
-      - Copilot - Connectivity Experience
-      summary: Get Wireless Connectivity Time-To-Connect
-      description: List a page of Time-To-Connect score data over a selected period of time.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wireless_time_to_connect
-      operationId: getWirelessTimeToConnect
-      parameters:
-      - $ref: '#/components/parameters/wirelessViewType'
-      - $ref: '#/components/parameters/wirelessViewIdentifier'
-      - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/startTime'
-      - $ref: '#/components/parameters/endTime'
-      - $ref: '#/components/parameters/locationType'
-      - $ref: '#/components/parameters/locationId'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotTimeToConnect'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/connectivity/wireless/performance:
-    get:
-      tags:
-      - Copilot - Connectivity Experience
-      summary: Get Wireless Connectivity Performance
-      description: List a page of Performance score data over a selected period of time.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wireless_performance
-      operationId: getWirelessPerformance
-      parameters:
-      - $ref: '#/components/parameters/wirelessViewType'
-      - $ref: '#/components/parameters/wirelessViewIdentifier'
-      - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/startTime'
-      - $ref: '#/components/parameters/endTime'
-      - $ref: '#/components/parameters/locationType'
-      - $ref: '#/components/parameters/locationId'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotPerformance'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/connectivity/wireless/events:
-    get:
-      tags:
-      - Copilot - Connectivity Experience
-      summary: List Wireless Connectivity Events
-      description: List a page of wireless events over a selected period of time.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wireless_events
-      operationId: getWirelessEvents
-      parameters:
-      - $ref: '#/components/parameters/wirelessViewType'
-      - $ref: '#/components/parameters/wirelessViewIdentifier'
-      - $ref: '#/components/parameters/wirelessScoreType'
-      - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/startTime'
-      - $ref: '#/components/parameters/endTime'
-      - $ref: '#/components/parameters/page'
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/wirelessSortField'
-      - $ref: '#/components/parameters/sortOrder'
-      - $ref: '#/components/parameters/searchKey'
-      - $ref: '#/components/parameters/locationType'
-      - $ref: '#/components/parameters/locationId'
-      - $ref: '#/components/parameters/timestamp'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotWirelessEvents'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/connectivity/wireless/apps:
-    get:
-      tags:
-      - Copilot - Connectivity Experience
-      summary: Get Wireless Connectivity Apps Info
-      description: Get app statistics for a specific view type.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wireless_apps
-      operationId: getWirelessApps
-      parameters:
-      - $ref: '#/components/parameters/wirelessViewType'
-      - $ref: '#/components/parameters/wirelessViewIdentifier'
-      - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/startTime'
-      - $ref: '#/components/parameters/endTime'
-      - $ref: '#/components/parameters/locationType'
-      - $ref: '#/components/parameters/locationId'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotWirelessApps'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/connectivity/wireless/views:
-    get:
-      tags:
-      - Copilot - Connectivity Experience
-      summary: Get Wireless Connectivity Views
-      description: Get all the views for a selected view type.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wireless_views
-      operationId: getWirelessViews
-      parameters:
-      - $ref: '#/components/parameters/wirelessViewType'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotWirelessViewsList'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -11665,33 +12053,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqCopilotWiredQualityIndex'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/connectivity/wired/hardware:
-    get:
-      tags:
-      - Copilot - Connectivity Experience
-      summary: Get Wired Connectivity Experience - Hardware
-      description: List a page of hardware score data over a selected period of time.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wired_hardware
-      operationId: getWiredHardware
-      parameters:
-      - $ref: '#/components/parameters/wiredViewType'
-      - $ref: '#/components/parameters/wiredViewIdentifier'
-      - $ref: '#/components/parameters/forensicBucket'
-      - $ref: '#/components/parameters/startTime'
-      - $ref: '#/components/parameters/endTime'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotHardware'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -11933,58 +12294,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqCopilotHardwareByLocation'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/anomalies/locations:
-    get:
-      tags:
-      - Copilot - Anomalies
-      summary: List Anomaly Locations
-      description: List a page of Anomaly Locations.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_locations
-      operationId: getCopilotAnomalyLocations
-      parameters:
-      - $ref: '#/components/parameters/anomalyType'
-      - $ref: '#/components/parameters/page'
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/sortField1'
-      - $ref: '#/components/parameters/sortOrder'
-      - $ref: '#/components/parameters/muted'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotAnomaliesLocations'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/anomalies/devices-by-location:
-    get:
-      tags:
-      - Copilot - Anomalies
-      summary: Get Anomaly Devices for a given location
-      description: Get all anomaly devices for a given location.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_devices
-      operationId: getCopilotAnomalyDevices
-      parameters:
-      - $ref: '#/components/parameters/anomalyType'
-      - $ref: '#/components/parameters/locationIds1'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotAnomaliesDevicesByLocation'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -12268,34 +12577,6 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
-  /copilot/anomalies/update-action:
-    put:
-      tags:
-      - Copilot - Anomalies
-      summary: Update Anomaly Action
-      description: Update & save action for Anomaly.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_put_update_copilot_anomaly_action
-      operationId: updateCopilotAnomalyAction
-      requestBody:
-        description: The body of update action
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/XiqAnomaliesUpdateActionRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotAnomaliesSuccess'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
   /copilot/anomalies/devices/feedback:
     put:
       tags:
@@ -12320,55 +12601,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqCopilotAnomaliesSuccess'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/anomalies/devices/update-action:
-    put:
-      tags:
-      - Copilot - Anomalies
-      summary: Update Anomaly Devices Action
-      description: Update & save action for Anomaly devices.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_put_update_copilot_anomaly_devices_action
-      operationId: updateCopilotAnomalyDevicesAction
-      requestBody:
-        description: The body of update feedback
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/XiqAnomaliesDeviceUpdateActionRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotAnomaliesSuccess'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /copilot/anomalies/notifications:
-    get:
-      tags:
-      - Copilot - Anomalies
-      summary: Get Anomalies Notifications
-      description: Get Anomaly notifications count and details.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_copilot_anomaly_notifications
-      operationId: getCopilotAnomalyNotifications
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqCopilotAnomaliesNotificationsVo'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -13522,6 +13754,32 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /afc/mobileapp/apcandidates:
+    post:
+      tags:
+      - AFC
+      summary: Find potential AP candidates to be used as anchor
+      description: Find potential AP candidates to be used as anchor.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_afc_mobileapp_apcandidates
+      operationId: afcMobileappApCandidates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqAfcMobileappScanInfo'
+      responses:
+        '200':
+          description: List of AP candidates that may be used as anchors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqMobileappAnchorCandidatesResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /ucp/{id}/engines/installed:
     get:
       tags:
@@ -14150,10 +14408,58 @@ paths:
                     type: integer
                     format: int64
       responses:
-        '200':
-          description: Returns the details of sites with issues based on the filters
-          content:
-            application/octet-stream:
+        '202':
+          description: Accepted - The request has been accepted for processing, but the processing has not been completed.
+          headers:
+            cache-control:
+              description: Cache control directives
+              schema:
+                type: string
+            content-length:
+              description: The length of the response body in octets (8-bit bytes)
+              schema:
+                type: integer
+            date:
+              description: The date and time at which the message was originated
+              schema:
+                type: string
+                format: date-time
+            expires:
+              description: The date/time after which the response is considered stale
+              schema:
+                type: string
+            location:
+              description: The URL to which the client should navigate to check the status of the request
+              schema:
+                type: string
+                format: uri
+            pragma:
+              description: Implementation-specific directives that might apply to any recipient along the request-response chain
+              schema:
+                type: string
+            ratelimit-limit:
+              description: The maximum number of requests that the client is allowed to make in a given time period
+              schema:
+                type: string
+            ratelimit-remaining:
+              description: The number of requests remaining in the current rate limit window
+              schema:
+                type: integer
+            retry-after:
+              description: The amount of time to wait before making a follow-up request
+              schema:
+                type: integer
+            server:
+              description: A name for the server
+              schema:
+                type: string
+                example: nginx
+            x-content-type-options:
+              description: Prevents the browser from interpreting files as a different MIME type
+              schema:
+                type: string
+            x-xss-protection:
+              description: Enables cross-site scripting (XSS) filter
               schema:
                 type: string
                 format: byte
@@ -14323,6 +14629,34 @@ paths:
                     $ref: '#/components/schemas/XiqPostWirelessClientHealthCriteria'
                   usage_capacity_criteria_param:
                     $ref: '#/components/schemas/XiqPostWirelessUsageAndCapacityCriteria'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wireless/dashboard/reports/{id}:
+    get:
+      tags:
+      - Dashboard
+      summary: Download the Export CSV file
+      description: Returns the CSV File of the Site With Issue status based on the provided filters.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_site_with_issue_report
+      operationId: siteWithIssueGridExportReport
+      parameters:
+      - name: id
+        in: path
+        description: The report ID
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returns the CSV File of the Site With Issue grid
+          content:
+            application/octet-stream:
+              schema:
+                type: string
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -15487,7 +15821,7 @@ paths:
     post:
       tags:
       - Dashboard - Wireless Client Health
-      summary: Export Wireless client health grid as a CSV File
+      summary: Export Grid as a CSV File
       description: Returns the CSV File of the client health grid of wireless devices based on the provided filters. You can filter the results by sites.
       externalDocs:
         description: API Reference
@@ -15593,13 +15927,89 @@ paths:
                   description: Indicates if the client has a roaming issue
                   type: boolean
       responses:
+        '202':
+          description: Accepted - The request has been accepted for processing, but the processing has not been completed.
+          headers:
+            cache-control:
+              description: Cache control directives
+              schema:
+                type: string
+            content-length:
+              description: The length of the response body in octets (8-bit bytes)
+              schema:
+                type: integer
+            date:
+              description: The date and time at which the message was originated
+              schema:
+                type: string
+                format: date-time
+            expires:
+              description: The date/time after which the response is considered stale
+              schema:
+                type: string
+            location:
+              description: The URL to which the client should navigate to check the status of the request
+              schema:
+                type: string
+                format: uri
+            pragma:
+              description: Implementation-specific directives that might apply to any recipient along the request-response chain
+              schema:
+                type: string
+            ratelimit-limit:
+              description: The maximum number of requests that the client is allowed to make in a given time period
+              schema:
+                type: string
+            ratelimit-remaining:
+              description: The number of requests remaining in the current rate limit window
+              schema:
+                type: integer
+            retry-after:
+              description: The amount of time to wait before making a follow-up request
+              schema:
+                type: integer
+            server:
+              description: A name for the server
+              schema:
+                type: string
+                example: nginx
+            x-content-type-options:
+              description: Prevents the browser from interpreting files as a different MIME type
+              schema:
+                type: string
+            x-xss-protection:
+              description: Enables cross-site scripting (XSS) filter
+              schema:
+                type: string
+                format: byte
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wireless/client-health/reports/{id}:
+    get:
+      tags:
+      - Dashboard - Wireless Client Health
+      summary: Download the Export CSV file
+      description: Returns the CSV File of the Wireless Client Health status based on the provided filters.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_client_grid_export_report
+      operationId: wirelessClientHealthGridExportReport
+      parameters:
+      - name: id
+        in: path
+        description: The report ID
+        required: true
+        schema:
+          type: string
+      responses:
         '200':
-          description: Returns the CSV of the client health grid
+          description: Returns the CSV File of the Wireless Client Health
           content:
             application/octet-stream:
               schema:
                 type: string
-                format: byte
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -15672,6 +16082,12 @@ paths:
                     type: string
                 has_usage_capacity_issues:
                   description: Indicates if the device has a usage capacity issue
+                  type: boolean
+                has_packet_loss_issues:
+                  description: Indicates if the device has a packet loss issue
+                  type: boolean
+                has_retries_issues:
+                  description: Indicates if the device has a retries issue
                   type: boolean
                 number_filters:
                   type: array
@@ -15874,13 +16290,89 @@ paths:
                   items:
                     $ref: '#/components/schemas/number_filter'
       responses:
+        '202':
+          description: Accepted - The request has been accepted for processing, but the processing has not been completed.
+          headers:
+            cache-control:
+              description: Cache control directives
+              schema:
+                type: string
+            content-length:
+              description: The length of the response body in octets (8-bit bytes)
+              schema:
+                type: integer
+            date:
+              description: The date and time at which the message was originated
+              schema:
+                type: string
+                format: date-time
+            expires:
+              description: The date/time after which the response is considered stale
+              schema:
+                type: string
+            location:
+              description: The URL to which the client should navigate to check the status of the request
+              schema:
+                type: string
+                format: uri
+            pragma:
+              description: Implementation-specific directives that might apply to any recipient along the request-response chain
+              schema:
+                type: string
+            ratelimit-limit:
+              description: The maximum number of requests that the client is allowed to make in a given time period
+              schema:
+                type: string
+            ratelimit-remaining:
+              description: The number of requests remaining in the current rate limit window
+              schema:
+                type: integer
+            retry-after:
+              description: The amount of time to wait before making a follow-up request
+              schema:
+                type: integer
+            server:
+              description: A name for the server
+              schema:
+                type: string
+                example: nginx
+            x-content-type-options:
+              description: Prevents the browser from interpreting files as a different MIME type
+              schema:
+                type: string
+            x-xss-protection:
+              description: Enables cross-site scripting (XSS) filter
+              schema:
+                type: string
+                format: byte
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wireless/usage-capacity/reports/{id}:
+    get:
+      tags:
+      - Dashboard - Wireless Usage and Capacity
+      summary: Download the Export CSV file
+      description: Returns the CSV File of the Wireless Usage And Capacity status based on the provided filters.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_usage_and_capacity_report
+      operationId: wirelessUsageAndCapacityGridExportReport
+      parameters:
+      - name: id
+        in: path
+        description: The report ID
+        required: true
+        schema:
+          type: string
+      responses:
         '200':
-          description: Returns the CSV File of usage & capacity grid
+          description: Returns the CSV File of the usage and capacity grid
           content:
             application/octet-stream:
               schema:
                 type: string
-                format: byte
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -16125,31 +16617,63 @@ paths:
     post:
       tags:
       - Dashboard - Wireless Device Health
-      summary: Export Wireless device health grid as a CSV File
-      description: Returns the CSV File of the device health grid of wireless devices based on the provided filters. The results can be filtered by sites.
+      summary: Wireless device health grid Export
+      description: Returns the device health grid export of wireless devices based on the provided filters. The results can be filtered by sites.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_health_grid
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_health_grid_export
       operationId: wirelessDeviceHealthGridExport
       parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
       - name: keyword
         in: query
-        description: The keyword to search
+        description: The keyword to search - hostname, mac, site
         required: false
         schema:
           type: string
-      - name: sortField
+      - name: CPU_UTILIZATION
         in: query
-        description: The sort field
+        description: The CPU utilization
         required: false
         schema:
-          $ref: '#/components/schemas/XiqDeviceHealthGridSortField'
-      - name: sortOrder
+          $ref: '#/components/schemas/XiqWarningFilter'
+      - name: MEMORY_UTILIZATION
         in: query
-        description: The sort order
+        description: The memory utilization
         required: false
         schema:
-          $ref: '#/components/schemas/XiqSortOrder'
+          $ref: '#/components/schemas/XiqWarningFilter'
+      - name: BROADCAST_ETH0
+        in: query
+        description: The broadcast of eth0
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqWarningFilter'
+      - name: UNICAST_ETH0
+        in: query
+        description: The unicast of eth0
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqWarningFilter'
+      - name: MULTICAST_ETH0
+        in: query
+        description: The multicast of eth 0
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqWarningFilter'
+      - name: BROADCAST_ETH1
+        in: query
+        description: The broadcast of eth1
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqWarningFilter'
+      - name: UNICAST_ETH1
+        in: query
+        description: The unicast of eth1
+        required: false
+        schema:
+          $ref: '#/components/schemas/XiqWarningFilter'
       requestBody:
         required: false
         content:
@@ -16157,26 +16681,89 @@ paths:
             schema:
               type: object
               properties:
-                site_ids:
+                siteIds:
                   description: List of site IDs to filter the device health grid
                   type: array
                   items:
                     type: integer
                     format: int64
-                device_ids:
-                  description: List of device IDs to filter the device health grid
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                has_device_health_issues:
-                  description: Indicates if the device has a device health issue
-                  type: boolean
-                number_filters:
-                  type: array
-                  description: The number based column filters available(Available columns- cpu_usage_percentage, memory_usage_percentage, eth0_broadcast_score, eth0_multicast_score, eth0_unicast_score, eth1_broadcast_score, eth1_unicast_score, eth1_multicast_score).
-                  items:
-                    $ref: '#/components/schemas/number_filter'
+      responses:
+        '202':
+          description: Accepted - The request has been accepted for processing, but the processing has not been completed.
+          headers:
+            cache-control:
+              description: Cache control directives
+              schema:
+                type: string
+            content-length:
+              description: The length of the response body in octets (8-bit bytes)
+              schema:
+                type: integer
+            date:
+              description: The date and time at which the message was originated
+              schema:
+                type: string
+                format: date-time
+            expires:
+              description: The date/time after which the response is considered stale
+              schema:
+                type: string
+            location:
+              description: The URL to which the client should navigate to check the status of the request
+              schema:
+                type: string
+                format: uri
+            pragma:
+              description: Implementation-specific directives that might apply to any recipient along the request-response chain
+              schema:
+                type: string
+            ratelimit-limit:
+              description: The maximum number of requests that the client is allowed to make in a given time period
+              schema:
+                type: string
+            ratelimit-remaining:
+              description: The number of requests remaining in the current rate limit window
+              schema:
+                type: integer
+            retry-after:
+              description: The amount of time to wait before making a follow-up request
+              schema:
+                type: integer
+            server:
+              description: A name for the server
+              schema:
+                type: string
+                example: nginx
+            x-content-type-options:
+              description: Prevents the browser from interpreting files as a different MIME type
+              schema:
+                type: string
+            x-xss-protection:
+              description: Enables cross-site scripting (XSS) filter
+              schema:
+                type: string
+                format: byte
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /dashboard/wireless/device-health/reports/{id}:
+    get:
+      tags:
+      - Dashboard - Wireless Device Health
+      summary: Download the Export CSV file
+      description: Returns the CSV File of the wireless Device Health status based on the provided filters.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_device_status_grid_report
+      operationId: wirelessDeviceHealthGridExportReport
+      parameters:
+      - name: id
+        in: path
+        description: The report ID
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Returns the CSV File of the device health grid
@@ -16184,7 +16771,6 @@ paths:
             application/octet-stream:
               schema:
                 type: string
-                format: byte
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -16231,7 +16817,7 @@ paths:
                     type: integer
                     format: int64
                 device_ids:
-                  description: List of device IDs to filter the device health grid
+                  description: List of device IDs to filter the client health grid
                   type: array
                   items:
                     type: integer
@@ -16283,6 +16869,12 @@ paths:
                   items:
                     type: integer
                     format: int64
+                device_ids:
+                  description: List of device IDs to filter the clients with IP connectivity issues
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
       responses:
         '200':
           description: Returns the counts of clients with IP connectivity issues based on the filters
@@ -16318,6 +16910,12 @@ paths:
               properties:
                 site_ids:
                   description: List of site IDs to filter the clients with port congestion issues
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                device_ids:
+                  description: List of device IDs to filter the clients with port congestion issues
                   type: array
                   items:
                     type: integer
@@ -16361,6 +16959,12 @@ paths:
                   items:
                     type: integer
                     format: int64
+                device_ids:
+                  description: List of device IDs to filter the clients with traffic anomalies
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
       responses:
         '200':
           description: Returns the counts of clients with traffic anomalies based on the filters
@@ -16396,6 +17000,12 @@ paths:
               properties:
                 site_ids:
                   description: List of site IDs to filter the clients with port errors
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                device_ids:
+                  description: List of device IDs to filter the  clients with port errors
                   type: array
                   items:
                     type: integer
@@ -16999,6 +17609,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/XiqWiredUsageCapacityCongestion'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /switch-inspector/diagnostics:
+    post:
+      tags:
+      - Switch Inspector Panel
+      summary: Diagnostics Widget for Wired Devices
+      description: Returns the "Device Health", "Usage and Capacity" and "Client Health" current number of issues for wired devices based on the provided device ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wired_diagnostics_widget
+      operationId: wiredDiagnosticsWidget
+      parameters:
+      - name: deviceId
+        in: query
+        description: The device ID for which the "Device Health", "Usage and Capacity" and "Client Health" current number of issues needs to be provided
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Returns the "Device Health", "Usage and Capacity" and "Client Health" current number of issues for the specified device ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqSwitchInspectorPanelDiagnosticsWidget'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -17621,6 +18260,12 @@ components:
           enable_password_for_exos_voss:
             type: boolean
             description: Flag to enable device management settings for Switch Engine (EXOS) / Fabric Engine (VOSS) switches.
+          enable_auto_config_push:
+            type: boolean
+            description: Flag to enable auto config push
+          enable_site_isolation:
+            type: boolean
+            description: Flag to enable site isolation
     XiqUpdateVhmSettingRequest:
       type: object
       properties:
@@ -17639,6 +18284,12 @@ components:
         enable_password_for_exos_voss:
           type: boolean
           description: Flag to enable device management settings for Switch Engine (EXOS) / Fabric Engine (VOSS) switches.
+        enable_auto_config_push:
+          type: boolean
+          description: Flag to enable auto config push
+        enable_site_isolation:
+          type: boolean
+          description: Flag to enable site isolation
     XiqVhmSetting:
       allOf:
       - $ref: '#/components/schemas/XiqBaseEntity'
@@ -17663,6 +18314,12 @@ components:
           enable_password_for_exos_voss:
             type: boolean
             description: Flag to enable device management settings for Switch Engine (EXOS) / Fabric Engine (VOSS) switches.
+          enable_auto_config_push:
+            type: boolean
+            description: Flag to enable auto config push
+          enable_site_isolation:
+            type: boolean
+            description: Flag to enable site isolation
     XiqVhmStatus:
       type: object
       description: VHM Account Status
@@ -20342,6 +20999,12 @@ components:
         always_create:
           type: boolean
           description: Whether the VLAN should be created even if not assigned to any port
+        isid_id:
+          type: integer
+          description: ISID ID
+        isid_name:
+          type: string
+          description: Name of the ISID
         vlanObj:
           type: object
           $ref: '#/components/schemas/XiqVlanProfile'
@@ -20846,6 +21509,13 @@ components:
         non_forwarding_vlan_enabled:
           type: boolean
           description: Indicates whether or not this VLAN is a Non-Forwarding VLAN (learning VLAN)
+        isid_id:
+          type: integer
+          description: The ISID ID
+          format: int32
+        isid_name:
+          type: string
+          description: The ISID Name
     XiqDeviceMonitorVlanAttributes:
       type: object
       description: The VLAN attributes information for the device.
@@ -21066,6 +21736,13 @@ components:
         routing_instance:
           type: string
           description: The Routing instance name of the IPv4 Route
+        isid_id:
+          type: integer
+          description: The ISID ID
+          format: int32
+        isid_name:
+          type: string
+          description: The ISID Name
     XiqDeviceMonitorIpv4Routing:
       type: object
       description: The IPv4 Routing information for the device.
@@ -21115,6 +21792,14 @@ components:
         ospf_routes_count:
           type: integer
           description: The number of OSPF routes
+          format: int32
+        bgp_routes_count:
+          type: integer
+          description: The number of BGP routes
+          format: int32
+        isis_routes_count:
+          type: integer
+          description: The number of ISIS routes
           format: int32
         total_routes_count:
           type: integer
@@ -21603,6 +22288,101 @@ components:
       - SN
       - HOSTNAME
       - CONNECTION-STATUS
+    XiqDeviceLicenseTier:
+      type: string
+      description: The Device License Tier Enum.
+      enum:
+      - NOT_APPLICABLE
+      - TIER_A
+      - TIER_B
+      - TIER_C
+      - TIER_D
+      - UNKNOWN
+      - NONE
+    RmDeviceIcons:
+      type: object
+      description: Device icons status
+      properties:
+        afc_status:
+          type: boolean
+          description: AFC status
+        provisioned_device:
+          type: boolean
+          description: Provisioned device status
+        config_rolled_back:
+          type: boolean
+          description: Configuration rollback status
+        undetermined:
+          type: boolean
+          description: Undetermined status
+        configured_at_device_level:
+          type: boolean
+          description: Configured at device level status
+        device_update_unsuccessful:
+          type: boolean
+          description: Device update success status
+        managed_by_extreme_iot:
+          type: boolean
+          description: Managed by Extreme IoT status
+        thread_commissioner_running:
+          type: boolean
+          description: Thread commissioner running status
+        monitoring_unassociated_clients:
+          type: boolean
+          description: Monitoring unassociated clients status
+        switch_stack:
+          type: boolean
+          description: Switch stack status
+        switch_stack_warning:
+          type: boolean
+          description: Switch stack warning status
+        radsec_proxy_server:
+          type: boolean
+          description: RADSEC proxy server status
+        rogue_ap_mitigation_on:
+          type: boolean
+          description: Rogue AP mitigation status
+        sensor_mode:
+          type: boolean
+          description: Sensor mode status (true => active, false => inactive)
+        swap:
+          type: boolean
+          description: Swap status
+        spectrum_intelligence:
+          type: boolean
+          description: Spectrum intelligence status
+        vpn_server:
+          type: string
+          description: VPN server status
+          enum:
+          - VPN_STATUS_UP
+          - VPN_STATUS_DOWN
+          - VPN_STATUS_UP_DOWN
+        vpn_client:
+          type: string
+          description: VPN client status
+          enum:
+          - VPN_STATUS_UP
+          - VPN_STATUS_DOWN
+          - VPN_STATUS_UP_DOWN
+        locally_managed:
+          type: boolean
+          description: Locally managed status
+        extreme_cluster_appliance:
+          type: boolean
+          description: Extreme cluster appliance status
+        fabric_attach:
+          type: boolean
+          description: Fabric attach status
+        fabric_attach_error:
+          type: boolean
+          description: Fabric attach error status
+        old_os:
+          type: boolean
+          description: Device formerly used another OS persona, which is no longer active
+        config_pending:
+          type: boolean
+          description: Configuration pending status
     RmDevicePage:
       allOf:
       - $ref: '#/components/schemas/XiqViqEntity'
@@ -21731,6 +22511,10 @@ components:
             type: integer
             format: int8
             description: The number of devices in the stack (0 for standalone devices)
+          device_license_tier:
+            $ref: '#/components/schemas/XiqDeviceLicenseTier'
+          device_icons:
+            $ref: '#/components/schemas/RmDeviceIcons'
     PagedRmXiqDevice:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -21741,6 +22525,17 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/RmDevicePage'
+    RmCountryCodeName:
+      type: object
+      description: Country Code Name
+      properties:
+        country_code:
+          type: integer
+          format: int32
+          description: Country Code
+        country_name:
+          type: string
+          description: Country Name
     RmDeviceMetadataResponse:
       type: object
       description: Generic ExtremeCloud IQ Device model
@@ -21756,9 +22551,9 @@ components:
           items:
             type: string
         product_type:
-          type: array
-          description: 'List of product types, such as: AP_230, BR_100, NX9600, etc.'
-          items:
+          type: object
+          description: Map of product types, where keys are device models and values are their descriptions.
+          additionalProperties:
             type: string
         device_admin_state:
           type: array
@@ -21795,6 +22590,11 @@ components:
           description: List of radio types for wifi 2 interface
           items:
             type: string
+        country_code_name:
+          type: array
+          description: List Of Country Code and Name
+          items:
+            $ref: '#/components/schemas/RmCountryCodeName'
     RmDeviceStackInfoResponse:
       type: object
       description: Generic ExtremeCloud IQ Device model
@@ -21814,6 +22614,77 @@ components:
         mac_address:
           type: string
           description: The device MAC address
+    RmDeviceActionEnum:
+      type: string
+      enum:
+      - ASSIGN_LOCATION
+      - GET_TECH_DATA
+      - REBOOT
+      - RESET_TO_DEFAULT
+      - CLEAR_AUDIT_MISMATCH
+      - CHANGE_MGT_STATUS
+      - ASSIGN_COUNTRY_CODE
+      - CHANGE_TO_OS_WING
+      - CHANGE_DEVICE_MODE
+      - START_STOP_THREAD_COMMISSIONER
+      - LOCATE_DEVICE
+      - SSH_ACCESS
+      - PROXY_WEB_FOR_SWITCHING
+      - VLAN_PROBE
+      - DIAGNOSTICS
+      - SPECTRUM_INTELLIGENCE
+      - RADIUS_TEST
+      - FIRMWARE_UPGRADE
+      - ASSIGN_NETWORK_POLICY
+      - ADD_TO_CLOUD_CONFIG_GROUP
+      - REVERT_DEVICE_TO_TEMPLATE
+      - CHANGE_OS
+      - UPDATE_DEVICE
+    XiqAfcCoordinatesSource:
+      type: string
+      description: Source of coordinates:<br/> APP - Mobile Application GPS coordinates,<br/> GPS - AP reported GPS coordinates,<br/> GEO - Geolocation Agent derived coordinates<br/>
+      enum:
+      - APP
+      - GPS
+      - GEO
+    XiqAfcMobileappCoordinates:
+      allOf:
+      - type: object
+        properties:
+          latitude:
+            type: number
+            description: Latitude expressed as a floating point number
+            minimum: -90
+            maximum: 90
+          longitude:
+            type: number
+            description: Longitude expressed as a floating point number
+            minimum: -180
+            maximum: 180
+          source:
+            $ref: '#/components/schemas/XiqAfcCoordinatesSource'
+          ts:
+            type: number
+            description: Timestamp of the acquired geolocation (milliseconds from epoch)
+    XiqDeviceMobileappGpsRequest:
+      allOf:
+      - type: object
+        properties:
+          gpsAnchor:
+            type: boolean
+            default: false
+            description: Use this AP as GPS anchor to derive geo-coordinates of other APs on the floor
+          distance:
+            type: number
+            minimum: 0
+            default: 5
+            description: Distance between AP and the phone hosting the mobile APP in meters.
+          cep:
+            type: number
+            minimum: 0
+            description: Circular error probability, expressed as the radius of a circle centered on the true value that contains 50% of the actual GPS measurements. CEP68 is based on Android OS.
+          coordinates:
+            $ref: '#/components/schemas/XiqAfcMobileappCoordinates'
     PagedXiqNetworkPolicy:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -29391,6 +30262,51 @@ components:
       - ACCOUNTING
       - AUTHENTICATION
       - BOTH
+    XiqCertBundleType:
+      type: string
+      description: The type of Certificate Bundle.
+      enum:
+      - TRUST_POINT
+    XiqCertificateType:
+      type: string
+      enum:
+      - CERT
+      - KEY
+      - CA
+    XiqCertificate:
+      allOf:
+      - $ref: '#/components/schemas/XiqBaseEntity'
+      - type: object
+        description: The certificate
+        required:
+        - name
+        properties:
+          name:
+            type: string
+            description: The certificate file name
+          cert_type:
+            $ref: '#/components/schemas/XiqCertificateType'
+    XiqCertificateBundle:
+      allOf:
+      - $ref: '#/components/schemas/XiqViqEntity'
+      - type: object
+        description: The configuration of Certificate Bundle
+        required:
+        - bundle_type
+        properties:
+          bundle_type:
+            $ref: '#/components/schemas/XiqCertBundleType'
+          certificates:
+            type: array
+            description: Certificate Bundles certificates.
+            items:
+              $ref: '#/components/schemas/XiqCertificate'
+    XiqRadiusAccessType:
+      type: string
+      description: The access type of the External RADIUS server, an External RADIUS server with type 'SECURE' is a RADSEC server.  This field cannot be changed after it is set.
+      enum:
+      - STANDARD
+      - SECURE
     XiqExternalRadiusServer:
       allOf:
       - $ref: '#/components/schemas/XiqViqEntity'
@@ -29401,7 +30317,6 @@ components:
         - authentication_port
         - accounting_port
         - server_type
-        - ip_address
         - enable_a3
         properties:
           name:
@@ -29412,20 +30327,27 @@ components:
             description: The shared secret for the external RADIUS server (optional)
           authentication_port:
             type: integer
-            description: The authentication port for the external RADIUS server (1 ~ 65535)
+            description: The authentication port for the external RADIUS server (1 ~ 65535).  The default for a External RADIUS server of type 'STANDARD', the default port is 1812. For a External RADIUS server of type 'SECURE', the default port is 2083.
             format: int32
           accounting_port:
             type: integer
-            description: The accounting port for the external RADIUS server (1 ~ 65535)
+            description: The accounting port for the external RADIUS server (1 ~ 65535). The default for a External RADIUS server of type 'STANDARD', the default port is 1813. For a External RADIUS server of type 'SECURE', the default port is 2083.
             format: int32
           server_type:
             $ref: '#/components/schemas/XiqRadiusServerType'
           ip_address:
             type: string
-            description: The ip address or hostname of the RADIUS server
+            description: The ip address or hostname of the RADIUS server, this is not allowed when Peer Discovery is enabled.
           enable_a3:
             type: boolean
             description: Indicates whether this is an Extreme A3 RADIUS server or not, cannot be updated after creation. Please set it to false if it is not an Extreme A3 RADIUS server.
+          enable_peer_discovery:
+            type: boolean
+            description: Indicates whether the RADIUS server allows devices to connect automatically  without manually defining their IP address or hostname.
+          trust_point:
+            $ref: '#/components/schemas/XiqCertificateBundle'
+          access_type:
+            $ref: '#/components/schemas/XiqRadiusAccessType'
     PagedXiqExternalRadiusServer:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -29443,7 +30365,6 @@ components:
       - authentication_port
       - accounting_port
       - server_type
-      - ip_addr
       - enable_a3
       properties:
         name:
@@ -29456,16 +30377,14 @@ components:
           maximum: 65535
           minimum: 1
           type: integer
-          description: The authentication port for the external RADIUS server (1 ~ 65535)
+          description: The authentication port for the external RADIUS server (1 ~ 65535).  The default for a External RADIUS server of type 'STANDARD', the default port is 1812.  For a External RADIUS server of type 'SECURE' the default port is 2083.
           format: int32
-          default: 1812
         accounting_port:
           maximum: 65535
           minimum: 1
           type: integer
-          description: The accounting port for the external RADIUS server (1 ~ 65535)
+          description: The accounting port for the external RADIUS server (1 ~ 65535). The default for a External RADIUS server of type 'STANDARD', the default port is 1813, For a External RADIUS server of type 'SECURE', the default port is 2083.
           format: int32
-          default: 1813
         server_type:
           $ref: '#/components/schemas/XiqRadiusServerType'
         ip_addr:
@@ -29474,6 +30393,15 @@ components:
         enable_a3:
           type: boolean
           description: Indicates whether this is an Extreme A3 RADIUS server or not, cannot be updated after creation. Please set it to false if it is not an Extreme A3 RADIUS server.
+        enable_peer_discovery:
+          type: boolean
+          description: Indicates whether the RADIUS server allows devices to connect automatically  without manually defining their IP address or hostname.
+        trust_point_id:
+          type: integer
+          description: The Certificate Bundle Trust Point ID.
+          format: int64
+        access_type:
+          $ref: '#/components/schemas/XiqRadiusAccessType'
     XiqUpdateExternalRadiusServerRequest:
       type: object
       required:
@@ -29481,51 +30409,153 @@ components:
       - authentication_port
       - accounting_port
       - server_type
-      - ip_addr
       properties:
         name:
           type: string
-          description: The external RADIUS server name
+          description: The external RADIUS server name.
         shared_secret:
           type: string
-          description: The shared secret for the external RADIUS server (optional)
+          description: The shared secret for the external RADIUS server (optional).
         authentication_port:
           maximum: 65535
           minimum: 1
           type: integer
-          description: The authentication port for the external RADIUS server (1 ~ 65535)
+          description: The authentication port for the external RADIUS server (1 ~ 65535).  The default for a External RADIUS server of type 'STANDARD', the default port is 1812.  For a External RADIUS server of type 'SECURE', the default port is 2083.
           format: int32
-          default: 1812
         accounting_port:
           maximum: 65535
           minimum: 1
           type: integer
-          description: The accounting port for the external RADIUS server (1 ~ 65535)
+          description: The accounting port for the external RADIUS server (1 ~ 65535). The default for a External RADIUS server of type 'STANDARD', the default port is 1813. For a External RADIUS server of type 'SECURE', the default port is 2083.
           format: int32
-          default: 1813
         server_type:
           $ref: '#/components/schemas/XiqRadiusServerType'
         ip_addr:
           type: string
-          description: The IP address or hostname of the RADIUS server
-    XiqCertificateType:
+          description: The IP address or hostname of the RADIUS server.
+        enable_peer_discovery:
+          type: boolean
+          description: Indicates whether the RADIUS server allows devices to connect automatically  without manually defining their IP address or hostname.
+        trust_point_id:
+          type: integer
+          description: The Trust Point Certificate Bundle ID.
+          format: int64
+    XiqRadsecOperatorNameType:
       type: string
+      description: The operator name type of a RADSEC proxy.
       enum:
-      - CERT
-      - KEY
-    XiqCertificate:
+      - WBAID
+    XiqRadsecProxyRealm:
+      type: object
+      description: The RADSEC proxy realm definition
+      properties:
+        name:
+          type: string
+          description: The RADIUS proxy realm name
+        enable_strip_realm_name:
+          type: boolean
+          description: The flag to strip the realm name
+        external_radius_server_object_ids:
+          type: array
+          description: The list of external RADIUS server object IDs (up to 8)
+          items:
+            type: integer
+            format: int64
+    XiqRadsecProxy:
       allOf:
-      - $ref: '#/components/schemas/XiqBaseEntity'
+      - $ref: '#/components/schemas/XiqViqEntity'
       - type: object
-        description: The certificate
-        required:
-        - name
+        description: The configuration of RADSEC proxy
         properties:
           name:
             type: string
-            description: The certificate file name
-          cert_type:
-            $ref: '#/components/schemas/XiqCertificateType'
+            description: The RADSEC proxy name.
+          description:
+            type: string
+            description: The RADSEC proxy description.
+          format_type:
+            $ref: '#/components/schemas/XiqRadiusProxyFormatType'
+          enable_inject_operator_name_attribute:
+            type: boolean
+            description: The flag for enable inject operator name attribute.
+          operator_name_type:
+            $ref: '#/components/schemas/XiqRadsecOperatorNameType'
+          operator_name:
+            type: string
+            description: The RADSEC proxy operator name.
+          realms:
+            type: array
+            description: The RADSEC realms of RADSEC proxy.
+            items:
+              $ref: '#/components/schemas/XiqRadsecProxyRealm'
+    PagedXiqRadsecProxy:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqRadsecProxy'
+    XiqRadsecNameFormatType:
+      type: string
+      description: The name format type of a RADSEC proxy.
+      enum:
+      - NAI
+    XiqCreateRadsecProxyRequest:
+      type: object
+      description: The payload to create a new RADSEC proxy.
+      required:
+      - name
+      - realms
+      properties:
+        name:
+          type: string
+          description: The RADSEC proxy name.
+        description:
+          type: string
+          description: The RADSEC proxy description.
+        name_format:
+          $ref: '#/components/schemas/XiqRadsecNameFormatType'
+        enable_inject_operator_name_attribute:
+          type: boolean
+          description: The flag for enable inject operator name attribute.
+        operator_name_type:
+          $ref: '#/components/schemas/XiqRadsecOperatorNameType'
+        operator_name:
+          type: string
+          description: The RADSEC proxy operator name.
+        realms:
+          type: array
+          description: The RADSEC realms of RADSEC proxy.
+          items:
+            $ref: '#/components/schemas/XiqRadsecProxyRealm'
+    XiqUpdateRadsecProxyRequest:
+      type: object
+      description: The payload to update RADSEC proxy
+      properties:
+        name:
+          type: string
+          description: The RADSEC proxy name
+        description:
+          type: string
+          description: The RADSEC proxy description
+        name_format:
+          $ref: '#/components/schemas/XiqRadsecNameFormatType'
+        enable_inject_operator_name_attribute:
+          type: boolean
+          description: The flag for enable inject operator name attribute.
+        operator_name:
+          type: string
+          description: The RADSEC proxy operator name.
+        realms:
+          maxItems: 2147483647
+          minItems: 2
+          type: array
+          description: The RADSEC realms of RADSEC proxy, provide at least two default RADSEC realms with name 'DEFAULT' and 'NULL'
+          items:
+            $ref: '#/components/schemas/XiqUpdateRadiusProxyRealm'
     PagedXiqCertificate:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -29536,6 +30566,92 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqCertificate'
+    XiqCertConvertOptionType:
+      type: string
+      description: The Certificate convert option, required when the convert option type is 'KEY'.
+      enum:
+      - CERTIFICATE
+      - KEY
+    XiqImportCertRequest:
+      type: object
+      description: The payload to import a certificate.
+      required:
+      - name
+      - file
+      - file_type
+      properties:
+        name:
+          type: string
+          description: The certificate name.
+        file:
+          type: string
+          format: binary
+          description: The certificate file to import.
+        file_type:
+          $ref: '#/components/schemas/XiqCertificateType'
+        enable_convert_pfx:
+          type: boolean
+          description: Whether to convert the certificate format from PFX to PEM.
+        pfx_password:
+          type: string
+          description: The PFX password.
+        enable_convert_der:
+          type: boolean
+          description: Whether to convert the certificate format from DER to PEM.
+        convert_option_type:
+          $ref: '#/components/schemas/XiqCertConvertOptionType'
+        der_password:
+          type: string
+          description: The DER password, required when the convert option type is 'KEY'.
+    PagedXiqCertificateBundle:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqCertificateBundle'
+    XiqCreateCertBundleRequest:
+      type: object
+      description: The payload to create a new Certificate Bundle.
+      required:
+      - name
+      - bundle_type
+      properties:
+        name:
+          type: string
+          description: The Certificate Bundle name.
+        description:
+          type: string
+          description: The Certificate Bundle description.
+        bundle_type:
+          $ref: '#/components/schemas/XiqCertBundleType'
+        certificate_ids:
+          type: array
+          description: Collection of Certificate IDs.
+          items:
+            type: integer
+            format: int64
+    XiqUpdateCertBundleRequest:
+      type: object
+      description: The payload to update a Certificate Bundle.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: The Certificate Bundle name.
+        description:
+          type: string
+          description: The Certificate Bundle description.
+        certificate_ids:
+          type: array
+          description: Collection of Certificate IDs.
+          items:
+            type: integer
+            format: int64
     XiqClientType:
       type: string
       enum:
@@ -29599,13 +30715,172 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqCopilotConnectivityExperienceEntity'
-    XiqCopilotWirelessQualityIndex:
+    XiqCopilotWiredQualityIndex:
+      type: object
+      description: Wired Connectivity Experience QualityIndex
+      required:
+      - quality_index
+      - hardware_score
+      properties:
+        quality_index:
+          type: integer
+          minimum: 1
+          maximum: 10
+        hardware_score:
+          type: integer
+          minimum: 1
+          maximum: 10
+    XiqCopilotWiredEventEntity:
+      type: object
+      description: Wired Event Entity
+      required:
+      - device_id
+      - hostname
+      - interface_errors
+      - maximum_errors
+      - mgmt_ip
+      - port
+      - serial_number
+      properties:
+        device_id:
+          type: string
+        hostname:
+          type: string
+        interface_errors:
+          type: number
+          format: double
+        maximum_errors:
+          type: number
+          format: double
+        mgmt_ip:
+          type: string
+        port:
+          type: string
+        serial_number:
+          type: string
+    XiqCopilotWiredEvents:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqCopilotWiredEventEntity'
+    XiqQualityIndex:
+      type: string
+      enum:
+      - LOW
+      - MEDIUM
+      - HIGH
+    XiqCopilotConnectivityByLocationsEntity:
+      type: object
+      description: Copilot Experience Entity
+      required:
+      - id
+      - name
+      - quality_index
+      - quality_index_value
+      - client_type
+      - quality_index_graph
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        quality_index:
+          type: integer
+          minimum: 1
+          maximum: 10
+        quality_index_value:
+          $ref: '#/components/schemas/XiqQualityIndex'
+        client_type:
+          $ref: '#/components/schemas/XiqClientType'
+        quality_index_graph:
+          type: array
+          description: The data in the current page
+          items:
+            type: object
+            description: Connectivity experience quality sequence
+            required:
+            - timestamp
+            - value
+            properties:
+              timestamp:
+                type: integer
+                format: int64
+              value:
+                type: integer
+                minimum: 1
+                maximum: 10
+    XiqCopilotConnectivityByLocations:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqCopilotConnectivityByLocationsEntity'
+    XiqCopilotConnectivityByClientType:
+      type: object
+      description: data sequence
+      required:
+      - sites_by_wireless
+      - sites_by_wired
+      properties:
+        sites_by_wireless:
+          type: object
+          description: The data in the current page
+          required:
+          - low_quality_score_count
+          - medium_quality_score_count
+          - high_quality_score_count
+          - total_quality_score_count
+          properties:
+            low_quality_score_count:
+              type: integer
+              format: int32
+            medium_quality_score_count:
+              type: integer
+              format: int32
+            high_quality_score_count:
+              type: integer
+              format: int32
+            total_quality_score_count:
+              type: integer
+              format: int32
+        sites_by_wired:
+          type: object
+          description: The data in the current page
+          required:
+          - low_quality_score_count
+          - medium_quality_score_count
+          - high_quality_score_count
+          - total_quality_score_count
+          properties:
+            low_quality_score_count:
+              type: integer
+              format: int32
+            medium_quality_score_count:
+              type: integer
+              format: int32
+            high_quality_score_count:
+              type: integer
+              format: int32
+            total_quality_score_count:
+              type: integer
+              format: int32
+    XiqCopilotWirelessQualityIndexByLocation:
       type: object
       description: Wireless Connectivity Experience QualityIndex
       required:
       - quality_index
       - time_to_connect_score
       - performance_score
+      - total_clients
       properties:
         quality_index:
           type: integer
@@ -29619,6 +30894,9 @@ components:
           type: integer
           minimum: 1
           maximum: 10
+        total_clients:
+          type: integer
+          format: int32
     XiqCopilotTimeToConnectEntity:
       type: object
       description: Connectivity experience Time-To-Connect entity
@@ -29805,48 +31083,6 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqCopilotWirelessEventEntity'
-    XiqCopilotWirelessApps:
-      type: object
-      description: Wireless Connectivity Experience Apps
-      required:
-      - total_clients
-      - most_active_app
-      - most_active_user
-      - total_apps
-      - total_users
-      properties:
-        total_clients:
-          type: integer
-        most_active_app:
-          type: string
-        most_active_user:
-          type: string
-        total_apps:
-          type: integer
-        total_users:
-          type: integer
-    XiqCopilotWirelessViewsList:
-      type: object
-      properties:
-        views_list_entities:
-          type: array
-          items:
-            type: string
-    XiqCopilotWiredQualityIndex:
-      type: object
-      description: Wired Connectivity Experience QualityIndex
-      required:
-      - quality_index
-      - hardware_score
-      properties:
-        quality_index:
-          type: integer
-          minimum: 1
-          maximum: 10
-        hardware_score:
-          type: integer
-          minimum: 1
-          maximum: 10
     XiqCopilotHardwareEntity:
       type: object
       description: Connectivity Experience Hardware entity
@@ -29869,184 +31105,6 @@ components:
           type: integer
           minimum: 1
           maximum: 100
-    XiqCopilotHardware:
-      type: object
-      description: Wired Connectivity Experience Hardware
-      required:
-      - quality_index_graph
-      properties:
-        quality_index_graph:
-          type: array
-          description: The data in the current page
-          items:
-            $ref: '#/components/schemas/XiqCopilotHardwareEntity'
-    XiqCopilotWiredEventEntity:
-      type: object
-      description: Wired Event Entity
-      required:
-      - device_id
-      - hostname
-      - interface_errors
-      - maximum_errors
-      - mgmt_ip
-      - port
-      - serial_number
-      properties:
-        device_id:
-          type: string
-        hostname:
-          type: string
-        interface_errors:
-          type: number
-          format: double
-        maximum_errors:
-          type: number
-          format: double
-        mgmt_ip:
-          type: string
-        port:
-          type: string
-        serial_number:
-          type: string
-    XiqCopilotWiredEvents:
-      allOf:
-      - $ref: '#/components/schemas/XiqPage'
-      - type: object
-        properties:
-          data:
-            type: array
-            description: The data in the current page
-            items:
-              $ref: '#/components/schemas/XiqCopilotWiredEventEntity'
-    XiqQualityIndex:
-      type: string
-      enum:
-      - LOW
-      - MEDIUM
-      - HIGH
-    XiqCopilotConnectivityByLocationsEntity:
-      type: object
-      description: Copilot Experience Entity
-      required:
-      - id
-      - name
-      - quality_index
-      - quality_index_value
-      - client_type
-      - quality_index_graph
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        quality_index:
-          type: integer
-          minimum: 1
-          maximum: 10
-        quality_index_value:
-          $ref: '#/components/schemas/XiqQualityIndex'
-        client_type:
-          $ref: '#/components/schemas/XiqClientType'
-        quality_index_graph:
-          type: array
-          description: The data in the current page
-          items:
-            type: object
-            description: Connectivity experience quality sequence
-            required:
-            - timestamp
-            - value
-            properties:
-              timestamp:
-                type: integer
-                format: int64
-              value:
-                type: integer
-                minimum: 1
-                maximum: 10
-    XiqCopilotConnectivityByLocations:
-      allOf:
-      - $ref: '#/components/schemas/XiqPage'
-      - type: object
-        properties:
-          data:
-            type: array
-            description: The data in the current page
-            items:
-              $ref: '#/components/schemas/XiqCopilotConnectivityByLocationsEntity'
-    XiqCopilotConnectivityByClientType:
-      type: object
-      description: data sequence
-      required:
-      - sites_by_wireless
-      - sites_by_wired
-      properties:
-        sites_by_wireless:
-          type: object
-          description: The data in the current page
-          required:
-          - low_quality_score_count
-          - medium_quality_score_count
-          - high_quality_score_count
-          - total_quality_score_count
-          properties:
-            low_quality_score_count:
-              type: integer
-              format: int32
-            medium_quality_score_count:
-              type: integer
-              format: int32
-            high_quality_score_count:
-              type: integer
-              format: int32
-            total_quality_score_count:
-              type: integer
-              format: int32
-        sites_by_wired:
-          type: object
-          description: The data in the current page
-          required:
-          - low_quality_score_count
-          - medium_quality_score_count
-          - high_quality_score_count
-          - total_quality_score_count
-          properties:
-            low_quality_score_count:
-              type: integer
-              format: int32
-            medium_quality_score_count:
-              type: integer
-              format: int32
-            high_quality_score_count:
-              type: integer
-              format: int32
-            total_quality_score_count:
-              type: integer
-              format: int32
-    XiqCopilotWirelessQualityIndexByLocation:
-      type: object
-      description: Wireless Connectivity Experience QualityIndex
-      required:
-      - quality_index
-      - time_to_connect_score
-      - performance_score
-      - total_clients
-      properties:
-        quality_index:
-          type: integer
-          minimum: 1
-          maximum: 10
-        time_to_connect_score:
-          type: integer
-          minimum: 1
-          maximum: 10
-        performance_score:
-          type: integer
-          minimum: 1
-          maximum: 10
-        total_clients:
-          type: integer
-          format: int32
     XiqCopilotHardwareByLocation:
       type: object
       description: Wired Connectivity Experience Hardware
@@ -30066,157 +31124,6 @@ components:
         total_affected_ports:
           type: integer
           format: int32
-    XiqAnomalyType:
-      type: string
-      enum:
-      - POE_STABILITY
-      - DFS_RECURRENCE
-      - ADVERSE_TRAFFIC
-      - PORT_EFFICIENCY
-      - WIFI_CAPACITY
-      - WIFI_EFFICIENCY
-      - HARDWARE_HEALTH
-      - MISSING_VLAN
-    XiqLocationType:
-      type: string
-      enum:
-      - SITE
-      - BUILDING
-      - FLOOR
-    XiqLocationIds:
-      type: object
-      description: data sequence
-      required:
-      - locationId
-      properties:
-        locationId:
-          type: integer
-          format: int64
-    XiqAnomalySeverity:
-      type: string
-      enum:
-      - LOW
-      - MEDIUM
-      - HIGH
-    XiqCopilotAnomaliesLocationEntity:
-      type: object
-      description: Anomaly Location Entity
-      required:
-      - location_type
-      - location_ids
-      - building_id
-      - location_name
-      - pinned
-      - muted
-      - severity
-      - severity_id
-      - summary
-      - anomaly_type
-      - affected_device_count
-      - last_detected_time
-      properties:
-        location_type:
-          $ref: '#/components/schemas/XiqLocationType'
-        location_ids:
-          type: array
-          description: the location Ids
-          items:
-            $ref: '#/components/schemas/XiqLocationIds'
-        building_id:
-          type: integer
-          format: int64
-        location_name:
-          type: string
-        pinned:
-          type: boolean
-        muted:
-          type: boolean
-        severity_id:
-          type: integer
-          minimum: 1
-          maximum: 3
-        severity:
-          $ref: '#/components/schemas/XiqAnomalySeverity'
-        summary:
-          type: string
-        anomaly_type:
-          $ref: '#/components/schemas/XiqAnomalyType'
-        affected_device_count:
-          type: integer
-        last_detected_time:
-          type: integer
-          format: int64
-    XiqCopilotAnomaliesLocations:
-      allOf:
-      - $ref: '#/components/schemas/XiqPage'
-      - type: object
-        properties:
-          summary:
-            type: string
-          data:
-            type: array
-            description: The data in the current page
-            items:
-              $ref: '#/components/schemas/XiqCopilotAnomaliesLocationEntity'
-    XiqCopilotAnomaliesDeviceEntity:
-      type: object
-      description: Anomaly Device Entity
-      required:
-      - device_id
-      - device_name
-      - pinned
-      - wired
-      - anomaly_id
-      - severity
-      - summary
-      - last_detected_time
-      - recommended_action
-      - anomaly_subtypes
-      - interface_name
-      properties:
-        device_id:
-          type: string
-        device_name:
-          type: string
-        pinned:
-          type: boolean
-        wired:
-          type: boolean
-        anomaly_id:
-          type: string
-        severity:
-          $ref: '#/components/schemas/XiqAnomalySeverity'
-        summary:
-          type: string
-        last_detected_time:
-          type: integer
-          format: int64
-        recommended_action:
-          type: string
-        anomaly_subtypes:
-          type: string
-        interface_name:
-          type: string
-        channel:
-          type: integer
-          format: int32
-        frequency:
-          type: string
-    XiqCopilotAnomaliesDevicesByLocation:
-      allOf:
-      - type: object
-        description: The devices entity data
-        required:
-        - location_entity
-        - devices
-        properties:
-          location_entity:
-            $ref: '#/components/schemas/XiqCopilotAnomaliesLocationEntity'
-          devices:
-            type: array
-            description: The data in the current page
-            items:
-              $ref: '#/components/schemas/XiqCopilotAnomaliesDeviceEntity'
     XiqFlapCountEntity:
       type: object
       description: data sequence
@@ -30623,31 +31530,17 @@ components:
           description: The data in the current page
           items:
             $ref: '#/components/schemas/XiqAnomaliesCount'
-    XiqActionType:
+    XiqAnomalyType:
       type: string
       enum:
-      - MUTE
-      - UNMUTE
-      - DISMISSED
-    XiqAnomaliesUpdateActionRequest:
-      type: object
-      description: The update action request
-      properties:
-        anomalyType:
-          $ref: '#/components/schemas/XiqAnomalyType'
-        actionType:
-          $ref: '#/components/schemas/XiqActionType'
-        buildingId:
-          type: integer
-          format: int64
-    XiqCopilotAnomaliesSuccess:
-      type: object
-      description: value
-      required:
-      - success
-      properties:
-        success:
-          type: boolean
+      - POE_STABILITY
+      - DFS_RECURRENCE
+      - ADVERSE_TRAFFIC
+      - PORT_EFFICIENCY
+      - WIFI_CAPACITY
+      - WIFI_EFFICIENCY
+      - HARDWARE_HEALTH
+      - MISSING_VLAN
     XiqFeedbackType:
       type: string
       enum:
@@ -30665,34 +31558,20 @@ components:
           $ref: '#/components/schemas/XiqFeedbackType'
         feedback:
           type: string
-    XiqAnomaliesDeviceUpdateActionRequest:
+    XiqCopilotAnomaliesSuccess:
       type: object
-      description: The device update action request
-      properties:
-        anomalyType:
-          $ref: '#/components/schemas/XiqAnomalyType'
-        actionType:
-          $ref: '#/components/schemas/XiqActionType'
-        locationId:
-          type: integer
-          format: int64
-        anomalyId:
-          type: string
-    XiqCopilotAnomaliesNotificationsVo:
-      type: object
-      description: data sequence
+      description: value
       required:
-      - total_anomaly_count
-      - location_entity
+      - success
       properties:
-        total_anomaly_count:
-          type: integer
-          format: int64
-        location_entity:
-          type: array
-          description: The data in the current page
-          items:
-            $ref: '#/components/schemas/XiqCopilotAnomaliesLocationEntity'
+        success:
+          type: boolean
+    XiqAnomalySeverity:
+      type: string
+      enum:
+      - LOW
+      - MEDIUM
+      - HIGH
     XiqAnomaliesSiteEntity:
       type: object
       description: data sequence
@@ -30924,6 +31803,12 @@ components:
           type: string
         anomalyType:
           $ref: '#/components/schemas/XiqAnomalyType'
+    XiqActionType:
+      type: string
+      enum:
+      - MUTE
+      - UNMUTE
+      - DISMISSED
     XiqUpdateAnomaliesAndDevicesRequest:
       type: object
       description: The device update action request
@@ -36850,6 +37735,69 @@ components:
             type: string
           siteSchedule:
             type: integer
+    XiqMacAddress:
+      description: Colon separated MAC address in upper or lower case
+      type: string
+      pattern: ^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$
+      example: 18:09:F8:61:6B:C0
+    XiqAfcMobileappScanInfo:
+      allOf:
+      - type: object
+        properties:
+          ownerId:
+            type: integer
+            format: int64
+          bssidList:
+            type: array
+            description: Base radio BSSIDs reported by the mobile application scan
+            items:
+              $ref: '#/components/schemas/XiqMacAddress'
+    XiqAfcMobileappAnchorCandidate:
+      allOf:
+      - type: object
+        properties:
+          id:
+            type: integer
+            description: The device unique identifier
+            format: int64
+          serial:
+            type: string
+            description: The device serial number
+          name:
+            type: string
+            description: AP name
+          mac_address:
+            $ref: '#/components/schemas/XiqMacAddress'
+          make:
+            type: string
+            description: 'The product make, such as: WiNG, Aerohive, Extreme etc.'
+          product_type:
+            type: string
+            description: 'The product type, such as: AP_5050U, AP_5050D, AP_5020 etc.'
+          location:
+            type: string
+            description: The location of the device, including floor name
+          bssid:
+            $ref: '#/components/schemas/XiqMacAddress'
+            description: Base radio BSSID
+          gpsAnchor:
+            type: boolean
+            default: false
+            description: Use this AP as GPS anchor to derive geo-coordinates of other APs on the floor
+          coordinates:
+            $ref: '#/components/schemas/XiqAfcMobileappCoordinates'
+          neighbors:
+            type: integer
+            description: Number of neighboring APs.
+    XiqMobileappAnchorCandidatesResponse:
+      type: object
+      properties:
+        candidates:
+          description: List of AP candidates that may be used as anchors
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqAfcMobileappAnchorCandidate'
+      description: The response for afc mobile app anchor candidates
     XiqUcpEngineInstanceElement:
       allOf:
       - type: object
@@ -38566,7 +39514,7 @@ components:
     XiqClientHealthSortField:
       type: string
       title: ClientHealthSortField
-      description: Pre-defined filters for warnings in dashboard - OPERATING_SYSTEM - CLIENT_RETRIES
+      description: Pre-defined filters for warnings in dashboard - OPERATING_SYSTEM - CLIENT_RETRIES - IPV6 - RSSI - SNR - CLIENT_MAC - USER_PROFILE - ENCRYPTION - DEVICE_MAC - IPV4 - CONNECTION_STATUS - ALIAS - CATEGORY_ASSIGNMENT - CLIENT_IP - AIR_TIME - FREQUENCY - RX_CLIENT_RETIRES - AUTHENTICATION - CLIENT_DEVICE_ID - VLAN - TX_CLIENT_RETIRES
       example: OPERATING_SYSTEM
     XiqClientHealthConnectionStatus:
       type: string
@@ -39066,6 +40014,11 @@ components:
                 description:
                   description: The reason for the device reboot.
                   type: string
+    XiqWarningFilter:
+      type: string
+      title: warningfilter
+      description: Pre-defined filters for warnings in dashboard - WITH_WARNING - WITHOUT_WARNING
+      example: WITH_WARNING
     XiqWiredClientHealthSortField:
       type: string
       title: WiredClientHealthSortField
@@ -39552,6 +40505,10 @@ components:
           type: integer
           format: int64
           description: Total number of packets dropped due to congestion on all QOS queues
+        total_packets_count:
+          type: integer
+          format: int64
+          description: Total number of unicast, multicast and broadcast packets
     PagedXiqWiredUsageCapacityGridResponse:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -39603,6 +40560,21 @@ components:
           type: integer
           format: int64
           description: Percentage of packets dropped due to congestion vs total number of transmitted packets on all QOS queues
+    XiqSwitchInspectorPanelDiagnosticsWidget:
+      type: object
+      properties:
+        device_health_issues:
+          type: integer
+          format: int64
+          description: The number of "Device Health" issues
+        usage_capacity_issues:
+          type: integer
+          format: int64
+          description: The number of "Usage and Capacity" issues
+        client_health_issues:
+          type: integer
+          format: int64
+          description: The number of "Client Health" issues
     GeoViewNode:
       type: object
       description: The Geo View data
@@ -40454,7 +41426,16 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/XiqSortOrder'
-    wirelessViewIdentifier:
+    wiredViewType:
+      in: query
+      description: The wired experience view type
+      name: viewType
+      required: false
+      schema:
+        type: string
+        enum:
+        - LOCATION
+    wiredViewIdentifier:
       in: query
       description: The view identifier based on selected view type
       name: viewId
@@ -40476,13 +41457,6 @@ components:
         - SEVEN_DAYS
         - THIRTY_DAYS
         - NINETY_DAYS
-    locationType:
-      in: query
-      description: The location type
-      name: locationType
-      required: false
-      schema:
-        type: string
     locationId:
       in: query
       description: The location id
@@ -40491,58 +41465,6 @@ components:
       schema:
         type: integer
         format: int64
-    wirelessScoreType:
-      in: query
-      description: The wireless score type
-      name: scoreType
-      required: true
-      schema:
-        type: string
-        enum:
-        - TIME_TO_AUTHENTICATE
-        - TIME_TO_ASSOCIATE
-        - TIME_TO_DHCP
-        - RETRIES
-    wirelessSortField:
-      name: sortField
-      in: query
-      description: The sort field
-      required: false
-      schema:
-        type: string
-        enum:
-        - AVERAGE
-    searchKey:
-      in: query
-      description: The search key
-      name: searchKey
-      required: false
-      schema:
-        type: string
-    timestamp:
-      name: timestamp
-      in: query
-      description: The timestamp to query, epoch time in milliseconds since 1/1/1970
-      required: false
-      schema:
-        type: integer
-        format: int64
-    wiredViewType:
-      in: query
-      description: The wired experience view type
-      name: viewType
-      required: false
-      schema:
-        type: string
-        enum:
-        - LOCATION
-    wiredViewIdentifier:
-      in: query
-      description: The view identifier based on selected view type
-      name: viewId
-      required: true
-      schema:
-        type: string
     wiredScoreType:
       in: query
       description: The wired score type
@@ -40561,6 +41483,21 @@ components:
         type: string
         enum:
         - IN_ERRORS
+    searchKey:
+      in: query
+      description: The search key
+      name: searchKey
+      required: false
+      schema:
+        type: string
+    timestamp:
+      name: timestamp
+      in: query
+      description: The timestamp to query, epoch time in milliseconds since 1/1/1970
+      required: false
+      schema:
+        type: integer
+        format: int64
     clientType:
       name: clientType
       in: query
@@ -40597,14 +41534,7 @@ components:
       required: false
       schema:
         type: string
-    anomalyType:
-      name: anomalyType
-      in: query
-      description: The anomaly type
-      required: false
-      schema:
-        $ref: '#/components/schemas/XiqAnomalyType'
-    sortField1:
+    wirelessSortField:
       name: sortField
       in: query
       description: The sort field
@@ -40612,30 +41542,19 @@ components:
       schema:
         type: string
         enum:
-        - DEVICE_NAME
-        - SEVERITY
-        - LOCATION
-        - CATEGORY
-        - ANOMALY_TYPE
-        - TIME
-    muted:
+        - AVERAGE
+    wirelessScoreType:
       in: query
-      name: excludeMuted
-      description: To filter muted anomalies
-      required: false
-      schema:
-        type: boolean
-        default: false
-    locationIds1:
-      in: query
-      description: The location ids
-      name: locationIds
+      description: The wireless score type
+      name: scoreType
       required: true
       schema:
-        type: array
-        description: the location Ids
-        items:
-          $ref: '#/components/schemas/XiqLocationIds'
+        type: string
+        enum:
+        - TIME_TO_AUTHENTICATE
+        - TIME_TO_ASSOCIATE
+        - TIME_TO_DHCP
+        - RETRIES
     anomalyId:
       in: query
       description: The anomaly id
@@ -40706,6 +41625,35 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/XiqAnomalySeverity'
+    anomalyType:
+      name: anomalyType
+      in: query
+      description: The anomaly type
+      required: false
+      schema:
+        $ref: '#/components/schemas/XiqAnomalyType'
+    muted:
+      in: query
+      name: excludeMuted
+      description: To filter muted anomalies
+      required: false
+      schema:
+        type: boolean
+        default: false
+    sortField1:
+      name: sortField
+      in: query
+      description: The sort field
+      required: false
+      schema:
+        type: string
+        enum:
+        - DEVICE_NAME
+        - SEVERITY
+        - LOCATION
+        - CATEGORY
+        - ANOMALY_TYPE
+        - TIME
     fileType:
       name: fileType
       in: query
