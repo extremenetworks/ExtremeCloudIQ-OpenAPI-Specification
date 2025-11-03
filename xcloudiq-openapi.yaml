@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 25.4.4-5
+  version: 25.5.1-15
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -113,8 +113,12 @@ tags:
   description: Switch Inspector Panel
 - name: Geo-View
   description: Geo View
+- name: NG Reports
+  description: The NG Reports - On Demand Analytics and Scheduled Reporting
 - name: UZ
   description: UZ Requests
+- name: Client - Details
+  description: The details of client associate to the devices of ExtremeCloud IQ
 paths:
   /login:
     post:
@@ -1161,6 +1165,322 @@ paths:
       responses:
         '200':
           description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /users/grid:
+    post:
+      tags:
+      - User
+      summary: List users
+      description: Returns a paginated list of users with support for search, filter, and sort.
+      operationId: list_users
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: search
+        in: query
+        description: Search term for user name, email or group
+        required: false
+        schema:
+          type: string
+      - name: sort_field
+        in: query
+        description: Field to sort by
+        required: false
+        schema:
+          type: string
+          enum:
+          - data_usage
+          - session_duration
+          - expiration
+          - user_name
+          - email
+          - group
+          - source
+      - $ref: '#/components/parameters/order'
+      - $ref: '#/components/parameters/startTime'
+      - $ref: '#/components/parameters/endTime'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by user name(s)
+                group:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by user group(s)
+                email:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by email(s)
+                source:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by session source(s)
+                status:
+                  type: boolean
+                  description: Filter by user status
+                number_filters:
+                  type: array
+                  description: |
+                    The number-based column filters available. Available columns: data_usage, session_duration, expiration.
+                  items:
+                    $ref: '#/components/schemas/number_filter'
+                site_ids:
+                  description: List of site IDs to filter the users grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: A paginated list of user sessions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RmPagedUsers'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /users/filter_metadata:
+    post:
+      tags:
+      - User
+      summary: List user grid filter metadata
+      description: Returns lists of available values for user_name, group, and source fields used in the user grid.
+      operationId: listUserGridFilterMetadata
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the users grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Lists of values for user grid filters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_names:
+                    type: array
+                    items:
+                      type: string
+                    description: List of unique user names
+                  groups:
+                    type: array
+                    items:
+                      type: string
+                    description: List of unique user groups
+                  sources:
+                    type: array
+                    items:
+                      type: string
+                    description: List of unique session sources
+                  emails:
+                    type: array
+                    items:
+                      type: string
+                    description: List of unique emails
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /users/type_distribution:
+    post:
+      tags:
+      - User
+      summary: Get user type distribution
+      description: Returns the percentage distribution of connected users by type (PPSK, RADIUS, Others) and the total number of connected users.
+      operationId: getUserTypeDistribution
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the users grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: User type distribution and total connected users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ppsk_percentage:
+                    type: number
+                    format: float
+                    description: Percentage of users authenticated via PPSK
+                  radius_percentage:
+                    type: number
+                    format: float
+                    description: Percentage of users authenticated via RADIUS
+                  others_percentage:
+                    type: number
+                    format: float
+                    description: Percentage of users authenticated via other methods
+                  total_connected_users:
+                    type: integer
+                    description: Total number of connected users
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /users/data_usage:
+    post:
+      tags:
+      - User
+      summary: Get user data usage
+      description: Returns data usage in bytes for each user.
+      operationId: getUserDataUsage
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the users grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: Data usage per user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_name:
+                          type: string
+                          description: Name or identifier of the user
+                        data_usage_gb:
+                          type: number
+                          format: float
+                          description: Data usage in bytes
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /users/grid_export:
+    post:
+      tags:
+      - User
+      summary: Export user grid
+      description: Export the user grid data as a CSV file.
+      operationId: exportUserGridToCsv
+      parameters:
+      - name: search
+        in: query
+        description: Search term for user name, email or group
+        required: false
+        schema:
+          type: string
+      - name: sort_field
+        in: query
+        description: Field to sort by
+        required: false
+        schema:
+          type: string
+          enum:
+          - data_usage
+          - session_duration
+          - expiration
+          - user_name
+          - email
+          - group
+          - source
+      - $ref: '#/components/parameters/order'
+      - $ref: '#/components/parameters/startTime'
+      - $ref: '#/components/parameters/endTime'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by user name(s)
+                group:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by user group(s)
+                source:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by session source(s)
+                email:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by email(s)
+                site_ids:
+                  description: List of site IDs to filter the client health grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                number_filters:
+                  type: array
+                  description: |
+                    The number-based column filters available. Available columns: data_usage, session_duration, expiration.
+                  items:
+                    $ref: '#/components/schemas/number_filter'
+      responses:
+        '202':
+          description: Accepted - The request has been accepted for processing, but the processing has not been completed.
+          headers:
+            location:
+              description: The URL to check the status or download the exported file
+              schema:
+                type: string
+                format: uri
+            retry-after:
+              description: Time in seconds to wait before polling the status
+              schema:
+                type: integer
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -3885,6 +4205,12 @@ paths:
           type: array
           items:
             $ref: '#/components/schemas/XiqAhDeviceSimulatedType'
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -3965,6 +4291,12 @@ paths:
           type: array
           items:
             $ref: '#/components/schemas/XiqAhDeviceSimulatedType'
+      - name: stackedView
+        in: query
+        description: Whether to include only virtual stack (when set to true) or also the stack members (when set to false)
+        required: false
+        schema:
+          type: boolean
       - name: sortField
         in: query
         description: The sort field
@@ -3973,6 +4305,12 @@ paths:
           $ref: '#/components/schemas/RmDeviceSortField'
       - $ref: '#/components/parameters/order'
       - $ref: '#/components/parameters/async'
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         content:
           application/json:
@@ -4025,6 +4363,11 @@ paths:
                   type: array
                   items:
                     type: string
+                network_policies:
+                  description: The device network policies to filter
+                  type: array
+                  items:
+                    type: string
       responses:
         '200':
           description: OK
@@ -4072,6 +4415,12 @@ paths:
           type: array
           items:
             $ref: '#/components/schemas/XiqAhDeviceSimulatedType'
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -4189,6 +4538,12 @@ paths:
           $ref: '#/components/schemas/RmDeviceSortField'
       - $ref: '#/components/parameters/order'
       - $ref: '#/components/parameters/async'
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         content:
           application/json:
@@ -4238,6 +4593,11 @@ paths:
                     type: integer
                 managed_by:
                   description: The entities managing the devices
+                  type: array
+                  items:
+                    type: string
+                network_policies:
+                  description: The device network policies to filter
                   type: array
                   items:
                     type: string
@@ -4379,6 +4739,41 @@ paths:
                           type: array
                           items:
                             type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/:ssh-active-sessions:
+    post:
+      tags:
+      - Device
+      summary: List SSH active sessions
+      description: List active SSH sessions for devices.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_ssh_active_sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: List of device IDs to filter active SSH sessions
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/XiqDevicesSshActiveSessions'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -5128,6 +5523,36 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /clients/disconnect:
+    post:
+      tags:
+      - Client
+      summary: Disconnect clients
+      description: Disconnect one or more clients by their MAC addresses.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_client_by_macaddress
+      operationId: disconnect_clients
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mac_addresses:
+                  type: array
+                  description: List of client MAC addresses to disconnect
+                  items:
+                    type: string
+                    format: mac
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /applications:
     get:
       tags:
@@ -5235,6 +5660,179 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/XiqApplicationTopClientsUsage'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /applications/grid:
+    post:
+      tags:
+      - Application
+      summary: List application usage summary
+      description: Returns a paginated list of application usage summaries with support for search, filter, and sort.
+      operationId: listApplicationUsageSummary
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: sort_field
+        in: query
+        description: Field to sort by (e.g., usage, percentage_usage, clients, users)
+        required: false
+        schema:
+          type: string
+          enum:
+          - usage
+          - percentage_usage
+          - clients
+          - users
+          - application_name
+          - category_name
+      - $ref: '#/components/parameters/order'
+      - $ref: '#/components/parameters/async'
+      - name: search
+        in: query
+        description: Search term for application or category name
+        required: false
+        schema:
+          type: string
+      requestBody:
+        description: Filters for category and number-based columns
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_name:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by one or more category (application group) names
+                application_name:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by one or more application names
+                site_ids:
+                  description: List of site IDs to filter the applications grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                number_filters:
+                  type: array
+                  description: |
+                    The number-based column filters available. Available columns: usage, percentageUsage, clients, users.
+                  items:
+                    $ref: '#/components/schemas/number_filter'
+      responses:
+        '200':
+          description: A paginated list of application usage summaries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedAppUsageSummary'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /applications/category_metadata:
+    get:
+      tags:
+      - Application
+      summary: List application categories and names
+      description: Returns a list of unique application category names along with associated application names used in application usage data.
+      operationId: listApplicationCategoriesAndNames
+      responses:
+        '200':
+          description: Lists of application categories and application names
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      type: string
+                      description: Application category name
+                  applicationNames:
+                    type: array
+                    items:
+                      type: string
+                      description: Application name
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /applications/grid/export:
+    post:
+      tags:
+      - Application
+      summary: Export application usage summary
+      description: Export the application usage summary grid as a CSV file.
+      operationId: export_application_usage_to_csv
+      parameters:
+      - name: search
+        in: query
+        description: Search term for application or category name
+        required: false
+        schema:
+          type: string
+      - name: sort_field
+        in: query
+        description: Field to sort by (e.g., usage, percentage_usage, clients, users)
+        required: false
+        schema:
+          type: string
+          enum:
+          - usage
+          - percentage_usage
+          - clients
+          - users
+      - $ref: '#/components/parameters/order'
+      - $ref: '#/components/parameters/async'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_name:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by one or more category (application group) names
+                application_name:
+                  type: array
+                  items:
+                    type: string
+                  description: Filter by one or more application names
+                site_ids:
+                  description: List of site IDs to filter the applications grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                number_filters:
+                  type: array
+                  description: |
+                    The number-based column filters available. Available columns: usage, percentage_usage, clients, users.
+                  items:
+                    $ref: '#/components/schemas/number_filter'
+      responses:
+        '202':
+          description: Accepted - The request has been accepted for processing, but the processing has not been completed.
+          headers:
+            location:
+              description: The URL to check the status or download the exported file
+              schema:
+                type: string
+                format: uri
+            retry-after:
+              description: Time in seconds to wait before polling the status
+              schema:
+                type: integer
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -13514,107 +14112,85 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
-  /afc/afcserver:
+  /afcserver:
     get:
       tags:
       - AFC
-      summary: List AFC Servers
-      description: List AFC servers.
+      summary: Get list of AFC Servers
+      description: Get list of AFC Servers.
       externalDocs:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_list_afc_servers
       operationId: listAfcServers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/XiqAfcServer'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /afc/afcserver/{id}:
-    get:
-      tags:
-      - AFC
-      summary: Get AFC Servers
-      description: Get AFC servers.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_afc_servers
-      operationId: getAfcServers
       parameters:
-      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/ownerId'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/XiqAfcServer'
+                $ref: '#/components/schemas/XiqListAfcServers'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
-  /afc/afcserver/statistics:
+  /afcserver/statistics/{server_id}:
     get:
       tags:
       - AFC
-      summary: AFC server Statistics
-      description: External AFC server Statistics.
+      summary: Get AFC server Statistics
+      description: Get AFC server Statistics.
       externalDocs:
         description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_afc_server_stats
-      operationId: getAfcServerStats
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/XiqAfcServerStatistics'
-        default:
-          $ref: '#/components/responses/ErrorResponse'
-      security:
-      - BearerAuth: []
-  /afc/afserver/job/statistics:
-    get:
-      tags:
-      - AFC
-      summary: AFC server job statistics
-      description: AFC server statistics for the past 7 days.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_afc_job_statistics
-      operationId: getAfcServerJobStats
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_afc_server_statistics
+      operationId: getAfcServerStatistics
       parameters:
-      - $ref: '#/components/parameters/page'
-      - $ref: '#/components/parameters/limit'
+      - name: server_id
+        in: path
+        description: The Id of the server
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: startTime
+        in: query
+        description: Query Start Time
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: endTime
+        in: query
+        description: Query End Time
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: precision
+        in: query
+        description: precision specified in seconds
+        required: false
+        schema:
+          type: integer
+          format: int64
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/XiqAfcJobStatistics'
+                $ref: '#/components/schemas/XiqAfcServersStatistics'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
-  /afc/ap/interface/details/{sn}:
+  /ap/afc/interface/details/{sn}:
     get:
       tags:
       - AFC
-      summary: AFC Ap Channels info
-      description: AFC Ap Channels info.
+      summary: Get AP Interface status
+      description: Get AP Interface status info.
       externalDocs:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_get_afc_ap_interface_details
@@ -13632,12 +14208,61 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /afc/recalculateSite/{id}:
+    post:
+      tags:
+      - AFC
+      summary: AFC Recalculate Geolocation
+      description: Recalculate geolocation for site.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_recalculate_afc_site
+      operationId: recalculateSite
+      parameters:
+      - name: id
+        in: path
+        description: The device id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /afc/aps/reportFtm:
+    post:
+      tags:
+      - AFC
+      summary: Request FTM data for APs
+      description: Request FTM data for a list of Access Points.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_request_ftm_data
+      operationId: requestAfcFtmData
+      requestBody:
+        description: List of APs to request FTM data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqReportFtmDataRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /afc/aps/status/summary:
     get:
       tags:
       - AFC
-      summary: AFC Ap status Summary
-      description: AFC Status summary of Ap channels and powers query.
+      summary: AFC AP status Summary
+      description: AFC Status summary of AP channels and powers query.
       externalDocs:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_get_afc_ap_status_stats
@@ -13653,32 +14278,175 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
-  /afc/aps/geolocation/summary:
+  /floor/afc/details:
     get:
       tags:
       - AFC
-      summary: AFC server job statistics
-      description: AFC server statistics for the past 7 days.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_afc_job_statistics
-      operationId: getAfcGeoLocation
+      summary: Get AFC Floor Details
+      description: Retrieve AFC related floor height and accuracy data for a specific floor.
+      operationId: getFloorAfcProperties
+      parameters:
+      - $ref: '#/components/parameters/ownerId'
+      - name: floorId
+        in: query
+        description: The Id of the floor
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/XiqAfcGeolocationSummary'
+                $ref: '#/components/schemas/XiqAfcFloorDetails'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - AFC
+      summary: Add AFC Floor Details
+      description: Create new AFC related floor height and accuracy data for a floor.
+      operationId: addFloorAfcProperties
+      requestBody:
+        description: Floor AFC related properties body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqAfcFloorDetails'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqAfcFloorDetails'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - AFC
+      summary: Update AFC Floor Details
+      description: Update existing AFC related floor height and accuracy data for a floor.
+      operationId: updateFloorAfcProperties
+      requestBody:
+        description: Floor AFC related properties body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqAfcFloorDetails'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqAfcFloorDetails'
+      security:
+      - BearerAuth: []
+  /aps/afc/query:
+    get:
+      tags:
+      - AFC
+      summary: Query AFC APs
+      description: Retrieve AFC summary information for access points including status, geolocation, and spectrum mismatch data.
+      operationId: getApsAfcSummaryInfo
+      parameters:
+      - $ref: '#/components/parameters/ownerId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqAfcApsInfoElement'
+      security:
+      - BearerAuth: []
+  /ap/afc/diagnostics/{id}:
+    get:
+      tags:
+      - AFC
+      summary: Get AFC AP Diagnostics
+      description: Retrieve AFC diagnostics information.
+      operationId: getApsAfcDiagnostics
+      parameters:
+      - $ref: '#/components/parameters/ownerId'
+      - name: id
+        in: path
+        description: device id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqAfcApDiagnostics'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
-  /afc/site/schedule:
+  /ap/afc/floorReport/{deviceId}:
+    get:
+      summary: Get AFC Floor Report
+      description: Retrieves the AFC geolocation floor report for a specific device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_afc_geolocation_floor_report
+      operationId: getAfcGeolocationFloorReport
+      tags:
+      - AFC
+      parameters:
+      - name: deviceId
+        in: path
+        description: Device ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqGetAfcGeolocationFloorReportResponse'
+              example:
+                floor_report: Floor geolocation report data for AFC calculations
+      security:
+      - BearerAuth: []
+  /aps/afc/update:
+    post:
+      tags:
+      - AFC
+      summary: Request Manual Spectrum for device(s)
+      description: Manual Spectrum request for device(s).
+      operationId: postApsManualAfcSpectrum
+      requestBody:
+        description: AFC site schedule request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqAfcApManualSpectrum'
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /site/afc/schedule:
     get:
       tags:
       - AFC
-      summary: Get AFC Site Update Schedule
+      summary: Get AFC Site Schedule
       description: Get AFC site update settings.
       externalDocs:
         description: API Reference
@@ -13695,7 +14463,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/XiqAfcSiteSchedule'
+                  $ref: '#/components/schemas/XiqAfcSiteScheduleResponse'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -13703,12 +14471,12 @@ paths:
     post:
       tags:
       - AFC
-      summary: Add AFC Site Schedule
-      description: Add AFC Site Schedule.
+      summary: Create AFC Site Schedule
+      description: Create AFC Site Schedule.
       externalDocs:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_add_afc_site_schedule
-      operationId: addAfcServerStats
+      operationId: addAfcSiteSchedule
       requestBody:
         description: The body of the Site Schedule
         content:
@@ -13719,10 +14487,6 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqAfcSiteSchedule'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -13746,10 +14510,6 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/XiqAfcSiteSchedule'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -14127,6 +14887,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_alert_diagnostics
       operationId: alertCountDashboard
+      parameters:
+      - name: include_unassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -14161,6 +14928,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_asset_counts
       operationId: assetCountDashboard
+      parameters:
+      - name: include_unassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -14195,6 +14969,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_client_health
       operationId: clientHealthDashboard
+      parameters:
+      - name: include_unassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -14229,6 +15010,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_device_health
       operationId: deviceHealthDashboard
+      parameters:
+      - name: include_unassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -14263,6 +15051,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_usage_and_capacity
       operationId: usageAndCapacityIssuesDashboard
+      parameters:
+      - name: include_unassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -14318,6 +15113,12 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/XiqSortOrder'
+      - name: include_unassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -14394,6 +15195,12 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/XiqSortOrder'
+      - name: include_unassigned
+        in: query
+        description: To include unassigned location
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -15339,6 +16146,120 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /d360/event/graph:
+    get:
+      tags:
+      - D360
+      summary: Events Graph
+      description: Retrieve a time-series graph of event metrics. Each timestamp includes an array of event types with their respective counts. Only selected filters will be included in the response.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_event_graph
+      operationId: eventsGraph
+      parameters:
+      - $ref: '#/components/parameters/startTime'
+      - $ref: '#/components/parameters/endTime'
+      - name: deviceId
+        in: query
+        description: The device ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: filter
+        in: query
+        description: |
+          Filter events by type. Only selected event types will be included in the response. Valid values: `CRITICAL`, `MAJOR`, `MINOR`, `INFO`, `ACTIVE`, `CLEARED`, `ALL`.
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - CRITICAL
+            - MAJOR
+            - MINOR
+            - INFO
+            - ACTIVE
+            - CLEARED
+            - ALL
+          uniqueItems: true
+          example:
+          - CRITICAL
+          - MAJOR
+        style: form
+        explode: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                description: The Graph metric response.
+                properties:
+                  data:
+                    type: array
+                    description: List of event metrics grouped by timestamp.
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: integer
+                          format: int64
+                          description: The timestamp of the event metric (Unix epoch in ms).
+                        events:
+                          type: array
+                          description: List of event types and their counts.
+                          items:
+                            type: object
+                            properties:
+                              event_name:
+                                type: string
+                                enum:
+                                - CRITICAL
+                                - MAJOR
+                                - MINOR
+                                - INFO
+                                - ACTIVE
+                                - CLEARED
+                                - ALL
+                                description: The name of the event type.
+                              count:
+                                type: integer
+                                format: int64
+                                description: Number of events of this type at the timestamp.
+  /d360/wired/queue-grid:
+    get:
+      tags:
+      - D360
+      summary: Wired QOS queue grid
+      description: Returns all QOS queue statistics for a wired device.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wired_queue_grid
+      operationId: wiredQueueGrid
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: deviceId
+        in: query
+        description: The unique device identifier. It can be virtual slot id and all stack ports will be returned or a member slot id and only that slot ports will be returned.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Returns all QOS queue statistics for a wired device
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedRmWiredQueueGridResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /dashboard/wireless/client-health/grid:
     post:
       tags:
@@ -15376,6 +16297,12 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/XiqClientHealthConnectionStatus'
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -15471,6 +16398,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wireless_client_health_connectivity_issues
       operationId: wirelessClientHealthConnectivityIssues
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -15505,6 +16439,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wireless_client_health_frequency_distribution
       operationId: wirelessClientHealthFrequencyDistribution
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -15539,6 +16480,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wireless_client_health_roaming_issues
       operationId: wirelessClientHealthRoamingIssues
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -15582,6 +16530,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_client_health_grid
       operationId: wirelessClientHealthGridFilterMetada
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         content:
           application/json:
@@ -15664,6 +16619,12 @@ paths:
         required: false
         schema:
           type: string
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -15707,6 +16668,12 @@ paths:
         required: false
         schema:
           type: string
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -15750,6 +16717,12 @@ paths:
         required: false
         schema:
           type: string
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -15793,6 +16766,12 @@ paths:
         required: false
         schema:
           type: string
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -15852,6 +16831,12 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/XiqClientHealthConnectionStatus'
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned clients
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16045,6 +17030,12 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/XiqSortOrder'
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16115,6 +17106,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wireless_usage_capacity_excessive_packet_loss
       operationId: wirelessUsageCapacityExcessivePacketLoss
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16154,6 +17152,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wireless_usage_capacity_excessive_utilization
       operationId: wirelessUsageCapacityExcessiveUtilization
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16188,6 +17193,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_wireless_usage_capacity_excessive_retries
       operationId: wirelessUsageCapacityExcessiveRetries
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16246,6 +17258,12 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/XiqSortOrder'
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16408,6 +17426,12 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/XiqSortOrder'
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16429,6 +17453,9 @@ paths:
                     format: int64
                 has_device_health_issues:
                   description: Indicates if the device has a device health issue
+                  type: boolean
+                has_poe_issues:
+                  description: Indicates if the device has a poe issue
                   type: boolean
                 number_filters:
                   type: array
@@ -16456,6 +17483,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wireless_device_health_issues_cpu_usage
       operationId: wirelessDeviceHealthCpuUsageIssues
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16490,6 +17524,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wireless_device_health_issues_memory_usage
       operationId: wirelessDeviceHealthMemoryUsageIssues
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16524,6 +17565,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_get_wireless_device_health_issues_poe_usage
       operationId: wirelessDeviceHealthPoEUsageIssues
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16558,6 +17606,13 @@ paths:
         description: API Reference
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_device_health_wireless_summary
       operationId: wirelessDeviceHealthSummary
+      parameters:
+      - name: includeUnassigned
+        in: query
+        description: To include unassigned devices
+        required: false
+        schema:
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16628,52 +17683,28 @@ paths:
       - $ref: '#/components/parameters/limit'
       - name: keyword
         in: query
-        description: The keyword to search - hostname, mac, site
+        description: The keyword to search
         required: false
         schema:
           type: string
-      - name: CPU_UTILIZATION
+      - name: sortField
         in: query
-        description: The CPU utilization
+        description: The sort field
         required: false
         schema:
-          $ref: '#/components/schemas/XiqWarningFilter'
-      - name: MEMORY_UTILIZATION
+          $ref: '#/components/schemas/XiqDeviceHealthGridSortField'
+      - name: sortOrder
         in: query
-        description: The memory utilization
+        description: The sort order
         required: false
         schema:
-          $ref: '#/components/schemas/XiqWarningFilter'
-      - name: BROADCAST_ETH0
+          $ref: '#/components/schemas/XiqSortOrder'
+      - name: includeUnassigned
         in: query
-        description: The broadcast of eth0
+        description: To include unassigned devices
         required: false
         schema:
-          $ref: '#/components/schemas/XiqWarningFilter'
-      - name: UNICAST_ETH0
-        in: query
-        description: The unicast of eth0
-        required: false
-        schema:
-          $ref: '#/components/schemas/XiqWarningFilter'
-      - name: MULTICAST_ETH0
-        in: query
-        description: The multicast of eth 0
-        required: false
-        schema:
-          $ref: '#/components/schemas/XiqWarningFilter'
-      - name: BROADCAST_ETH1
-        in: query
-        description: The broadcast of eth1
-        required: false
-        schema:
-          $ref: '#/components/schemas/XiqWarningFilter'
-      - name: UNICAST_ETH1
-        in: query
-        description: The unicast of eth1
-        required: false
-        schema:
-          $ref: '#/components/schemas/XiqWarningFilter'
+          type: boolean
       requestBody:
         required: false
         content:
@@ -16681,12 +17712,29 @@ paths:
             schema:
               type: object
               properties:
-                siteIds:
+                site_ids:
                   description: List of site IDs to filter the device health grid
                   type: array
                   items:
                     type: integer
                     format: int64
+                device_ids:
+                  description: List of device IDs to filter the device health grid
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                has_device_health_issues:
+                  description: Indicates if the device has a device health issue
+                  type: boolean
+                has_poe_issues:
+                  description: Indicates if the device has a poe issue
+                  type: boolean
+                number_filters:
+                  type: array
+                  description: The number based column filters available(Available columns- cpu_usage_percentage, memory_usage_percentage, eth0_broadcast_score, eth0_multicast_score, eth0_unicast_score, eth1_broadcast_score, eth1_unicast_score, eth1_multicast_score).
+                  items:
+                    $ref: '#/components/schemas/number_filter'
       responses:
         '202':
           description: Accepted - The request has been accepted for processing, but the processing has not been completed.
@@ -17665,6 +18713,919 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /ng-reports/reports:
+    get:
+      tags:
+      - NG Reports
+      summary: Get scheduled reports
+      description: Retrieve scheduled reports based on frequency and keyword search.
+      operationId: getScheduledReports
+      parameters:
+      - name: request
+        in: query
+        description: Type of report to retrieve
+        required: true
+        schema:
+          type: string
+          enum:
+          - monthly_reports
+          - daily_reports
+          - weekly_reports
+      - name: keyword
+        in: query
+        description: Keyword to search reports
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: A list of scheduled reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    report_name:
+                      type: string
+                      description: Name of the report
+                    recipients:
+                      type: array
+                      items:
+                        type: string
+                      description: List of report recipients
+                    latest_report_pdf:
+                      type: string
+                      format: uri
+                      description: URL to the latest report PDF
+                    enable_report:
+                      type: boolean
+                      description: Indicates if the report is enabled
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - NG Reports
+      summary: Create a new scheduled report
+      description: Create a new scheduled report with specified details.
+      operationId: createScheduledReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - report_name
+              - recipients
+              - enable_report
+              properties:
+                report_name:
+                  type: string
+                  description: Name of the report
+                recipients:
+                  type: array
+                  items:
+                    type: string
+                  description: List of email recipients
+                enable_report:
+                  type: boolean
+                  description: Whether the report is enabled
+                frequency:
+                  type: string
+                  enum:
+                  - daily_reports
+                  - weekly_reports
+                  - monthly_reports
+                  description: Frequency of the report
+      responses:
+        '201':
+          description: Report successfully created
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/reports/{id}:
+    delete:
+      tags:
+      - NG Reports
+      summary: Delete a scheduled report
+      description: Delete a scheduled report by its unique identifier.
+      operationId: deleteScheduledReport
+      parameters:
+      - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: Report successfully deleted (No Content)
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - NG Reports
+      summary: Update an existing scheduled report
+      description: Update the details of a scheduled report by its ID.
+      operationId: updateScheduledReport
+      parameters:
+      - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                report_name:
+                  type: string
+                recipients:
+                  type: array
+                  items:
+                    type: string
+                enable_report:
+                  type: boolean
+                frequency:
+                  type: string
+                  enum:
+                  - daily_reports
+                  - weekly_reports
+                  - monthly_reports
+      responses:
+        '200':
+          description: Report successfully updated
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/metrics/timeseries.yaml:
+    post:
+      tags:
+      - NG Reports
+      summary: Time Series data in NG Reports Metrics
+      operationId: timeseriesReportMetrics
+      description: This API returns the data for the graph widgets.
+      requestBody:
+        description: The payload to get the table data metrics data
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - $ref: '#/components/schemas/XiqMaxConcurrentClientsRequest'
+              - $ref: '#/components/schemas/XiqUniqueWifiClientsRequest'
+              - $ref: '#/components/schemas/XiqClientSessionsRequest'
+              - $ref: '#/components/schemas/XiqClientAirtimeUsageRequest'
+              - $ref: '#/components/schemas/XiqUniqueClientsByOSRequest'
+              - $ref: '#/components/schemas/XiqAppTrafficPercentageRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqDiagnosticsTimeSeriesResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/metrics/tabledata.yaml:
+    post:
+      tags:
+      - NG Reports
+      summary: Table Data data in NG Reports Metrics
+      description: This API returns the table (raw) Data data in NG Reports Metrics.
+      operationId: tabledataReportMetrics
+      requestBody:
+        description: The payload to get the table data metrics data
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - $ref: '#/components/schemas/XiqMaxConcurrentClientsRequest-2'
+              - $ref: '#/components/schemas/XiqUniqueWifiClientsRequest-2'
+              - $ref: '#/components/schemas/XiqClientSessionsRequest-2'
+              - $ref: '#/components/schemas/XiqClientAirtimeUsageRequest-2'
+              - $ref: '#/components/schemas/XiqUniqueClientsByOSRequest-2'
+              - $ref: '#/components/schemas/XiqAppTrafficPercentageRequest-2'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/XiqPage'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      description: The data in the current page
+                      items:
+                        $ref: '#/components/schemas/XiqDiagnosticsTableDataResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/metrics/metadata/ssid:
+    post:
+      tags:
+      - NG Reports
+      summary: Ssid filter metadata
+      description: Returns the Ssid filter metadata. You can filter the results by sites,buildings,floor.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_ssid
+      operationId: getDiagnosticsSsidFilterMetadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The site ID list to filter
+                building_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Building ID list to filter
+                floor_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Floor ID list to filter
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The List of Ssids
+                items:
+                  type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/metrics/metadata/os:
+    post:
+      tags:
+      - NG Reports
+      summary: Client Os filter metadata
+      description: Returns the Client Os filter metadata. You can filter the results by sites,buildings,floor,ssid,band.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_os
+      operationId: getDiagnosticsOsFilterMetadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The site ID list to filter
+                building_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Building ID list to filter
+                floor_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Floor ID list to filter
+                ssids:
+                  type: array
+                  items:
+                    type: string
+                  description: The Ssid list to filter
+                bands:
+                  type: array
+                  items:
+                    type: string
+                  description: The Band list to filter
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The List of os
+                items:
+                  type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/metrics/metadata/channel:
+    post:
+      tags:
+      - NG Reports
+      summary: Channel filter metadata
+      description: Returns the Channel filter metadata. You can filter the results by sites,buildings,floor,ssid,band.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_channel
+      operationId: getDiagnosticsChannelFilterMetadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The site ID list to filter
+                building_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Building ID list to filter
+                floor_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Floor ID list to filter
+                ssids:
+                  type: array
+                  items:
+                    type: string
+                  description: The Ssid list to filter
+                bands:
+                  type: array
+                  items:
+                    type: string
+                  description: The Band list to filter
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The List of Channel
+                items:
+                  type: integer
+                  format: int64
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/metrics/metadata/band:
+    post:
+      tags:
+      - NG Reports
+      summary: Band filter metadata
+      description: Returns the Band filter metadata. You can filter the results by sites,buildings,floor,ssid.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_band
+      operationId: getDiagnosticsBandFilterMetadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The site ID list to filter
+                building_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Building ID list to filter
+                floor_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Floor ID list to filter
+                ssids:
+                  type: array
+                  items:
+                    type: string
+                  description: The Ssid list to filter
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The List of Bands
+                items:
+                  type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/metrics/metadata/client:
+    post:
+      tags:
+      - NG Reports
+      summary: Client filter metadata
+      description: Returns the Client filter metadata. You can filter the results by sites,buildings,floor,usernames.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_client
+      operationId: getDiagnosticsClientFilterMetadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The site ID list to filter
+                building_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Building ID list to filter
+                floor_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Floor ID list to filter
+                usernames:
+                  type: array
+                  items:
+                    type: string
+                  description: The username list to filter
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The filter metadata available for Client.
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: id
+                    hostname:
+                      type: string
+                      description: Host Name
+                    mac_address:
+                      type: string
+                      description: Mac address
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/metrics/metadata/user:
+    post:
+      tags:
+      - NG Reports
+      summary: User filter metadata
+      description: Returns the user filter metadata. You can filter the results by sites,buildings,floor.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_user
+      operationId: getDiagnosticsUserFilterMetadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The site ID list to filter
+                building_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Building ID list to filter
+                floor_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Floor ID list to filter
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The filter metadata available for User.
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: id
+                    username:
+                      type: string
+                      description: User Name
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/metrics/metadata/applications:
+    post:
+      tags:
+      - NG Reports
+      summary: Application filter metadata
+      description: Returns the Application filter metadata. You can filter the results by sites, buildings, floor, usernames, and client MAC addresses.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_application
+      operationId: getDiagnosticsApplicationFilterMetadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The site ID list to filter.
+                building_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The building ID list to filter.
+                floor_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The floor ID list to filter.
+                usernames:
+                  type: array
+                  items:
+                    type: string
+                  description: The username list to filter.
+                client_macs:
+                  type: array
+                  items:
+                    type: string
+                  description: The client MAC list to filter.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The filter metadata available for the application.
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Application Code.
+                    name:
+                      type: string
+                      description: Application Name.
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/metrics/metadata/devices:
+    post:
+      tags:
+      - NG Reports
+      summary: Devices filter metadata
+      description: Returns the Channel filter metadata. You can filter the results by sites,buildings,floor,channel,band.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_devices
+      operationId: getDiagnosticsDeviceFilterMetadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The site ID list to filter
+                building_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Building ID list to filter
+                floor_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Floor ID list to filter
+                bands:
+                  type: array
+                  items:
+                    type: string
+                  description: The Band list to filter
+                channel:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: The Channel list to filter
+                ostype:
+                  type: array
+                  items:
+                    type: string
+                  description: The OsType list to filter
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The filter metadata available for Devices.
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: id
+                    hostname:
+                      type: string
+                      description: Host Name
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/metrics/metadata/connection-type:
+    post:
+      tags:
+      - NG Reports
+      summary: Connection type filter metadata
+      description: Returns the Connection type filter metadata.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_connection-type
+      operationId: getDiagnosticsConnectionTypeFilterMetadata
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The List of Connection type
+                items:
+                  type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/metrics/get-metrics-grouping:
+    get:
+      tags:
+      - NG Reports
+      summary: Grouping of Metrics
+      description: Provides detailed information about the grouping of different metrics.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_application
+      operationId: metricsGrouping
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clientsAnalytics:
+                    type: array
+                    items:
+                      type: string
+                      example: |
+                        - maxConcurrentClientsOverTime
+                        - uniqueClientsOverTimeBySsid
+                        - uniqueWiFiClientsOverTime
+                        - clientQualityScopeOverTime
+                        - clientSessionsOverTime
+                        - clientAirtimeUsageOverTime
+                        - wirelessClientsByOs
+                        - uniqueClientsByOs
+                  applicationUsageAnalytics:
+                    type: array
+                    items:
+                      type: string
+                      example: |
+                        - applicationUsage
+                  deviceAnalytics:
+                    type: array
+                    items:
+                      type: string
+                      example: |
+                        - devicesByClientsOverTime
+                        - switchSummary
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /ng-reports/download/reports:
+    post:
+      tags:
+      - NG Reports
+      summary: Download NG reports
+      description: Returns the Xlsx/pdf for provided metrics on the provided filters.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_post_export_download
+      operationId: ngReportDownload
+      requestBody:
+        description: The payload to get the table data metrics
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/XiqDownloadReportsRequest'
+      responses:
+        '202':
+          description: Accepted - The request has been accepted for processing, but processing has not been completed.
+          headers:
+            cache-control:
+              description: Cache control directives
+              schema:
+                type: string
+            content-length:
+              description: The length of the response body in octets (8-bit bytes)
+              schema:
+                type: integer
+            date:
+              description: The date and time at which the message was originated
+              schema:
+                type: string
+                format: date-time
+            expires:
+              description: The date/time after which the response is considered stale
+              schema:
+                type: string
+            location:
+              description: The URL to check the request status
+              schema:
+                type: string
+                format: uri
+            pragma:
+              description: Implementation-specific directives that might apply to any recipient
+              schema:
+                type: string
+            ratelimit-limit:
+              description: The maximum number of requests allowed in a given time period
+              schema:
+                type: string
+            ratelimit-remaining:
+              description: The number of requests remaining in the current rate limit window
+              schema:
+                type: integer
+            retry-after:
+              description: Time to wait before making a follow-up request
+              schema:
+                type: integer
+            server:
+              description: Server name
+              schema:
+                type: string
+                example: nginx
+            x-content-type-options:
+              description: Prevents browser from interpreting files as a different MIME type
+              schema:
+                type: string
+            x-xss-protection:
+              description: Enables cross-site scripting (XSS) filter
+              schema:
+                type: string
+                format: byte
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/download/reports/{id}:
+    get:
+      tags:
+      - NG Reports
+      summary: Download the file
+      description: Returns the file for the given metrics based on the provided filters.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_metrics_report
+      operationId: ngReportExport
+      parameters:
+      - name: id
+        in: path
+        description: The file name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returns the file for the given metrics
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/information/{metrics}:
+    get:
+      tags:
+      - NG Reports
+      summary: Information of filters
+      description: Returns the filter for the given metrics.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_metrics_report
+      operationId: ngReportInfo
+      parameters:
+      - $ref: '#/components/parameters/id-2'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The filter metadata available for metrics.
+                items:
+                  type: object
+                  properties:
+                    metrics:
+                      type: string
+                      description: Unique metric identifier.
+                    description:
+                      type: string
+                      description: Description of the metric.
+                    filters_supported:
+                      type: array
+                      description: List of filters applicable.
+                      items:
+                        type: string
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /client-details/topology/client-trail/{macAddress}:
+    get:
+      tags:
+      - Client - Details
+      summary: Client Trail Topology
+      description: Return the Nodes and Links to draw the topology for client.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_client_details_topology
+      operationId: clientDetailsTopology
+      parameters:
+      - name: macAddress
+        in: path
+        description: The Mac Address of Client
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_details_topology'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
 components:
   schemas:
     XiqLoginRequest:
@@ -18567,6 +20528,98 @@ components:
         enable_api_access:
           type: boolean
           description: Whether to enable API access, false by default.
+    XiqSortOrder:
+      type: string
+      enum:
+      - ASC
+      - DESC
+    number_filter:
+      type: object
+      description: If the filter type is between, only then min and max are to be used, else value is to be used.
+      properties:
+        column_name:
+          description: The name of the column being filtered
+          type: string
+        filter_type:
+          description: The type of number filter
+          type: string
+          enum:
+          - eq
+          - neq
+          - gt
+          - gte
+          - lt
+          - lte
+          - bw
+          - blank
+          - notblank
+        value:
+          description: The value of the number
+          type: integer
+          format: int64
+        min:
+          description: The minimum value of the number
+          type: integer
+          format: int64
+        max:
+          description: The maximum value of the number
+          type: integer
+          format: int64
+    RmUsers:
+      type: object
+      properties:
+        status:
+          type: boolean
+          description: The connection status of user
+        site:
+          type: string
+          description: The site where the user is located
+        building:
+          type: string
+          description: The building where the user is located
+        floor:
+          type: string
+          description: The floor where the user is located
+        user_name:
+          type: string
+          description: Name of the user
+        email:
+          type: string
+          description: Email address of the user
+        group:
+          type: string
+          description: Group to which the user belongs
+        wireless_clients:
+          type: integer
+          description: The number of wireless clients
+        wired_clients:
+          type: integer
+          description: The number of wired clients
+        data_usage:
+          type: integer
+          format: int64
+          description: Total data usage in bytes
+        source:
+          type: string
+          description: Source of the session (e.g., RADIUS, SAML)
+        session_duration:
+          type: integer
+          format: int64
+          description: Duration of the session in seconds
+        expiration:
+          type: integer
+          format: int64
+          description: Time in seconds until the session expires
+    RmPagedUsers:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/RmUsers'
     XiqHiqStatus:
       type: object
       required:
@@ -19230,11 +21283,6 @@ components:
       enum:
       - MAC
       - SN
-    XiqSortOrder:
-      type: string
-      enum:
-      - ASC
-      - DESC
     XiqDeviceView:
       type: string
       description: 'The logic collections of device fields<br/><br/>BASIC: ID, ORG_ID, SERIAL_NUMBER, SERVICE_TAG, MAC_ADDRESS, SIMULATED, DEVICE_FUNCTION, PRODUCT_TYPE, HOSTNAME, IP_ADDRESS, SOFTWARE_VERSION, DEVICE_ADMIN_STATE, CONNECTED, CONFIG_MISMATCH<br>FULL: All fields<br/>STATUS: ID, DEVICE_ADMIN_STATE, CONNECTED<br/>LOCATION: ID, LOCATION_ID, LOCATIONS<br>CLIENT: ID, ACTIVE_CLIENTS<br/>DETAIL: ID, ORG_ID, CREATE_TIME, UPDATE_TIME, SERIAL_NUMBER, SERVICE_TAG, MAC_ADDRESS,SIMULATED, DEVICE_FUNCTION, PRODUCT_TYPE, HOSTNAME, IP_ADDRESS, SOFTWARE_VERSION, DEVICE_ADMIN_STATE, CONNECTED, LAST_CONNECT_TIME, DNS_SERVER_ADDRESS, SUBNET_MASK, DEFAULT_GATEWAY, IPV6_ADDRESS, IPV6_NETMASK, DISPLAY_VERSION, CONFIG_MISMATCH'
@@ -19280,6 +21328,7 @@ components:
       - COUNTRY_CODE
       - CONFIG_MISMATCH
       - SYSTEM_UP_TIME
+      - SUBSCRIPTION_LICENSE
     XiqDeviceNullField:
       type: string
       enum:
@@ -19342,9 +21391,10 @@ components:
       type: string
       description: Status of AP AFC.
       enum:
-      - AFC_PENDING
-      - AFC_GRACE_PERIOD
-      - AFC_AVAILABLE
+      - PENDING
+      - GRACE_PERIOD
+      - AVAILABLE
+      - NA
     XiqAfcPowerMode:
       type: string
       description: AFC Power Mode
@@ -19466,6 +21516,9 @@ components:
             description: Afc related Radio data
             items:
               $ref: '#/components/schemas/XiqDeviceAfcRadioData'
+          subscription_license:
+            type: string
+            description: The subscription license of the device
     PagedXiqDevice:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -21516,6 +23569,18 @@ components:
         isid_name:
           type: string
           description: The ISID Name
+        num_active_ports_count:
+          type: integer
+          description: The count of active ports in the VLAN
+          format: int32
+        num_tagged_ports_count:
+          type: integer
+          description: The count of tagged ports in the VLAN
+          format: int32
+        num_untagged_ports_count:
+          type: integer
+          description: The count of untagged ports in the VLAN
+          format: int32
     XiqDeviceMonitorVlanAttributes:
       type: object
       description: The VLAN attributes information for the device.
@@ -22287,7 +24352,9 @@ components:
       - MAC
       - SN
       - HOSTNAME
-      - CONNECTION-STATUS
+      - CONNECTION_STATUS
+      - OS
+      - PRODUCT_TYPE
     XiqDeviceLicenseTier:
       type: string
       description: The Device License Tier Enum.
@@ -22299,6 +24366,23 @@ components:
       - TIER_D
       - UNKNOWN
       - NONE
+    XiqAhDeviceLicenseType:
+      type: string
+      description: The Device License Type Enum.
+      enum:
+      - LEGACY
+      - NAVIGATOR
+      - PILOT
+      - COPILOT
+      - NONE
+      - NA
+      - TRIAL
+      - NOT_REQUIRED
+      - GRACEPERIOD
+      - UNLICENSED
+      - STANDARD
+      - ADVANCED
+      - NOT_LICENSED
     RmDeviceIcons:
       type: object
       description: Device icons status
@@ -22513,8 +24597,32 @@ components:
             description: The number of devices in the stack (0 for standalone devices)
           device_license_tier:
             $ref: '#/components/schemas/XiqDeviceLicenseTier'
+          device_license_type:
+            $ref: '#/components/schemas/XiqAhDeviceLicenseType'
           device_icons:
             $ref: '#/components/schemas/RmDeviceIcons'
+          stack_id:
+            type: integer
+            format: int64
+            description: The stack id (only for stack members)
+          network_policy_id:
+            type: integer
+            description: The network policy ID
+            format: int64
+          network_policy_name:
+            type: string
+            description: The network policy name
+          os:
+            type: string
+            description: The device operating system
+          device_template_name:
+            type: string
+            description: The device template name
+          cloud_config_groups:
+            type: array
+            description: List of cloud config groups
+            items:
+              type: string
     PagedRmXiqDevice:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -22575,6 +24683,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/XiqAhDeviceSimulatedType'
+        network_policy:
+          type: array
+          description: List of network policy
+          items:
+            type: string
         radio_wifi0:
           type: array
           description: List of radio types for wifi 0 interface
@@ -22685,6 +24798,38 @@ components:
             description: Circular error probability, expressed as the radius of a circle centered on the true value that contains 50% of the actual GPS measurements. CEP68 is based on Android OS.
           coordinates:
             $ref: '#/components/schemas/XiqAfcMobileappCoordinates'
+    XiqDevicesSshActiveSessions:
+      type: object
+      description: The Ssh Active Sessions Data
+      properties:
+        device_id:
+          type: integer
+          format: int64
+          description: The device ID of the device
+        host_name:
+          type: string
+          description: The host name of device
+        serial_number:
+          type: string
+          description: The serial number of device
+        site_name:
+          type: string
+          description: The site name of device
+        percentage_progress:
+          type: integer
+          format: int32
+          description: The percentage ssh session timeout in mins
+        start_time:
+          type: integer
+          format: int64
+          description: The start time of ssh session
+        time_out:
+          type: integer
+          format: int64
+          description: The time out of ssh session
+        session_id:
+          type: string
+          description: The session ID for the active ssh access of device
     PagedXiqNetworkPolicy:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -23298,6 +25443,39 @@ components:
           type: integer
           description: The TOP N client usage
           format: int64
+    RmAppUsageSummary:
+      type: object
+      properties:
+        application_name:
+          type: string
+          description: Name of the application
+        category_name:
+          type: string
+          description: Name of the application group or category
+        usage:
+          type: integer
+          format: int64
+          description: Total data usage in bytes for the application
+        percentage_usage:
+          type: number
+          format: float
+          description: Percentage of total traffic attributed to this application
+        clients:
+          type: integer
+          description: Number of unique client devices that used the application
+        users:
+          type: integer
+          description: Number of unique users associated with the application
+    PagedAppUsageSummary:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/RmAppUsageSummary'
     XiqAlertSortField:
       type: string
       description: All available device sort fields TIMESTAMP = Last Detected, SOURCE = Source Name.
@@ -28991,6 +31169,13 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/XiqDeviceInterfaceRadioMode'
+    XiqMulticastRule:
+      allOf:
+      - type: object
+        properties:
+          ip:
+            type: string
+            description: IPv4 or IPv6 address with optional CIDR
     XiqTunnelConcentratorRequest:
       type: object
       required:
@@ -29108,6 +31293,19 @@ components:
           type: string
           description: Default gateway for the listening interface.
           format: ipv4
+        blockNonEssentialBroadcast:
+          type: boolean
+          description: Indicates if Tunnel Concentrator will block non essential broadcast
+          default: true
+        arpProxy:
+          type: boolean
+          description: Indicates if arp proxy is enabled
+          default: true
+        multicastRules:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqMulticastRule'
+          description: List of Multicast rules
     XiqTunnelConcentrator:
       allOf:
       - $ref: '#/components/schemas/XiqViqEntity'
@@ -37602,105 +39800,154 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/XiqThreadRouter'
+    XiqAfcServerState:
+      type: string
+      description: Status of AFC server connection
+      enum:
+      - CONNECTED
+      - DNS_ERROR
+      - UNREACHABLE
+      - CONNECTION_REFUSED
+      - INVALID_CERT
+      - REVOKED_CERT
+      - NOT_FOUND
+      - HTTP_ERROR
+      - INVALID_RESPONSE
+      - CONNECTION_RESET
+      - READ_TIMEOUT
+      - UNKNOWN_ERROR
     XiqAfcServer:
-      allOf:
-      - type: object
-        properties:
-          region:
-            type: string
-            description: The country or regulatory region for which the AFC server provides service.
-          state:
-            $ref: '#/components/schemas/XiqAfcApStatus'
-          serverUrl:
-            type: string
-            description: url of the AFC server.
+      type: object
+      properties:
+        state:
+          $ref: '#/components/schemas/XiqAfcServerState'
+        server_url:
+          type: string
+          description: URL of the AFC server
+          example: https://extremeserver.afc.wi-fi.com/api/9FxgegHdMPWi2sfJ
+        region:
+          type: string
+          description: The country or regulatory region for which the AFC server provides service
+          example: United States
+        server_id:
+          type: integer
+          format: int64
+          description: The unique identifier of the AFC server
+          example: 2
+    XiqListAfcServers:
+      type: object
+      properties:
+        servers:
+          type: array
+          description: List of AFC servers
+          items:
+            $ref: '#/components/schemas/XiqAfcServer'
     XiqAfcServerStatistics:
       allOf:
       - type: object
         properties:
-          region:
+          id:
+            type: integer
+            format: int64
+            description: The unique identifier
+          create_time:
             type: string
-            description: The country or regulatory region for which the AFC server provides service.
-          state:
-            $ref: '#/components/schemas/XiqAfcApStatus'
-          avgRespTime:
-            type: integer
-            description: Average Respond time of AFC server.
-          reqErrors:
-            type: integer
-            description: The total number of failed requests.
-          reqSuccess:
-            type: integer
-            description: The total number of successful requests.
-          reqRetries:
-            type: integer
-            description: The total number of retried requests.
-          reqPending:
-            type: integer
-            description: The total number of pending requests.
-          reqRefreshed:
-            type: integer
-            description: The total number of completed requests.
-    XiqAfcJobStatistics:
-      allOf:
-      - $ref: '#/components/schemas/XiqPage'
-      - type: object
-        properties:
-          site:
+            format: date-time
+            description: The create time
+          update_time:
             type: string
-            description: Site name.
-          apCount:
-            type: integer
-            description: The total number of Aps per site.
-          start:
+            format: date-time
+            description: The last update time
+          connection_state:
             type: string
-            description: Query start time.
-          end:
-            type: string
-            description: Query end time.
-          success:
+            description: The connection state of the AFC server
+            enum:
+            - CONNECTED
+            - DISCONNECTED
+            - CONNECTING
+            - ERROR
+          timestamp:
             type: integer
-            description: The total number of successful Aps with successful AFC requests.
-          errors:
-            type: integer
-            description: The total number of Aps with failed Afc requests.
-          retries:
-            type: integer
-            description: The total number of retries per site.
-          avgRespTime:
-            type: integer
-            description: Average respond time per site.
-    XiqChannelPowerInfo:
+            format: int64
+            description: The timestamp of the statistics data point
+    XiqAfcServersStatistics:
       allOf:
       - type: object
         properties:
-          expire:
-            type: string
-          opCh:
-            type: string
-          pwr:
-            type: integer
-          pwrMode:
-            $ref: '#/components/schemas/XiqAfcPowerMode'
-    XiqAfcApInterfaceDetails:
-      allOf:
-      - type: object
-        properties:
-          afcStatus:
-            $ref: '#/components/schemas/XiqAfcApStatus'
-          expire:
-            type: integer
-            description: timestamp of the next Ap channel/power info query.
-          received:
-            type: integer
-            description: Timestamp of the acquired channel/power (milliseconds from epoch).
-          reason:
-            type: string
-          channelPlan:
+          data:
             type: array
-            description: Available channels for this AP.
             items:
-              $ref: '#/components/schemas/XiqChannelPowerInfo'
+              $ref: '#/components/schemas/XiqAfcServerStatistics'
+            description: List of AFC server statistics
+    XiqAvailableChannelInfo:
+      type: object
+      properties:
+        global_operating_class:
+          type: integer
+          description: "Operating class:\n- 131 = 20MHz bandwidth\n- 132 = 40MHz bandwidth  \n- 133 = 80MHz bandwidth\n- 134 = 160MHz bandwidth\n- 137 = 320MHz bandwidth\n"
+        channel_cfi:
+          type: array
+          description: RF channel numbers
+          items:
+            type: integer
+        max_eirp:
+          type: array
+          description: Maximum RF power in dB
+          items:
+            type: number
+            format: double
+    XiqAfcAvailableSpectrum:
+      type: object
+      properties:
+        request_id:
+          type: string
+          description: serial number of AP
+        available_channel_info:
+          type: array
+          description: Available channel information for this AP
+          items:
+            $ref: '#/components/schemas/XiqAvailableChannelInfo'
+        availability_expire_time:
+          type: string
+          description: Expiration time for the spectrum availability in ISO 8601 format
+    XiqAfcApInterfaceDetails:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/XiqAfcApStatus'
+        expire:
+          type: integer
+          format: int64
+          description: Timestamp of the next AP channel/power info query (seconds from epoch)
+        received:
+          type: integer
+          format: int64
+          description: Timestamp of the acquired channel/power (seconds from epoch)
+        reason:
+          type: string
+          description: Reason for the current AFC status
+        spectrum:
+          $ref: '#/components/schemas/XiqAfcAvailableSpectrum'
+        band_width:
+          type: integer
+          format: int64
+          description: Bandwidth used by the AP
+    XiqReportFtmDataRequest:
+      type: object
+      properties:
+        owner_id:
+          type: integer
+          format: int64
+          description: The owner ID
+        ids:
+          type: array
+          description: List of Access Point IDs to request FTM data for
+          items:
+            type: integer
+            format: int64
+      required:
+      - owner_id
+      - ids
     XiqAfcApStatusSummary:
       allOf:
       - type: object
@@ -37711,16 +39958,135 @@ components:
             type: integer
           totalGracePeriod:
             type: integer
+    XiqAfcFloorDetails:
+      type: object
+      description: AFC Floor Details containing floor and AP height information
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the floor details record
+        floor_id:
+          type: integer
+          format: int64
+          description: The ID of the floor
+        floor_height:
+          type: number
+          format: float
+          description: Height of the floor
+        floor_height_accuracy:
+          type: integer
+          format: int64
+          description: Accuracy of the floor height measurement
+        ap_height:
+          type: number
+          format: float
+          description: Height of the access point
+        ap_height_accuracy:
+          type: integer
+          format: int64
+          description: Accuracy of the AP height measurement
+    XiqAfcStatusSummary:
+      type: object
+      description: AFC Status Summary information
+      properties:
+        total_available:
+          type: integer
+          description: Total number of APs available
+        total_pending:
+          type: integer
+          description: Total number of APs pending
+        total_grace_period:
+          type: integer
+          description: Total number of APs in grace period
     XiqAfcGeolocationSummary:
       allOf:
       - type: object
         properties:
-          totalAvailable:
+          total_available:
             type: integer
             description: Total number of Aps that have reported their geo location.
-          totalUnavailable:
+          total_unavailable:
             type: integer
             description: Total number of Aps that have not reported their geo location.
+    XiqSpectrumMismatchSummary:
+      type: object
+      description: Spectrum Mismatch Summary information
+      properties:
+        total_backup:
+          type: integer
+          description: Total number of APs in backup mode
+        total_radio_off:
+          type: integer
+          description: Total number of APs with radio off
+        total_reduced:
+          type: integer
+          description: Total number of APs with reduced power
+    XiqAfcApsInfoElement:
+      type: object
+      description: AFC APs Information Element containing status summaries
+      properties:
+        afc_status:
+          $ref: '#/components/schemas/XiqAfcStatusSummary'
+          description: AFC status summary information
+        geo_location:
+          $ref: '#/components/schemas/XiqAfcGeolocationSummary'
+          description: Geolocation summary information
+        spectrum_mismatch:
+          $ref: '#/components/schemas/XiqSpectrumMismatchSummary'
+          description: Spectrum mismatch summary information
+    XiqAfcApDiagnostics:
+      type: object
+      description: AFC AP Diagnostics containing spectrum details
+      properties:
+        afc_spectrum_details:
+          type: string
+          description: AFC spectrum details for the AP diagnostics
+    XiqGetAfcGeolocationFloorReportResponse:
+      type: object
+      description: Response containing AFC floor report data
+      properties:
+        floor_report:
+          type: string
+          description: |
+            Floor geolocation report data used for AFC (Automated Frequency Coordination) calculations.
+      required:
+      - floor_report
+    XiqAfcApManualSpectrum:
+      type: object
+      description: Manual spectrum request for AFC AP devices
+      properties:
+        ids:
+          type: array
+          description: List of AP device IDs for manual spectrum request
+          items:
+            type: integer
+            format: int64
+      required:
+      - ids
+    XiqAfcSiteScheduleResponse:
+      allOf:
+      - type: object
+        properties:
+          ownerId:
+            type: integer
+            format: int64
+          folderId:
+            type: integer
+            format: int64
+            description: Site folder ID, retrievable through device inventory API
+            example: 67890
+          siteTimeZone:
+            type: string
+            description: The timezone identifier for the site location, uses TZ database time zones format
+            example: America/New_York
+          siteSchedule:
+            type: integer
+            format: int64
+            description: The time of day in milliseconds since 00:00:00 (midnight) in the specified timezone when AFC spectrum recalculation should be performed for this site. Default is 0 (midnight) for new outdoor sites.
+            example: 7200000
+          default_schedule:
+            type: boolean
     XiqAfcSiteSchedule:
       allOf:
       - type: object
@@ -37731,10 +40097,19 @@ components:
           folderId:
             type: integer
             format: int64
+            description: Site folder ID, retrievable through device inventory API
+            example: 67890
           siteTimeZone:
             type: string
+            description: The timezone identifier for the site location, uses TZ database time zones format
+            example: America/New_York
           siteSchedule:
             type: integer
+            format: int64
+            description: The time of day in milliseconds since 00:00:00 (midnight) in the specified timezone when AFC spectrum recalculation should be performed for this site. Default is 0 (midnight) for new outdoor sites.
+            example: 7200000
+          isDefaultSchedule:
+            type: boolean
     XiqMacAddress:
       description: Colon separated MAC address in upper or lower case
       type: string
@@ -38763,38 +41138,6 @@ components:
         noise_unit:
           type: string
           description: Unit for Noise level
-    number_filter:
-      type: object
-      description: If the filter type is between, only then min and max are to be used, else value is to be used.
-      properties:
-        column_name:
-          description: The name of the column being filtered
-          type: string
-        filter_type:
-          description: The type of number filter
-          type: string
-          enum:
-          - eq
-          - neq
-          - gt
-          - gte
-          - lt
-          - lte
-          - bw
-          - blank
-          - notblank
-        value:
-          description: The value of the number
-          type: integer
-          format: int64
-        min:
-          description: The minimum value of the number
-          type: integer
-          format: int64
-        max:
-          description: The maximum value of the number
-          type: integer
-          format: int64
     RmSurroundingAps:
       type: object
       description: The Info about surrounding AP
@@ -38924,6 +41267,10 @@ components:
         software_version:
           type: string
           description: The version of the software running on the device
+        device_license_tier:
+          $ref: '#/components/schemas/XiqDeviceLicenseTier'
+        device_license_type:
+          $ref: '#/components/schemas/XiqAhDeviceLicenseType'
     RmDeviceSystemInformation:
       type: object
       description: The Device System Information.
@@ -39511,6 +41858,52 @@ components:
             description: The data in the current page
             items:
               $ref: '#/components/schemas/RmD360ClientGrid'
+    RmWiredQueueStats:
+      type: object
+      properties:
+        qos_queue:
+          type: integer
+          format: int64
+          description: QOS queue value. In Switch Engine (EXOS) the values of 1 through 8 correspond to QOS profiles QP1 through QP8 respectively. In Fabric Engine (VOSS) the values of 0 to 7 correspond to QOS COS queues.
+        cong_pkts:
+          type: integer
+          format: int64
+          description: Number of packets dropped due to congestion on the QOS queue.
+        tx_pkts:
+          type: integer
+          format: int64
+          description: Number of packets transmitted on the QOS queue.
+    RmWiredPortQosState:
+      type: object
+      description: QOS queue statistics of the interface
+      properties:
+        port_name:
+          type: string
+          description: The interface name
+        queue_stats:
+          type: array
+          description: QOS queue statistics of the interface
+          items:
+            allOf:
+            - type: array
+            - $ref: '#/components/schemas/RmWiredQueueStats'
+    RmWiredQueueGridResponse:
+      type: array
+      description: QOS queue statistics per interface
+      items:
+        allOf:
+        - type: array
+        - $ref: '#/components/schemas/RmWiredPortQosState'
+    PagedRmWiredQueueGridResponse:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/RmWiredQueueGridResponse'
     XiqClientHealthSortField:
       type: string
       title: ClientHealthSortField
@@ -40014,11 +42407,6 @@ components:
                 description:
                   description: The reason for the device reboot.
                   type: string
-    XiqWarningFilter:
-      type: string
-      title: warningfilter
-      description: Pre-defined filters for warnings in dashboard - WITH_WARNING - WITHOUT_WARNING
-      example: WITH_WARNING
     XiqWiredClientHealthSortField:
       type: string
       title: WiredClientHealthSortField
@@ -40601,6 +42989,1480 @@ components:
           description: Array of Child nodes
           items:
             $ref: '#/components/schemas/GeoViewNode'
+    XiqReportMetrics:
+      type: string
+      description: Metrics Type.
+      enum:
+      - MAX_CONCURRENT_CLIENTS
+      - UNIQUE_CLIENTS_BY_SSID
+      - UNIQUE_WIFI_CLIENTS
+      - CLIENT_QUALITY_SCORE
+      - CLIENT_SESSIONS
+      - CLIENT_AIRTIME_USAGE
+      - WIRELESS_CLIENTS_BY_OS
+      - UNIQUE_CLIENTS_BY_OS
+      - TRAFFIC_VOLUME_PER_APP
+      - APP_TRAFFIC_PERCENTAGE
+      - DEVICES_BY_CLIENTS
+      - SWITCH_SUMMARY
+      - UNIQUE_CLIENT_BY_SSID_PIE_CHART
+      - APP_TRAFFIC_PERCENTAGE_PIE_CHART
+      - TRAFFIC_VOLUME_PER_APP_PIE_CHART
+    XiqMaxConcurrentClientsRequest:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sort_field:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+          sort_order:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          site_ids:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          building_ids:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floor_ids:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          connTypes:
+            description: |
+              List of connection types
+            type: string
+            enum:
+            - UNKNOWN
+            - WIRELESS
+            - WIRED
+            - THREAD
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          bands:
+            description: List of Bands to filter (Supports Multi-Select)
+            type: array
+            items:
+              type: string
+              enum:
+              - 2.4GHz
+              - 5GHz
+              - 6GHz
+          device_ids:
+            description: |
+              List of deviceIds to filter
+            type: array
+            items:
+              type: integer
+              format: int64
+          start_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          end_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqUniqueWifiClientsRequest:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sort_field:
+            description: default TIME_STAMP
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+            - CONNECTED_TIME
+            - DICONNECTED_TIME
+          sort_order:
+            type: string
+            description: default ASC
+            enum:
+            - ASC (default)
+            - DESC
+          site_ids:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          building_ids:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floor_ids:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          bands:
+            description: List of Bands to filter (Supports Multi-Select)
+            type: array
+            items:
+              type: string
+              enum:
+              - 2.4GHz
+              - 5GHz
+              - 6GHz
+          channel_nums:
+            description: |
+              List of channel numbers to filter
+            type: array
+            items:
+              type: integer
+              format: int32
+          device_ids:
+            description: |
+              List of deviceIds to filter
+            type: array
+            items:
+              type: integer
+              format: int64
+          start_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          end_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqClientSessionsRequest:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sortField:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+            - SESSION_DURATION
+          sortOrder:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          siteIds:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          buildingIds:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floorIds:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          bands:
+            description: List of Bands to filter (Supports Multi-Select)
+            type: array
+            items:
+              type: string
+              enum:
+              - 2.4GHz
+              - 5GHz
+              - 6GHz
+          channelNums:
+            description: |
+              List of channel numbers to filter
+            type: array
+            items:
+              type: integer
+              format: int32
+          deviceIds:
+            description: |
+              List of deviceIds to filter
+            type: array
+            items:
+              type: integer
+              format: int64
+          startTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          endTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqClientAirtimeUsageRequest:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sort_field:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+            - PERCENTAGE_AIRTIME_UTILIZATION
+            - RELATIVE_TIME
+          sort_order:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          site_ids:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          building_ids:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floor_ids:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          bands:
+            description: List of Bands to filter (Supports Multi-Select)
+            type: array
+            items:
+              type: string
+              enum:
+              - 2.4GHz
+              - 5GHz
+              - 6GHz
+          channel_nums:
+            description: |
+              List of channel numbers to filter
+            type: array
+            items:
+              type: integer
+              format: int32
+          device_ids:
+            description: |
+              List of deviceIds to filter
+            type: array
+            items:
+              type: integer
+              format: int64
+          start_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          end_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqUniqueClientsByOSRequest:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sort_field:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+          sort_order:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          site_ids:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          building_ids:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floor_ids:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          bands:
+            description: List of Bands to filter (Supports Multi-Select)
+            type: array
+            items:
+              type: string
+              enum:
+              - 2.4GHz
+              - 5GHz
+              - 6GHz
+          ostypes:
+            description: List of OS types **The below table defines the different Widgets with there path param and description** 1.  UnKnown         --  0 2.  Windows         --  21000 3.  Windows Phone   --  21001 4.  MAC OS          --  21002 5.  IPad            --  21003 6.  IPhone          --  21004 7.  IOS Device      --  21005 8.  android         --  21006 9.  Symbian         --  21007 10. blackbery       --  21008 11. chrome          --  21009
+            type: integer
+            format: int32
+          deviceType:
+            description: Device types
+            type: array
+            items:
+              type: integer
+              format: int
+          start_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          end_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqAppTrafficPercentageRequest:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sortField:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+            - APPLICATION_USAGE
+          sortOrder:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          site_ids:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          building_ids:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floor_ids:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          user_id:
+            description: List of User IDs.
+            type: array
+            items:
+              type: integer
+              format: int64
+          client_mac:
+            description: List of Client Mac Address.
+            type: array
+            items:
+              type: string
+          application_id:
+            description: List of Application IDs.
+            type: array
+            items:
+              type: integer
+              format: int64
+          start_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          end_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+    XiqQoeDiagnosticsTimeRange:
+      required:
+      - startTime
+      - endTime
+      type: object
+      properties:
+        startTime:
+          type: integer
+          description: Start time in epoch
+          format: int64
+        endTime:
+          type: integer
+          description: End time in epoch
+          format: int64
+    XiqQoeDiagnosticsData:
+      required:
+      - timestamp
+      - value
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          description: Time Stamp
+          format: int64
+        value:
+          type: integer
+          description: values
+          format: int64
+    XiqQoeDiagnosticsResponse:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          name:
+            type: string
+            description: Name of the Metrics
+          timeRange:
+            description: Time Range ( Start and End Time )
+            $ref: '#/components/schemas/XiqQoeDiagnosticsTimeRange'
+          data:
+            type: array
+            description: The data for a particular metrics
+            items:
+              $ref: '#/components/schemas/XiqQoeDiagnosticsData'
+    XiqDiagnosticsPieChart:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          name:
+            type: string
+            description: Name of the Metrics
+          timeRange:
+            description: Time Range ( Start and End Time )
+            $ref: '#/components/schemas/XiqQoeDiagnosticsTimeRange'
+          data:
+            type: array
+            description: The data for a particular metrics
+            items:
+              required:
+              - id
+              - name
+              - value
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: Time Stamp
+                  format: int64
+                name:
+                  type: string
+                  description: name of the fraction
+                value:
+                  type: integer
+                  description: values
+                  format: int64
+    XiqDiagnosticsTimeSeriesResponse:
+      type: object
+      description: Metrics response
+      properties:
+        Response Body ( Select Metrics ):
+          anyOf:
+          - $ref: '#/components/schemas/XiqQoeDiagnosticsResponse'
+          - $ref: '#/components/schemas/XiqDiagnosticsPieChart'
+          discriminator:
+            propertyName: metrics
+            mapping:
+              MAX_CONCURRENT_CLIENTS: '#/components/schemas/XiqQoeDiagnosticsResponse'
+              UNIQUE_WIFI_CLIENTS: '#/components/schemas/XiqQoeDiagnosticsResponse'
+              CLIENT_SESSIONS: '#/components/schemas/XiqQoeDiagnosticsResponse'
+              APP_TRAFFIC_PERCENTAGE: '#/components/schemas/XiqDiagnosticsPieChart'
+              CLIENT_AIRTIME_USAGE: '#/components/schemas/XiqQoeDiagnosticsResponse'
+              UNIQUE_CLIENTS_BY_OS: '#/components/schemas/XiqDiagnosticsPieChart'
+    XiqMaxConcurrentClientsRequest-2:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          METRICS:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sortField:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+          sortOrder:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          siteIds:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          buildingIds:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floorIds:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          connTypes:
+            description: |
+              List of connection types
+            type: string
+            enum:
+            - UNKNOWN
+            - WIRELESS
+            - WIRED
+            - THREAD
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          band:
+            description: |
+              List of Bands to filter
+            type: string
+            enum:
+            - 2.4GHz
+            - 5GHz
+            - 6GHz
+          deviceIds:
+            description: |
+              List of deviceIds to filter
+            type: array
+            items:
+              type: integer
+              format: int64
+          startTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          endTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          export:
+            description: export to CSV format. true will initiate export. default value false
+            type: boolean
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqUniqueWifiClientsRequest-2:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          METRICS:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sortField:
+            description: default TIME_STAMP
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+            - CONNECTED_TIME
+            - DICONNECTED_TIME
+          sortOrder:
+            type: string
+            description: default ASC
+            enum:
+            - ASC (default)
+            - DESC
+          siteIds:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          buildingIds:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floorIds:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          band:
+            description: |
+              List of Bands to filter
+            type: string
+            enum:
+            - 2.4GHz
+            - 5GHz
+            - 6GHz
+          channelNums:
+            description: |
+              List of channel numbers to filter
+            type: array
+            items:
+              type: integer
+              format: int32
+          deviceIds:
+            description: |
+              List of deviceIds to filter
+            type: array
+            items:
+              type: integer
+              format: int64
+          startTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          endTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          export:
+            description: export to CSV format. true will initiate export. default value false
+            type: boolean
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqClientSessionsRequest-2:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          METRICS:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sortField:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+            - SESSION_DURATION
+          sortOrder:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          siteIds:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          buildingIds:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floorIds:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          band:
+            description: |
+              List of Bands to filter
+            type: string
+            enum:
+            - 2.4GHz
+            - 5GHz
+            - 6GHz
+          channelNums:
+            description: |
+              List of channel numbers to filter
+            type: array
+            items:
+              type: integer
+              format: int32
+          deviceIds:
+            description: |
+              List of deviceIds to filter
+            type: array
+            items:
+              type: integer
+              format: int64
+          startTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          endTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          export:
+            description: export to CSV format. true will initiate export. default value false
+            type: boolean
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqClientAirtimeUsageRequest-2:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          METRICS:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sortField:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+            - PERCENTAGE_AIRTIME_UTILIZATION
+            - RELATIVE_TIME
+          sortOrder:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          siteIds:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          buildingIds:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floorIds:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          band:
+            description: |
+              List of Bands to filter
+            type: string
+            enum:
+            - 2.4GHz
+            - 5GHz
+            - 6GHz
+          channelNums:
+            description: |
+              List of channel numbers to filter
+            type: array
+            items:
+              type: integer
+              format: int32
+          deviceIds:
+            description: |
+              List of deviceIds to filter
+            type: array
+            items:
+              type: integer
+              format: int64
+          startTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          endTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          export:
+            description: export to CSV format. true will initiate export. default value false
+            type: boolean
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqUniqueClientsByOSRequest-2:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          METRICS:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sortField:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+          sortOrder:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          siteIds:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          buildingIds:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floorIds:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          ssids:
+            description: |
+              List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          band:
+            description: |
+              List of Bands to filter
+            type: string
+            enum:
+            - 2.4GHz
+            - 5GHz
+            - 6GHz
+          ostypes:
+            description: List of OS types **The below table defines the different Widgets with there path param and description** 1.  UnKnown         --  0 2.  Windows         --  21000 3.  Windows Phone   --  21001 4.  MAC OS          --  21002 5.  IPad            --  21003 6.  IPhone          --  21004 7.  IOS Device      --  21005 8.  android         --  21006 9.  Symbian         --  21007 10. blackbery       --  21008 11. chrome          --  21009
+            type: integer
+            format: int32
+          deviceType:
+            description: Device types
+            type: array
+            items:
+              type: integer
+              format: int
+          startTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          endTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          export:
+            description: export to CSV format. true will initiate export. default value false
+            type: boolean
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqAppTrafficPercentageRequest-2:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          METRICS:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          sortField:
+            description: ''
+            type: string
+            enum:
+            - TIME_STAMP (default)
+            - MAC
+            - HOSTNAME
+            - APPLICATION_USAGE
+          sortOrder:
+            type: string
+            description: ''
+            enum:
+            - ASC (default)
+            - DESC
+          siteIds:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          buildingIds:
+            description: List of building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floorIds:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          userID:
+            description: List of User IDs.
+            type: array
+            items:
+              type: integer
+              format: int64
+          clientMac:
+            description: List of Client Mac Address.
+            type: array
+            items:
+              type: string
+          applicationId:
+            description: List of Application IDs.
+            type: array
+            items:
+              type: integer
+              format: int64
+          startTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          endTime:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: array
+            items:
+              type: integer
+              format: int64
+          export:
+            description: export to CSV format. true will initiate export. default value false
+            type: boolean
+          pageno:
+            description: page number >= 1. Ignored if export is set to true
+            type: integer
+            format: int
+          limit:
+            description: size of each page. Ignored if export is set to true
+            type: integer
+            format: int
+          async:
+            description: LRO operation. default value false. Will be true if export is set to true
+            type: boolean
+    XiqMaxConcurrentClientsResponse:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+      - type: object
+        properties:
+          time_stamp:
+            type: integer
+            description: time in epoch
+            format: int64
+          user_name:
+            type: string
+            description: Name of the User
+          user_profile_name:
+            type: string
+            description: Profile Name of the User
+          os_name:
+            type: string
+            description: Profile Name of the operating system
+          ssid:
+            type: string
+            description: ssid
+    XiqUniqueWifiClientsResponse:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+      - type: object
+        properties:
+          time_stamp:
+            type: integer
+            description: Time in Epoch
+            format: int64
+          client_hostname:
+            type: string
+            description: Host Name of the Client
+          client_mac:
+            type: string
+            description: MAC Address of the Client
+          ip_address:
+            type: string
+            description: IP Address of the Client
+          os_type:
+            type: string
+            description: Operating System of the Client
+          connected_time:
+            type: integer
+            description: Connected Time of the Client
+            format: int64
+          disconnected_time:
+            type: integer
+            description: Disconnected Time of the Client
+            format: int64
+    XiqClientSessionsResponse:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+      - type: object
+        properties:
+          time_stamp:
+            type: integer
+            description: time in epoch
+            format: int64
+          client_hostname:
+            type: string
+            description: Host Name of the Client
+          client_mac:
+            type: string
+            description: MAC Address of the Client
+          ip_address:
+            type: string
+            description: IP Address of the Client
+          os_type:
+            type: string
+            description: Operating System of the Client
+          session_duration:
+            description: Session Duration of the Client in MilliSeconds
+            type: integer
+            format: int64
+    XiqAppTrafficPercentageResponse:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+      - type: object
+        properties:
+          time_stamp:
+            type: integer
+            description: time in epoch
+            format: int64
+          application_name:
+            type: string
+            description: Name of the Application
+          application_usage:
+            type: integer
+            format: int64
+            description: Application Usage in Bytes
+    XiqClientAirtimeUsageResponse:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+      - type: object
+        properties:
+          time_stamp:
+            type: integer
+            description: time in epoch
+            format: int64
+          devicet_hostname:
+            type: string
+            description: Host Name of the Device
+          device_mac:
+            type: string
+            description: MAC Address of the Device
+          ip_address:
+            type: string
+            description: IP Address of the Device
+          percentage_airtime_utilization:
+            type: integer
+            description: percentage channle utilization
+            format: int64
+          releative_time:
+            type: integer
+            description: relative time in epoch
+            format: int64
+    XiqUniqueClientsByOSResponse:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            $ref: '#/components/schemas/XiqReportMetrics'
+      - type: object
+        properties:
+          time_stamp:
+            type: integer
+            description: time in epoch
+            format: int64
+          client_hostname:
+            type: string
+            description: Name of the Client
+          client_mac:
+            type: string
+            description: MAC Address of the Client
+          ip_address:
+            type: string
+            description: IP Address of the Device
+          os_type:
+            type: integer
+            description: Type of Operating System
+            format: int
+    XiqDiagnosticsTableDataResponse:
+      type: object
+      description: Metrics response
+      properties:
+        Response Body ( Select Metrics ):
+          anyOf:
+          - $ref: '#/components/schemas/XiqMaxConcurrentClientsResponse'
+          - $ref: '#/components/schemas/XiqUniqueWifiClientsResponse'
+          - $ref: '#/components/schemas/XiqClientSessionsResponse'
+          - $ref: '#/components/schemas/XiqAppTrafficPercentageResponse'
+          - $ref: '#/components/schemas/XiqClientAirtimeUsageResponse'
+          - $ref: '#/components/schemas/XiqUniqueClientsByOSResponse'
+          discriminator:
+            propertyName: metrics
+            mapping:
+              MAX_CONCURRENT_CLIENTS: '#/components/schemas/XiqMaxConcurrentClientsResponse'
+              UNIQUE_WIFI_CLIENTS: '#/components/schemas/XiqUniqueWifiClientsResponse'
+              CLIENT_SESSIONS: '#/components/schemas/XiqClientSessionsResponse'
+              APP_TRAFFIC_PERCENTAGE: '#/components/schemas/XiqAppTrafficPercentageResponse'
+              CLIENT_AIRTIME_USAGE: '#/components/schemas/XiqClientAirtimeUsageResponse'
+              UNIQUE_CLIENTS_BY_OS: '#/components/schemas/XiqUniqueClientsByOSResponse'
+    XiqDownloadReportsRequest:
+      allOf:
+      - type: object
+        description: Network Service
+        required:
+        - service_type
+        properties:
+          metrics:
+            type: array
+            items:
+              $ref: '#/components/schemas/XiqReportMetrics'
+          site_ids:
+            description: List of Site IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          building_ids:
+            description: List of Building IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          floor_ids:
+            description: List of Floor IDs
+            type: array
+            items:
+              type: integer
+              format: int64
+          ssids:
+            description: List of SSIDs to filter
+            type: array
+            items:
+              type: string
+          bands:
+            description: List of Bands to filter (Supports Multi-Select)
+            type: array
+            items:
+              type: string
+              enum:
+              - 2.4GHz
+              - 5GHz
+              - 6GHz
+          channel_nums:
+            description: List of channel numbers to filter
+            type: array
+            items:
+              type: integer
+              format: int32
+          device_ids:
+            description: List of device IDs to filter
+            type: array
+            items:
+              type: integer
+              format: int64
+          start_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          end_time:
+            description: Epoch Time in milliseconds since 1/1/1970
+            type: integer
+            format: int64
+          mode:
+            type: string
+            enum:
+            - AGG_SNAPSHOT
+            - SNAPSHOT
+          download_type:
+            type: string
+            enum:
+            - XLSX
+            - PDF
+          connTypes:
+            description: |
+              List of connection types
+            type: string
+            enum:
+            - UNKNOWN
+            - WIRELESS
+            - WIRED
+            - THREAD
     DefaultError:
       type: object
       properties:
@@ -41079,6 +44941,248 @@ components:
               type: integer
               format: int64
               example: 0
+    topology_link:
+      type: object
+      description: The Topology Link
+      properties:
+        source:
+          type: integer
+        source_port_id:
+          type: string
+        source_lag:
+          type: string
+        destination:
+          type: integer
+        destination_port_id:
+          type: string
+        destination_lag:
+          type: string
+        index:
+          type: integer
+        connected:
+          type: boolean
+        connection_mode:
+          type: string
+          enum:
+          - LLDP
+          - CLIENT
+          - UNKNOWNDEVICE
+          - MESH
+          - VGVA
+          - FAKEGATEWAY
+    topology_node_vlan:
+      type: object
+      description: Vlan Info for Topology Node
+      properties:
+        mgmt_vlan:
+          type: integer
+        native_vlan:
+          type: integer
+        access_port_vlans:
+          type: array
+          items:
+            type: integer
+        trunk_port_vlans:
+          type: array
+          items:
+            type: integer
+        user_profile_vlans:
+          type: array
+          items:
+            type: integer
+    topology_unknown_device:
+      type: object
+      description: Details of Unknown Device in Topology
+      properties:
+        mac_address:
+          type: string
+        hostname:
+          type: string
+        type:
+          type: string
+        ip_address:
+          type: string
+    topology_node_poe_info:
+      type: object
+      description: Poe Info of Topology Node
+      properties:
+        powerState:
+          type: object
+        unit_power_available:
+          type: number
+          format: double
+        unit_power_consumed:
+          type: number
+          format: double
+        unit_power_threshold:
+          type: number
+          format: double
+        poe_power_available:
+          type: number
+          format: double
+        poe_power_consumed:
+          type: number
+          format: double
+        poe_power_threshold:
+          type: number
+          format: double
+    topology_stack_member_info:
+      type: object
+      description: Details of Topology Node stack vlan_info
+      properties:
+        stack_member_id:
+          type: integer
+          format: int64
+        device_id:
+          type: integer
+          format: int64
+        serial_number:
+          type: string
+        unit_number:
+          type: integer
+        member_type:
+          type: string
+        poe_info:
+          $ref: '#/components/schemas/topology_node_poe_info'
+    topology_position:
+      type: object
+      description: Position for Topology Node
+      properties:
+        x:
+          type: integer
+          format: dobule
+        y:
+          type: integer
+          format: double
+    topology_node:
+      type: object
+      description: The Topology Node
+      properties:
+        id:
+          type: integer
+        hostname:
+          type: string
+        mac_address:
+          type: string
+        ip_address:
+          type: string
+        port_number:
+          type: string
+        radio_info:
+          type: string
+        health_score:
+          type: integer
+        client_count:
+          type: integer
+          format: int64
+        last_node:
+          type: boolean
+        topology_start_node:
+          type: boolean
+        connected:
+          type: boolean
+        vlan_info:
+          $ref: '#/components/schemas/topology_node_vlan'
+        type:
+          type: string
+          enum:
+          - WIRELESS_CLIENT
+          - WIRED_CLIENT
+          - UNKNOWN
+          - AP
+          - MESHAP
+          - PORTALAP
+          - SWITCH
+          - ROUTER
+          - VAASL2VG
+          - VAASL3VG
+          - GATEWAY
+          - STACK
+          - APASROUTER
+          - XMCSERVER
+        critical_alarms:
+          type: integer
+          format: int64
+        not_current_location_node:
+          type: boolean
+        unknown_device:
+          $ref: '#/components/schemas/topology_unknown_device'
+        wired_interface_name:
+          type: string
+        connected_port:
+          type: string
+        stack_member_info:
+          type: array
+          items:
+            $ref: '#/components/schemas/topology_stack_member_info'
+        make:
+          type: string
+        position:
+          $ref: '#/components/schemas/topology_position'
+        poe_info:
+          $ref: '#/components/schemas/topology_node_poe_info'
+        product_type:
+          type: string
+        is_locally_managed:
+          type: boolean
+        sim_type:
+          type: string
+    topology_neighbor:
+      type: object
+      description: Neighbor of Topology nodes
+      properties:
+        device_id:
+          type: integer
+          format: int64
+        hostname:
+          type: string
+        ip_address:
+          type: string
+        mac_address:
+          type: string
+        rssi:
+          type: integer
+          format: int64
+        connection_failure_reason:
+          type: string
+          enum:
+          - OTHER
+          - ABORT_FROM_OS
+          - DEASSOC_FROM_AP
+          - DEAUTH_FROM_AP
+          - INTERNAL_TERMINATION
+          - INVALID_CAPABILITIES
+          - ASSOC_FAILURE_802_11
+          - AUTH_FAILURE_802_11
+          - TX_RX_FAILURE_REASON
+    client_details_topology:
+      type: object
+      description: The Topology for Client
+      properties:
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/topology_link'
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/topology_node'
+        baseline:
+          type: boolean
+        user_initiated:
+          type: boolean
+        created_at:
+          type: integer
+          format: int64
+        zoom:
+          type: integer
+          format: double
+        pan:
+          $ref: '#/components/schemas/topology_position'
+        neighbors:
+          type: array
+          items:
+            $ref: '#/components/schemas/topology_neighbor'
   responses:
     ErrorResponse:
       description: The generic ExtremeCloud IQ API error response
@@ -41205,16 +45309,6 @@ components:
         type: integer
         format: int32
         default: 10
-    locationIds:
-      name: locationIds
-      in: query
-      description: The location IDs
-      required: false
-      schema:
-        type: array
-        items:
-          type: integer
-          format: int64
     order:
       name: order
       in: query
@@ -41222,14 +45316,6 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/XiqSortOrder'
-    async:
-      in: query
-      name: async
-      description: Whether to enable async mode
-      required: false
-      schema:
-        type: boolean
-        default: false
     startTime:
       name: startTime
       in: query
@@ -41246,6 +45332,24 @@ components:
       schema:
         type: integer
         format: int64
+    locationIds:
+      name: locationIds
+      in: query
+      description: The location IDs
+      required: false
+      schema:
+        type: array
+        items:
+          type: integer
+          format: int64
+    async:
+      in: query
+      name: async
+      description: Whether to enable async mode
+      required: false
+      schema:
+        type: boolean
+        default: false
     XiqDeviceVlanPageLimit:
       name: XiqDeviceVlanPageLimit
       in: query
@@ -41744,13 +45848,6 @@ components:
       schema:
         type: integer
         format: int64
-    sn:
-      name: sn
-      in: path
-      description: The serial number of an Ap.
-      required: true
-      schema:
-        type: string
     ownerId:
       name: ownerId
       in: query
@@ -41759,6 +45856,13 @@ components:
       schema:
         type: integer
         format: int64
+    sn:
+      name: sn
+      in: path
+      description: The serial number of an Ap.
+      required: true
+      schema:
+        type: string
     folderId:
       name: folderId
       in: query
@@ -41775,3 +45879,26 @@ components:
       schema:
         type: integer
         format: int64
+    id-2:
+      name: metrics
+      in: path
+      description: |
+        **The below table defines the different REPORT_METRICS values and their descriptions**
+
+        | Metric Identifier           | Description                                                                 |
+        |-----------------------------|-----------------------------------------------------------------------------|
+        | MAX_CONCURRENT_CLIENTS      | Maximum concurrent clients over time                                        |
+        | UNIQUE_CLIENTS_BY_SSID      | Unique clients over time by SSID                                            |
+        | UNIQUE_WIFI_CLIENTS         | Unique WiFi clients over time                                               |
+        | CLIENT_QUALITY_SCORE        | Client quality score over time                                              |
+        | CLIENT_SESSIONS             | Client sessions over time                                                   |
+        | CLIENT_AIRTIME_USAGE        | Client airtime usage over time                                              |
+        | WIRELESS_CLIENTS_BY_OS      | Wireless clients categorized by OS                                          |
+        | UNIQUE_CLIENTS_BY_OS        | Unique clients categorized by OS                                            |
+        | TRAFFIC_VOLUME_PER_APP      | Traffic volume per application                                              |
+        | APP_TRAFFIC_PERCENTAGE      | Percentage of total traffic per application                                 |
+        | DEVICES_BY_CLIENTS          | Devices used by clients over time                                           |
+        | SWITCH_SUMMARY              | Summary of switch-related metrics                                           |
+      required: true
+      schema:
+        type: string
