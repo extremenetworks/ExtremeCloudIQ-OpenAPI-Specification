@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 25.5.1-15
+  version: 25.8.1-23
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -115,19 +115,21 @@ tags:
   description: Geo View
 - name: NG Reports
   description: The NG Reports - On Demand Analytics and Scheduled Reporting
+- name: NG Scheduled Reports
+  description: The NG Reports - Scheduled Reporting
 - name: UZ
   description: UZ Requests
 - name: Client - Details
   description: The details of client associate to the devices of ExtremeCloud IQ
+- name: RTTS
+  description: RTT sessions in ExtremeCloud IQ
 paths:
   /login:
     post:
       tags:
       - Authentication
       summary: User login with username and password
-      description: |-
-        Get access token via username and password authentication.
-        The client must present Bearer token to access the protected API endpoints.The Bearer token should be present in the "Authorization" request header field and use the "Bearer" HTTP authentication scheme to transmit the access token.
+      description: Get access token via username and password authentication. <p> The client must present Bearer token to access the protected API endpoints.The Bearer token should be present in the "Authorization" request header field and use the "Bearer" HTTP authentication scheme to transmit the access token. <p> User can also provide an optional rate limits parameter to control the rate limiting for the current session.
       operationId: login
       externalDocs:
         description: API Reference
@@ -145,6 +147,23 @@ paths:
                 value:
                   username: username@company.com
                   password: ChangeMe
+              login_with_rate_limiting:
+                summary: Login with rate limiting
+                description: User login with rate limiting
+                value:
+                  username: username@company.com
+                  password: ChangeMe
+                  rate_limit:
+                    hour: 7500
+              login_with_multiple_rate_limits:
+                summary: Login with multiple rate limits
+                description: User login with multiple rate limits
+                value:
+                  username: username@company.com
+                  password: ChangeMe
+                  rate_limit:
+                    hour: 7500
+                    second: 100
         required: true
       responses:
         '200':
@@ -185,7 +204,7 @@ paths:
       tags:
       - Authorization
       summary: Generate new API token
-      description: "Generate a new API token with given permissions and expiration time. \nThe available permission list can be found via 'GET /auth/permissions' endpoint."
+      description: Generate a new API token with given permissions and expiration time.  <p> The available permission list can be found via 'GET /auth/permissions' endpoint. <p> User can also provide an optional rate limits parameter to control the rate limiting for the API token.
       operationId: generateApiToken
       externalDocs:
         description: API Reference
@@ -205,6 +224,27 @@ paths:
                   expire_time: 1604737598
                   permissions:
                   - account:r
+              Generate_API_token_with_rate_limiting:
+                summary: Generate API token with specific permissions and rate limiting
+                description: Generate API token with a single permission to read account info and rate limiting
+                value:
+                  description: Token for reading account info only
+                  expire_time: 1604737598
+                  permissions:
+                  - account:r
+                  rate_limit:
+                    hour: 7500
+              Generate_API_token_with_multiple_rate_limits:
+                summary: Generate API token with specific permissions and multiple rate limits
+                description: Generate API token with a single permission to read account info and multiple rate limits
+                value:
+                  description: Token for reading account info only
+                  expire_time: 1604737598
+                  permissions:
+                  - account:r
+                  rate_limit:
+                    hour: 7500
+                    second: 100
         required: true
       responses:
         '200':
@@ -4197,6 +4237,7 @@ paths:
           enum:
           - WIRED
           - WIRELESS
+          - TPME
       - name: deviceTypes
         in: query
         description: The device types to return (REAL by default)
@@ -4283,6 +4324,7 @@ paths:
           enum:
           - WIRED
           - WIRELESS
+          - TPME
       - name: deviceTypes
         in: query
         description: The device types to return
@@ -4774,6 +4816,56 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/XiqDevicesSshActiveSessions'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/thread/commissioner/start:
+    post:
+      tags:
+      - Device
+      summary: Start the Thread Commissioner by Building IDs
+      description: Start the Thread Commissioner by Building IDs.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_device_thread_start_commissioner_bybuildings
+      operationId: startThreadCommissionerByBuildings
+      parameters:
+      - $ref: '#/components/parameters/ownerId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqThreadStartCommissionerByBuildingsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /devices/thread/commissioner/stop:
+    post:
+      tags:
+      - Device
+      summary: Stop the Thread Commissioner by Building IDs
+      description: Stop the Thread Commissioner by Building IDs.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_device_thread_stop_commissioner_bybuildings
+      operationId: stopThreadCommissionerByBuildings
+      parameters:
+      - $ref: '#/components/parameters/ownerId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqThreadStopCommissionerByBuildingsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -14365,6 +14457,35 @@ paths:
                 $ref: '#/components/schemas/XiqAfcApsInfoElement'
       security:
       - BearerAuth: []
+    post:
+      tags:
+      - AFC
+      summary: Query AFC APs
+      description: Retrieve AFC summary information for access points including status, geolocation, and spectrum mismatch data.
+      operationId: getApsAfcSummaryInfoWithFilter
+      parameters:
+      - $ref: '#/components/parameters/ownerId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                site_ids:
+                  description: List of site IDs to filter the device list
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqAfcApsInfoElement'
+      security:
+      - BearerAuth: []
   /ap/afc/diagnostics/{id}:
     get:
       tags:
@@ -14888,6 +15009,14 @@ paths:
         url: https://extremecloudiq.com/api-docs/api-reference.html#_post_alert_diagnostics
       operationId: alertCountDashboard
       parameters:
+      - name: alertsTimeRange
+        in: query
+        description: Alerts Time Range in days (defaults to 1 day)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
       - name: include_unassigned
         in: query
         description: To include unassigned location
@@ -15113,6 +15242,15 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/XiqSortOrder'
+      - name: alertsTimeRange
+        in: query
+        description: Alerts Time Range in days (defaults to 1 day)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
+          default: 1
       - name: include_unassigned
         in: query
         description: To include unassigned location
@@ -15195,6 +15333,15 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/XiqSortOrder'
+      - name: alertsTimeRange
+        in: query
+        description: Alerts Time Range in days (defaults to 1 day)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
+          default: 1
       - name: include_unassigned
         in: query
         description: To include unassigned location
@@ -19032,63 +19179,6 @@ paths:
                   type: string
         default:
           $ref: '#/components/responses/ErrorResponse'
-  /ng-reports/metrics/metadata/channel:
-    post:
-      tags:
-      - NG Reports
-      summary: Channel filter metadata
-      description: Returns the Channel filter metadata. You can filter the results by sites,buildings,floor,ssid,band.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_channel
-      operationId: getDiagnosticsChannelFilterMetadata
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                site_ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                  description: The site ID list to filter
-                building_ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                  description: The Building ID list to filter
-                floor_ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                  description: The Floor ID list to filter
-                ssids:
-                  type: array
-                  items:
-                    type: string
-                  description: The Ssid list to filter
-                bands:
-                  type: array
-                  items:
-                    type: string
-                  description: The Band list to filter
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                description: The List of Channel
-                items:
-                  type: integer
-                  format: int64
-        default:
-          $ref: '#/components/responses/ErrorResponse'
   /ng-reports/metrics/metadata/band:
     post:
       tags:
@@ -19386,28 +19476,6 @@ paths:
                       description: Host Name
         default:
           $ref: '#/components/responses/ErrorResponse'
-  /ng-reports/metrics/metadata/connection-type:
-    post:
-      tags:
-      - NG Reports
-      summary: Connection type filter metadata
-      description: Returns the Connection type filter metadata.
-      externalDocs:
-        description: API Reference
-        url: https://extremecloudiq.com/api-docs/api-reference.html#_ng-reports_metadata_connection-type
-      operationId: getDiagnosticsConnectionTypeFilterMetadata
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                description: The List of Connection type
-                items:
-                  type: string
-        default:
-          $ref: '#/components/responses/ErrorResponse'
   /ng-reports/metrics/get-metrics-grouping:
     get:
       tags:
@@ -19598,6 +19666,552 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /ng-reports/scheduled/network-summary:
+    get:
+      tags:
+      - NG Scheduled Reports
+      summary: Get Scheduled Network Summary Reports
+      description: Fetches all the scheduled Network Summary Reports.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_ng_reports_scheduled_network_summary
+      operationId: getScheduledNetworkSummaryReports
+      parameters:
+      - name: keyword
+        in: query
+        description: The keyword to search the report file name and recipient email
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returns scheduled network summary reports grouped by schedule ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report_id:
+                    type: integer
+                    format: int64
+                    description: Unique identifier for the Report
+                  report_schedule_id:
+                    type: integer
+                    format: int64
+                    description: Unique Identifier for the Report Schedule
+                  enable_schedule:
+                    type: boolean
+                    default: true
+                    description: Whether the schedule is enabled
+                  report_runs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/XiqScheduledReport'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/scheduled/pci-compliance:
+    get:
+      tags:
+      - NG Scheduled Reports
+      summary: Get Scheduled PCI Compliance Reports
+      description: Fetches all the scheduled PCI Compliance Reports.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_ng_reports_scheduled_pci_compliance
+      operationId: getScheduledPciComplianceReports
+      parameters:
+      - name: keyword
+        in: query
+        description: The keyword to search the report file name and recipient email
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returns scheduled PCI compliance reports grouped by schedule ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report_id:
+                    type: integer
+                    format: int64
+                    description: Unique identifier for the Report
+                  report_schedule_id:
+                    type: integer
+                    format: int64
+                    description: Unique Identifier for the Report Schedule
+                  enable_schedule:
+                    type: boolean
+                    default: true
+                    description: Whether the schedule is enabled
+                  report_runs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/XiqScheduledReport'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/scheduled/{reportScheduleId}:
+    patch:
+      tags:
+      - NG Scheduled Reports
+      summary: Enable/Disable Report Schedule
+      description: Enable/Disable an existing schedule for a Report.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_patch_report_schedule
+      operationId: patchReportSchedule
+      parameters:
+      - name: reportScheduleId
+        in: path
+        required: true
+        description: Unique identifier for the report schedule
+        schema:
+          type: integer
+          format: int64
+      - name: enableSchedule
+        in: query
+        required: false
+        description: Whether the schedule is enabled
+        schema:
+          type: boolean
+          default: true
+      responses:
+        '200':
+          description: OK
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/scheduled/custom:
+    get:
+      tags:
+      - NG Scheduled Reports
+      summary: Get Scheduled Custom Reports
+      description: Fetches all the schedules for Custom Reports based on frequency.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_scheduled_custom_reports
+      operationId: getScheduledCustomReports
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
+      - name: frequency
+        in: query
+        description: Frequency of the report (MONTHLY, WEEKLY, DAILY)
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - MONTHLY
+            - WEEKLY
+            - DAILY
+      - name: keyword
+        in: query
+        description: The keyword to search the report name and recipient email
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Returns a list of scheduled custom reports
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedCustomScheduledReport'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - NG Scheduled Reports
+      summary: Create Schedule for Custom Report
+      description: Creates a schedule for a Custom Report using the provided schedule ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_post_scheduled_custom_reports
+      operationId: createCustomReportSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqCreateCustomReportScheduleRequest'
+      responses:
+        '200':
+          description: Schedule created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCustomReportScheduleResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - NG Scheduled Reports
+      summary: Delete Report Schedules
+      description: Deletes an existing schedule for a Report.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_report_schedule
+      operationId: deleteReportSchedule
+      parameters:
+      - name: reportScheduleIds
+        in: query
+        required: true
+        description: Comma-separated list of report schedule IDs to delete
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Schedule deleted successfully
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/scheduled/custom/{reportId}:
+    get:
+      tags:
+      - NG Scheduled Reports
+      summary: Get Custom Report Schedule by ID
+      description: Fetches a specific scheduled custom report using its report ID.
+      operationId: getScheduledCustomReportById
+      parameters:
+      - name: reportId
+        in: path
+        required: true
+        description: Unique identifier of the scheduled report
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Returns the report details for the given report ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCustomReportScheduleResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - NG Scheduled Reports
+      summary: Edit Schedule for Custom Report
+      description: Updates an existing schedule for a Custom Report.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_update_custom_report_schedule
+      operationId: updateCustomReportSchedule
+      parameters:
+      - name: reportId
+        in: path
+        required: true
+        description: Unique identifier for the report schedule
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqUpdateCustomReportScheduleRequest'
+      responses:
+        '200':
+          description: Schedule updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqCustomReportScheduleResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/scheduled/custom/{reportScheduleId}/runs:
+    get:
+      tags:
+      - NG Scheduled Reports
+      summary: Get Report Runs for Custom Report Schedule
+      description: Retrieves all report runs for a given custom report schedule.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_custom_report_runs
+      operationId: getCustomReportRuns
+      parameters:
+      - name: reportScheduleId
+        in: path
+        required: true
+        description: Unique identifier for the report schedule
+        schema:
+          type: integer
+          format: int64
+      - name: frequency
+        in: query
+        required: false
+        description: Filter by frequency (MONTHLY, WEEKLY, DAILY)
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - MONTHLY
+            - WEEKLY
+            - DAILY
+      responses:
+        '200':
+          description: List of report runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/XiqReportRun'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/scheduled/runs:
+    delete:
+      tags:
+      - NG Scheduled Reports
+      summary: Delete Report Runs
+      description: Deletes an existing Report schedule run.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_custom_report_run
+      operationId: deleteCustomReportRun
+      parameters:
+      - name: reportRunIds
+        in: query
+        required: true
+        description: Comma-separated list of report run IDs to delete
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Report Run deleted successfully
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/scheduled/runs/{reportRunId}/recipients:
+    get:
+      tags:
+      - NG Scheduled Reports
+      summary: Get Recipients for given Report Run
+      description: Retrieves all recipients for a given report run ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_report_runs_recipients
+      operationId: getReportRunRecipients
+      parameters:
+      - name: reportRunId
+        in: path
+        required: true
+        description: Unique identifier for the report run
+        schema:
+          type: integer
+          format: int64
+      - name: keyword
+        in: query
+        description: The keyword to search
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: List of recipients for the report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqReportRunRecipient'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/scheduled/{reportId}/recipients:
+    get:
+      tags:
+      - NG Scheduled Reports
+      summary: Get Recipients for given Report
+      description: Retrieves all recipients for a given report ID.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_report_recipients
+      operationId: getReportRecipients
+      parameters:
+      - name: reportId
+        in: path
+        required: true
+        description: Unique identifier for the report
+        schema:
+          type: integer
+          format: int64
+      - name: keyword
+        in: query
+        description: The keyword to search
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: List of recipients for the report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/XiqReportRecipient'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - NG Scheduled Reports
+      summary: Add Recipients to Report
+      description: Adds a list of recipient emails to the specified report.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_add_recipients_to_report
+      operationId: addRecipientsToReport
+      parameters:
+      - name: reportId
+        in: path
+        required: true
+        description: Unique identifier for the report
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipients:
+                  type: array
+                  description: List of recipients to add
+                  items:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        description: Recipient email address
+                      notifier_id:
+                        type: integer
+                        format: int64
+                        description: Unique identifier for the notifier
+      responses:
+        '200':
+          description: Recipients added successfully
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - NG Scheduled Reports
+      summary: Delete Recipients from Report
+      description: Deletes a list of recipient emails from the specified report.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_delete_recipients_from_report
+      operationId: deleteRecipientsFromReport
+      parameters:
+      - name: reportId
+        in: path
+        required: true
+        description: Unique identifier for the report
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipient_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  description: List of recipient ids to delete
+      responses:
+        '200':
+          description: Recipients deleted successfully
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /ng-reports/scheduled/reports/download:
+    get:
+      tags:
+      - NG Scheduled Reports
+      summary: Download or Preview Scheduled Report File
+      description: Downloads or previews a scheduled report file in PDF or XLSX format.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_download_scheduled_report_file
+      operationId: downloadScheduledReportFile
+      parameters:
+      - name: reportRunId
+        in: query
+        required: true
+        description: Unique identifier of the report to download
+        schema:
+          type: integer
+          format: int64
+      - name: fileFormat
+        in: query
+        required: true
+        description: File format to download (PDF or XLSX)
+        schema:
+          type: string
+          enum:
+          - PDF
+          - XLSX
+      - name: preview
+        in: query
+        required: false
+        description: Param to view Preview, (applicable only when fileFormat = PDF)
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: File download or inline preview response
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
   /client-details/topology/client-trail/{macAddress}:
     get:
       tags:
@@ -19626,20 +20240,70 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
       security:
       - BearerAuth: []
+  /rtts/supported-devices:
+    post:
+      tags:
+      - RTTS
+      summary: List RTTS supported devices
+      operationId: listRttsSupportedDevices
+      description: List RTTS supported devices for the specified location filter.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_list_rtts_supported_devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XiqRttsSupportedDevicesRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/XiqRttsSupportedDevice'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
 components:
   schemas:
-    XiqLoginRequest:
+    RateLimitPolicy:
       type: object
+      description: Configuration for API usage quotas and throughput limits.
       required:
-      - username
-      - password
+      - hour
       properties:
-        username:
-          type: string
-          description: The login username
-        password:
-          type: string
-          description: The login password
+        hour:
+          type: integer
+          format: int64
+          minimum: 1
+          description: The sustained request quota per hour. Defines the baseline traffic capacity.
+          example: 7500
+        second:
+          type: integer
+          format: int64
+          minimum: 1
+          description: The maximum burst allowance per second. If omitted, no short-term throttling is applied.
+          example: 100
+    XiqLoginRequest:
+      allOf:
+      - type: object
+        required:
+        - username
+        - password
+        properties:
+          username:
+            type: string
+            description: The login username
+          password:
+            type: string
+            description: The login password
+          rate_limit:
+            $ref: '#/components/schemas/RateLimitPolicy'
     XiqErrorParams:
       type: object
       description: Error parameters
@@ -19692,23 +20356,26 @@ components:
           format: int32
           description: The lifetime in seconds of the access token
     XiqGenerateApiTokenRequest:
-      type: object
-      required:
-      - permissions
-      properties:
-        expire_time:
-          type: integer
-          description: The token expire time, format is the number of seconds from epoch of 1970-01-01T00:00:00Z. If null means no expiration, the minimum value is current time plus 300 seconds.
-          format: int64
-        description:
-          type: string
-          description: The token description
-        permissions:
-          type: array
-          description: The token permissions
-          items:
+      allOf:
+      - type: object
+        required:
+        - permissions
+        properties:
+          expire_time:
+            type: integer
+            description: The token expire time, format is the number of seconds from epoch of 1970-01-01T00:00:00Z. If null means no expiration, the minimum value is current time plus 300 seconds.
+            format: int64
+          description:
             type: string
+            description: The token description
+          permissions:
+            type: array
             description: The token permissions
+            items:
+              type: string
+              description: The token permissions
+          rate_limit:
+            $ref: '#/components/schemas/RateLimitPolicy'
     XiqGenerateApiTokenResponse:
       type: object
       required:
@@ -24345,6 +25012,10 @@ components:
           type: integer
           format: int64
           description: Total count of offline unmanaged devices
+        total_simulated_devices:
+          type: integer
+          format: int64
+          description: Total count of simulated devices
     RmDeviceSortField:
       type: string
       description: All available device sort fields<br/><br/>MAC = Device MAC Address<br/>SN = Device Serial Number
@@ -24830,6 +25501,58 @@ components:
         session_id:
           type: string
           description: The session ID for the active ssh access of device
+    XiqThreadBuilding:
+      type: object
+      description: The building where thread devices are located.
+      properties:
+        building_id:
+          type: integer
+          description: The location id
+          format: int64
+    XiqThreadStartCommissionerByBuildingsRequest:
+      type: object
+      description: The start commissioner service request based on buildings.
+      properties:
+        buildings:
+          description: List of buildings where the Thread Commissioner should be started.
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqThreadBuilding'
+        ext_pan_id:
+          description: The extended PAN ID for the Thread network.
+          type: string
+          minLength: 16
+          maxLength: 16
+          pattern: ^[0-9a-fA-F]+$
+        comm_timeout:
+          type: integer
+          default: 120
+          minimum: 1
+          maximum: 2000000
+          description: After this timeout the Commissioner will shutdown. The default is 120 sec. but the max is approximately 23 days.
+        owner_id:
+          type: integer
+          format: int64
+          description: The owner ID.
+    XiqThreadStopCommissionerByBuildingsRequest:
+      type: object
+      description: The stop commissioner service request based on buildings.
+      properties:
+        buildings:
+          description: List of buildings where the Thread Commissioner should be stopped.
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqThreadBuilding'
+        ext_pan_id:
+          description: The extended PAN ID for the Thread network.
+          type: string
+          minLength: 16
+          maxLength: 16
+          pattern: ^[0-9a-fA-F]+$
+        owner_id:
+          type: integer
+          format: int64
+          description: The owner ID.
     PagedXiqNetworkPolicy:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -26880,9 +27603,6 @@ components:
       type: object
       description: The firmware activate option (Only one of them can be enabled)
       properties:
-        enable_activate_at_next_reboot:
-          type: boolean
-          description: Activate at next reboot (requires rebooting manually)
         activation_delay_seconds:
           type: integer
           description: Activate after the given seconds
@@ -26891,6 +27611,9 @@ components:
           type: integer
           description: Activate at the following time according to the system clock on the updated device
           format: int64
+        enable_activate_at_next_reboot:
+          type: boolean
+          description: Activate at next reboot (requires rebooting manually)
     XiqDeploymentPolicy:
       type: object
       description: Push configuration and upgrade firmware policy
@@ -27292,6 +28015,12 @@ components:
             type: integer
             description: The password expired time
             format: int64
+          vlan_override:
+            type: integer
+            description: VLAN ID override assigned to the user
+            format: int32
+            minimum: 1
+            maximum: 4094
     PagedXiqEndUser:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -27342,6 +28071,12 @@ components:
         sms_password_delivery:
           type: string
           description: The password delivery SMS
+        vlan_override:
+          type: integer
+          minimum: 1
+          maximum: 4094
+          description: VLAN ID override assigned to the user (range 1-4094, Optional)
+          format: int32
     XiqUpdateEndUserRequest:
       type: object
       properties:
@@ -27372,6 +28107,12 @@ components:
         sms_password_delivery:
           type: string
           description: The password delivery SMS
+        vlan_override:
+          type: integer
+          minimum: 1
+          maximum: 4094
+          description: VLAN ID override assigned to the user (range 1-4094, Optional)
+          format: int32
     XiqRegenerateEndUserPasswordResponse:
       type: object
       description: The newly generated password for the end user
@@ -40026,6 +40767,9 @@ components:
       type: object
       description: AFC APs Information Element containing status summaries
       properties:
+        total_devices:
+          type: integer
+          description: Total number of AFC supported APs
         afc_status:
           $ref: '#/components/schemas/XiqAfcStatusSummary'
           description: AFC status summary information
@@ -44463,6 +45207,418 @@ components:
             - WIRELESS
             - WIRED
             - THREAD
+    XiqScheduledReport:
+      type: object
+      properties:
+        report_run_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the report run
+        report_run_timestamp:
+          type: integer
+          format: int64
+          description: Epoch timestamp (in milliseconds) when the report was run
+        recipients_count:
+          type: integer
+          format: int64
+          description: Number of recipients for the report
+        report_name:
+          type: string
+          description: Name of the scheduled report
+    XiqCustomScheduledReport:
+      type: object
+      properties:
+        report_schedule_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the report schedule
+        report_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the report
+        report_name:
+          type: string
+          description: The name of the scheduled report
+        report_description:
+          type: string
+          description: The description of the report
+        recipients_count:
+          type: integer
+          format: int64
+          description: The number of recipients for the report
+        frequency:
+          type: string
+          enum:
+          - MONTHLY
+          - WEEKLY
+          - DAILY
+          description: Frequency of the report schedule
+        enable_schedule:
+          type: boolean
+          default: true
+          description: Whether the schedule is enabled
+    PagedCustomScheduledReport:
+      allOf:
+      - $ref: '#/components/schemas/XiqPage'
+      - type: object
+        properties:
+          data:
+            type: array
+            description: The data in the current page
+            items:
+              $ref: '#/components/schemas/XiqCustomScheduledReport'
+    XiqScheduleFrequencyRequest:
+      type: object
+      properties:
+        enable_schedule:
+          type: boolean
+          default: true
+          description: Whether the schedule is enabled
+        frequency_type:
+          type: string
+          enum:
+          - DAILY
+          - WEEKLY
+          - MONTHLY
+          description: Frequency of the report schedule
+        schedule_time:
+          type: string
+          pattern: ^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$
+          description: Time of day to run the report in 24-hour format (HH:mm:ss), e.g., "09:00:00"
+        schedule_timezone:
+          type: string
+          description: IANA-compliant time zone identifier (e.g., "Asia/Kolkata", "America/New_York")
+          example: Asia/Kolkata
+        schedule_days:
+          type: array
+          items:
+            type: integer
+          description: |
+            Days to run the report:
+            - For DAILY/WEEKLY: 1 (Sunday) to 7 (Saturday)
+            - For MONTHLY: 1–31 or -1 for the last day of the month
+    XiqCreateCustomReportScheduleRequest:
+      type: object
+      properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          description: List of metrics to include in the report
+        report_name:
+          type: string
+          description: The name of the report
+        report_description:
+          type: string
+          description: The description of the report
+        site_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of Site IDs
+        building_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of building IDs
+        floor_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of Floor IDs
+        ssids:
+          type: array
+          items:
+            type: string
+          description: List of SSIDs to filter
+        bands:
+          type: array
+          items:
+            type: string
+            enum:
+            - TWO_GHZ
+            - FIVE_GHZ
+            - SIX_GHZ
+          description: List of Bands to filter
+        recipients:
+          type: array
+          description: List of recipients to notify
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                description: Recipient email address
+              notifier_id:
+                type: integer
+                format: int64
+                description: Unique identifier for the notifier
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqScheduleFrequencyRequest'
+          description: List of report schedules by frequency
+        file_format:
+          type: array
+          items:
+            type: string
+            enum:
+            - PDF
+            - XLSX
+          description: File format to download (PDF or XLSX)
+    XiqScheduleFrequencyResponse:
+      type: object
+      properties:
+        enable_schedule:
+          type: boolean
+          default: true
+          description: Whether the schedule is enabled
+        report_schedule_id:
+          type: integer
+          format: int64
+          description: The Unique Identifier for Report Schedule
+        frequency_type:
+          type: string
+          enum:
+          - DAILY
+          - WEEKLY
+          - MONTHLY
+          description: Frequency of the report schedule
+        schedule_time:
+          type: string
+          pattern: ^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$
+          description: Time of day to run the report in 24-hour format (HH:mm:ss), e.g., "09:00:00"
+        schedule_timezone:
+          type: string
+          description: IANA-compliant time zone identifier (e.g., "Asia/Kolkata", "America/New_York")
+          example: Asia/Kolkata
+        schedule_days:
+          type: array
+          items:
+            type: integer
+          description: |
+            Days to run the report:
+            - For DAILY/WEEKLY: 1 (Sunday) to 7 (Saturday)
+            - For MONTHLY: 1–31 or -1 for the last day of the month
+    XiqCustomReportScheduleResponse:
+      type: object
+      properties:
+        report_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the report
+        report_name:
+          type: string
+          description: The name of the scheduled report
+        report_description:
+          type: string
+          description: The description of the report
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          description: List of metrics to include in the report
+        site_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of Site IDs
+        building_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of building IDs
+        floor_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of Floor IDs
+        ssids:
+          type: array
+          items:
+            type: string
+          description: List of SSIDs to filter
+        bands:
+          type: array
+          items:
+            type: string
+            enum:
+            - 2.4GHz
+            - 5GHz
+            - 6GHz
+          description: List of Bands to filter
+        recipients:
+          type: array
+          description: List of recipients
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                description: Recipient email address
+              notifier_id:
+                type: integer
+                format: int64
+                description: Unique identifier for the notifier
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqScheduleFrequencyResponse'
+          description: List of report schedules by frequency
+        file_format:
+          type: array
+          items:
+            type: string
+            enum:
+            - PDF
+            - XLSX
+          description: File format to download (PDF or XLSX)
+    XiqUpdateCustomReportScheduleRequest:
+      type: object
+      properties:
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqReportMetrics'
+          description: List of metrics to include in the report
+        report_name:
+          type: string
+          description: The name of the report
+        report_description:
+          type: string
+          description: The description of the report
+        site_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of Site IDs
+        building_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of building IDs
+        floor_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of Floor IDs
+        ssids:
+          type: array
+          items:
+            type: string
+          description: List of SSIDs to filter
+        bands:
+          type: array
+          items:
+            type: string
+            enum:
+            - TWO_GHZ
+            - FIVE_GHZ
+            - SIX_GHZ
+          description: List of Bands to filter
+        recipients:
+          type: array
+          description: List of recipients to update
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                description: Recipient email address
+              notifier_id:
+                type: integer
+                format: int64
+                description: Unique identifier for the notifier
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/XiqScheduleFrequencyResponse'
+          description: List of report schedules by frequency
+        file_format:
+          type: array
+          items:
+            type: string
+            enum:
+            - PDF
+            - XLSX
+          description: File format to download (PDF or XLSX)
+    XiqReportRun:
+      type: object
+      properties:
+        report_run_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the report run
+        report_run_timestamp:
+          type: integer
+          format: int64
+          description: Epoch timestamp (in milliseconds) when the report was run
+        report_name:
+          type: string
+          description: Name of the report
+        report_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the report
+    XiqReportRunRecipient:
+      type: object
+      properties:
+        report_run_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the report run
+        report_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the report
+        report_name:
+          type: string
+          description: Name of the scheduled report
+        recipients:
+          type: array
+          description: List of recipients for this scheduled report
+          items:
+            type: object
+            properties:
+              recipient_id:
+                type: string
+                description: Unique identifier of the recipient
+              recipient_email:
+                type: string
+                format: email
+                description: Email address of the recipient
+    XiqReportRecipient:
+      type: object
+      properties:
+        report_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the report
+        report_name:
+          type: string
+          description: Name of the scheduled report
+        recipients:
+          type: array
+          description: List of recipients for this scheduled report
+          items:
+            type: object
+            properties:
+              recipient_id:
+                type: string
+                description: Unique identifier of the recipient
+              recipient_email:
+                type: string
+                format: email
+                description: Email address of the recipient
     DefaultError:
       type: object
       properties:
@@ -45183,6 +46339,45 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/topology_neighbor'
+    XiqRttsSupportedDevicesRequest:
+      type: object
+      description: Location filters
+      properties:
+        site_ids:
+          type: array
+          description: The Site ID list
+          items:
+            type: integer
+            description: The Site ID
+            format: int64
+        building_ids:
+          type: array
+          description: The Building ID list
+          items:
+            type: integer
+            description: The Building ID
+            format: int64
+        floor_ids:
+          type: array
+          description: The Floor ID list
+          items:
+            type: integer
+            description: The Floor ID
+            format: int64
+    XiqRttsSupportedDevice:
+      type: object
+      description: Device Details
+      properties:
+        device_id:
+          type: integer
+          description: The Device ID
+          format: int64
+        host_name:
+          type: string
+          description: The Hostname of Device
+        serial_number:
+          type: string
+          description: The Serial Number of Device
   responses:
     ErrorResponse:
       description: The generic ExtremeCloud IQ API error response
@@ -45393,6 +46588,14 @@ components:
         items:
           type: integer
           format: int64
+    ownerId:
+      name: ownerId
+      in: query
+      description: The Owner Id
+      required: true
+      schema:
+        type: integer
+        format: int64
     fields:
       name: fields
       in: query
@@ -45844,14 +47047,6 @@ components:
       name: applianceId
       in: path
       description: ID of the related appliance
-      required: true
-      schema:
-        type: integer
-        format: int64
-    ownerId:
-      name: ownerId
-      in: query
-      description: The Owner Id
       required: true
       schema:
         type: integer
