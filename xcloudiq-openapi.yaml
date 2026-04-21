@@ -21,7 +21,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 25.8.1-23
+  version: 25.9.0-36
 servers:
 - url: https://api.extremecloudiq.com
   description: ExtremeCloud IQ REST API Server
@@ -20236,6 +20236,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/client_details_topology'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+      - BearerAuth: []
+  /client-details/overview/info/{clientId}:
+    get:
+      tags:
+      - Client - Details
+      summary: Client Details Overview
+      description: Return the Details for the clients.
+      externalDocs:
+        description: API Reference
+        url: https://extremecloudiq.com/api-docs/api-reference.html#_get_client_details_info
+      operationId: clientDetailsOverview
+      parameters:
+      - name: clientId
+        in: path
+        description: The Id of Client
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: startTime
+        in: query
+        description: The start time for the data to be returned (in milliseconds since epoch)
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: endTime
+        in: query
+        description: The end time for the data to be returned (in milliseconds since epoch)
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/client_details_overview'
         default:
           $ref: '#/components/responses/ErrorResponse'
       security:
@@ -42802,6 +42845,9 @@ components:
         air_time_warning:
           type: boolean
           description: Indicates if the air time is exceeding threshold
+        rtts_supported:
+          type: boolean
+          description: Indicates if RTT Session is supported
     PagedXiqClientHealthGridResponse:
       allOf:
       - $ref: '#/components/schemas/XiqPage'
@@ -46339,6 +46385,55 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/topology_neighbor'
+    client_details_overview:
+      type: object
+      description: The OverView for Client
+      properties:
+        device_connected:
+          type: boolean
+        device_id:
+          type: integer
+          format: int64
+        os_type:
+          type: string
+        ip_address:
+          type: string
+        mac_address:
+          type: string
+        device_location_names:
+          type: string
+        device_location_id:
+          type: integer
+          format: int64
+        alias:
+          type: string
+        user:
+          type: string
+        connection_to:
+          type: string
+        connection_time:
+          type: integer
+          format: int64
+        vlan:
+          type: integer
+        cwp_used:
+          type: integer
+        user_profile:
+          type: string
+        ssid:
+          type: string
+        radio:
+          type: string
+        wifi_protocol:
+          type: string
+        channel:
+          type: integer
+        client_hostname:
+          type: string
+        client_type:
+          type: string
+        rtts_supported:
+          type: boolean
     XiqRttsSupportedDevicesRequest:
       type: object
       description: Location filters
